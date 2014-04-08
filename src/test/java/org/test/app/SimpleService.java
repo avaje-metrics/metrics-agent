@@ -8,7 +8,7 @@ public class SimpleService {
 
   public void doSomething() throws RuntimeException {
     System.out.println("hello there");
-  }
+  } 
   
   public void doSomethingElse() throws InterruptedException {
     try {
@@ -25,7 +25,4 @@ public class SimpleService {
     System.out.println("not very interesting");    
   } 
   
-//  public static void onExit(Object obj, int opCode) {
-//    System.out.println("... onExit "+obj+" "+opCode);
-//  }
 }

@@ -7,9 +7,7 @@ import java.lang.instrument.Instrumentation;
 import java.security.ProtectionDomain;
 
 import org.avaje.metric.agent.asm.ClassReader;
-import org.avaje.metric.agent.asm.ClassVisitor;
 import org.avaje.metric.agent.asm.ClassWriter;
-import org.avaje.metric.agent.asm.util.CheckClassAdapter;
 
 /**
  * A Class file Transformer that enhances entity beans.
@@ -39,24 +37,11 @@ public class Transformer implements ClassFileTransformer {
     }
   }
 
-  private static final int CLASS_WRITER_COMPUTEFLAGS = ClassWriter.COMPUTE_FRAMES;// + ClassWriter.COMPUTE_MAXS;
-
   private final EnhanceContext enhanceContext;
 
   public Transformer(String agentArgs) {
     this.enhanceContext = new EnhanceContext(false, agentArgs);
   }
-
-//  /**
-//   * Override when you need transformation to occur with knowledge of other
-//   * classes.
-//   * <p>
-//   * Note: Added to support Play framework.
-//   * </p>
-//   */
-//  protected ClassWriter createClassWriter() {
-//    return new ClassWriter(CLASS_WRITER_COMPUTEFLAGS);
-//  }
 
   /**
    * Change the logout to something other than system out.
@@ -80,11 +65,11 @@ public class Transformer implements ClassFileTransformer {
 
       // ignore JDK and JDBC classes etc
       if (enhanceContext.isIgnoreClass(className)) {
-        enhanceContext.log(9, "ignore class " + className);
+        enhanceContext.log(8, "ignore class " + className);
         return null;
       }
 
-      System.out.println("trying to enhance "+className);
+      enhanceContext.log(8, "trying to enhance "+className);
       return enhancement(loader, classfileBuffer);
      
     } catch (NoEnhancementRequiredException e) {
@@ -110,15 +95,10 @@ public class Transformer implements ClassFileTransformer {
     ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
     ClassAdapterMetric ca = new ClassAdapterMetric(cw, enhanceContext);
 
-
     try {
 
-//      ClassVisitor cv = new CheckClassAdapter(ca);
-//      cr.accept(cv, ClassReader.EXPAND_FRAMES);
-
       cr.accept(ca, ClassReader.EXPAND_FRAMES);
-
-      if (ca.isLog(1)) {
+      if (ca.isLog(3)) {
         ca.log("enhanced");
       }
 
@@ -136,7 +116,7 @@ public class Transformer implements ClassFileTransformer {
       return null;
 
     } catch (NoEnhancementRequiredException e) {
-      if (ca.isLog(0)) {
+      if (ca.isLog(4)) {
         ca.log("skipping... no enhancement required");
       }
       return null;

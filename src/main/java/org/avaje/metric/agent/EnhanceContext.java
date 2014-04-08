@@ -1,7 +1,17 @@
 package org.avaje.metric.agent;
 
+import java.io.InputStream;
 import java.io.PrintStream;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -14,40 +24,31 @@ public class EnhanceContext {
 
 	private final IgnoreClassHelper ignoreClassHelper;
 
-	//private final boolean subclassing;
-
 	private final HashMap<String, String> agentArgsMap;
 
 	private final boolean readOnly;
 
-	//private final boolean transientInternalFields;
+	private final boolean enhanceJaxrsProtected;
+	
+	private final boolean sysoutOnCollect;
+	
+	private final Map<String, String> nameMapping;
 
-  //private final boolean checkNullManyFields;
-
-	//private final ClassMetaReader reader;
-
-	//private final ClassBytesReader classBytesReader;
+  private final String[] metricNameMatches;
 
 	private PrintStream logout;
 
 	private int logLevel;
 
-	//private HashMap<String, ClassMeta> map = new HashMap<String, ClassMeta>();
-
-	
 	/**
 	 * Construct a context for enhancement.
 	 */
 	public EnhanceContext(boolean subclassing, String agentArgs) {
 
 		this.ignoreClassHelper = new IgnoreClassHelper(agentArgs);
-		//this.subclassing = subclassing;
 		this.agentArgsMap = ArgParser.parse(agentArgs);
 
 		this.logout = System.out;
-
-		//this.classBytesReader = classBytesReader;
-		//this.reader = new ClassMetaReader(this);
 
 		String debugValue = agentArgsMap.get("debug");
 		if (debugValue != null) {
@@ -59,11 +60,53 @@ public class EnhanceContext {
 			}
 		}     
 		this.readOnly = getPropertyBoolean("readonly", false);
+		this.enhanceJaxrsProtected = getPropertyBoolean("jaxrsProtected", false);
+		this.sysoutOnCollect = getPropertyBoolean("sysoutoncollect", false);
+		this.nameMapping = readNameMapping();
+		log(1,"name mappings: "+nameMapping);
+		log(1,"settings: debug["+debugValue+"] sysoutoncollect["+sysoutOnCollect+"] readonly["+readOnly+"]");
+		this.metricNameMatches = getMetricNameMatches();
+		System.out.println("match keys: "+Arrays.toString(this.metricNameMatches));
 	}
 	
-//	public byte[] getClassBytes(String className, ClassLoader classLoader){
-//		return classBytesReader.getClassBytes(className, classLoader);
-//	}
+	private String[] getMetricNameMatches() {
+	  List<String> keys = new ArrayList<String>();
+	  keys.addAll(this.nameMapping.keySet());
+	  Collections.sort(keys);
+	  System.out.println("KEYS: "+keys);
+	  return keys.toArray(new String[keys.size()]);
+	}
+	
+	private Map<String,String> readNameMapping() {
+	  
+	  Map<String,String> map = new HashMap<String, String>();
+	  
+	  try {
+  	  ClassLoader classLoader = EnhanceContext.class.getClassLoader();
+  	  Enumeration<URL> resources = classLoader.getResources("metric-name-mapping.txt");
+  	  while (resources.hasMoreElements()) {
+        URL url = resources.nextElement();
+        InputStream inStream = url.openStream();
+        try {
+          Properties props = new Properties();
+          props.load(inStream);
+          
+          Set<String> stringPropertyNames = props.stringPropertyNames();
+          for (String propName : stringPropertyNames) {
+            map.put(propName, props.getProperty(propName));
+          }
+        } finally {
+          if (inStream != null) {
+            inStream.close();
+          }
+        }
+      }
+	  } catch (Exception e) {
+	    System.err.println("Error trying to read metric-name-mapping.properties resources");
+	    e.printStackTrace();
+	  }
+	  return map;
+	}
 	
 	/**
 	 * Return a value from the agent arguments using its key.
@@ -96,59 +139,6 @@ public class EnhanceContext {
 	public void setLogout(PrintStream logout) {
 		this.logout = logout;
 	}
-
-//	/**
-//	 * Create a new meta object for enhancing a class.
-//	 */
-//	public ClassMeta createClassMeta() {
-//		return new ClassMeta(this, subclassing, logLevel, logout);
-//	}
-//
-//	/**
-//	 * Read the class meta data for a super class.
-//	 * <p>
-//	 * Typically used to read meta data for inheritance hierarchy.
-//	 * </p>
-//	 */
-//	public ClassMeta getSuperMeta(String superClassName, ClassLoader classLoader) {
-//
-//		try {
-//			if (isIgnoreClass(superClassName)){
-//				return null;
-//			}
-//			return reader.get(false, superClassName, classLoader);
-//			
-//		} catch (ClassNotFoundException e) {
-//			throw new RuntimeException(e);
-//		}
-//	}
-//
-//	/**
-//	 * Read the class meta data for an interface.
-//	 * <p>
-//	 * Typically used to check the interface to see if it is transactional.
-//	 * </p>
-//	 */
-//	public ClassMeta getInterfaceMeta(String interfaceClassName, ClassLoader classLoader) {
-//
-//		try {
-//			if (isIgnoreClass(interfaceClassName)){
-//				return null;
-//			}
-//			return reader.get(true, interfaceClassName, classLoader);
-//			
-//		} catch (ClassNotFoundException e) {
-//			throw new RuntimeException(e);
-//		}
-//	}
-//	
-//	public void addClassMeta(ClassMeta meta) {
-//		map.put(meta.getClassName(), meta);
-//	}
-//
-//	public ClassMeta get(String className) {
-//		return map.get(className);
-//	}
 
 	/**
 	 * Log some debug output.
@@ -195,5 +185,41 @@ public class EnhanceContext {
 	public boolean isReadOnly() {
 		return readOnly;
 	}
+
+	/**
+	 * trim off any leading period.
+	 */
+	private String trimMetricName(String metricName) {
+	  if (metricName.startsWith(".")) {
+	    return metricName.substring(1);
+	  }
+	  return metricName;
+	}
+	
+	
+  public String getMappedName(String rawName) {
+    for (int i = metricNameMatches.length-1; i >= 0; i--) {
+      String name = metricNameMatches[i];
+      //System.out.println("----- name:"+name+" rawName:"+rawName+" starts:"+(rawName.startsWith(name)));
+      if (rawName.startsWith(name)) {
+        String prefix = nameMapping.get(name);
+        if (prefix == null || prefix.length() == 0) {
+          return trimMetricName(rawName.substring(name.length()));
+          
+        } else {
+          return trimMetricName(prefix + rawName.substring(name.length()));
+        }
+      }
+    }
+    return rawName;
+  }
+
+  public boolean isEnhanceJaxrsProtected() {
+    return enhanceJaxrsProtected;
+  }
+
+  public boolean isSysoutOnCollect() {
+    return sysoutOnCollect;
+  }
 
 }

@@ -14,9 +14,9 @@ public class MainTransform {
 			return;
 		}
 
-		String transformArgs = "debug=1";
 		String inDir = "./target/test-classes";
 		String pkg = "org/test/app";
+    String transformArgs = "debug=1";
 
 		if (args.length > 0) {
 			inDir = args[0];
