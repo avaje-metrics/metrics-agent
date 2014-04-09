@@ -20,7 +20,7 @@ public class Transformer implements ClassFileTransformer {
 
   public static void premain(String agentArgs, Instrumentation inst) {
 
-    Transformer t = new Transformer(agentArgs);
+    Transformer t = new Transformer(agentArgs, null);
     inst.addTransformer(t);
 
     if (t.getLogLevel() > 0) {
@@ -29,7 +29,7 @@ public class Transformer implements ClassFileTransformer {
   }
 
   public static void agentmain(String agentArgs, Instrumentation inst) throws Exception {
-    Transformer t = new Transformer( agentArgs);
+    Transformer t = new Transformer( agentArgs, null);
     inst.addTransformer(t);
 
     if (t.getLogLevel() > 0) {
@@ -39,8 +39,8 @@ public class Transformer implements ClassFileTransformer {
 
   private final EnhanceContext enhanceContext;
 
-  public Transformer(String agentArgs) {
-    this.enhanceContext = new EnhanceContext(false, agentArgs);
+  public Transformer(String agentArgs, ClassLoader classLoader) {
+    this.enhanceContext = new EnhanceContext(false, agentArgs, classLoader);
   }
 
   /**
@@ -62,7 +62,7 @@ public class Transformer implements ClassFileTransformer {
       ProtectionDomain protectionDomain, byte[] classfileBuffer) throws IllegalClassFormatException {
 
     try {
-
+      
       // ignore JDK and JDBC classes etc
       if (enhanceContext.isIgnoreClass(className)) {
         enhanceContext.log(8, "ignore class " + className);

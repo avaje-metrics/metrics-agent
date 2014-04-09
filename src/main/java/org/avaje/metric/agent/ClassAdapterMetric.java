@@ -184,6 +184,7 @@ public class ClassAdapterMetric extends ClassVisitor implements Opcodes {
   }
   
   private AddTimerMetricMethodAdapter createAdapter(boolean publicMethod, int metricIndex, String uniqueMethodName, MethodVisitor mv, int access, String name, String desc) {
+    
     return new AddTimerMetricMethodAdapter(enhanceContext, publicMethod, className, metricIndex, uniqueMethodName, mv, access, name, desc);
   }
 
@@ -226,14 +227,14 @@ public class ClassAdapterMetric extends ClassVisitor implements Opcodes {
         
       } else {
         
-        String uniqueMethodName = methodAdapter.getUniqueMethodName();////methodsEnhanced.get(i);
+        String uniqueMethodName = methodAdapter.getUniqueMethodName();
         String mappedMetricName = getMappedName(uniqueMethodName);
               
         log(1, "### METRIC["+mappedMetricName+"]   METHOD["+uniqueMethodName+"] index["+i+"]");
         Label l0 = new Label();
         mv.visitLabel(l0);
         mv.visitLineNumber(1, l0);
-        mv.visitLdcInsn(uniqueMethodName);
+        mv.visitLdcInsn(mappedMetricName);
         mv.visitMethodInsn(INVOKESTATIC, METRIC_MANAGER, METRIC_MANAGER_GET_METHOD, "(Ljava/lang/String;)"+LCOLLECTOR);
         mv.visitFieldInsn(PUTSTATIC, className, "_$metric_"+i, LCOLLECTOR);
       }

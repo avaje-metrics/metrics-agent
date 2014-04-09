@@ -1,5 +1,6 @@
 package org.avaje.metric.agent;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
 import java.net.URL;
@@ -22,6 +23,8 @@ public class EnhanceContext {
 
 	private static final Logger logger = Logger.getLogger(EnhanceContext.class.getName());
 
+	private final ClassLoader classLoader;
+	
 	private final IgnoreClassHelper ignoreClassHelper;
 
 	private final HashMap<String, String> agentArgsMap;
@@ -41,8 +44,9 @@ public class EnhanceContext {
 	/**
 	 * Construct a context for enhancement.
 	 */
-	public EnhanceContext(boolean subclassing, String agentArgs) {
+	public EnhanceContext(boolean subclassing, String agentArgs, ClassLoader classLoader) {
 
+	  this.classLoader = classLoader;
 		this.ignoreClassHelper = new IgnoreClassHelper(agentArgs);
 		this.agentArgsMap = ArgParser.parse(agentArgs);
 
@@ -73,14 +77,21 @@ public class EnhanceContext {
 	  System.out.println("KEYS: "+keys);
 	  return keys.toArray(new String[keys.size()]);
 	}
+
+	private Enumeration<URL> getNameMappingResources() throws IOException {
+	  if (classLoader != null) {
+	    return classLoader.getResources("metric-name-mapping.txt");
+	  } else {
+      return getClass().getClassLoader().getResources("metric-name-mapping.txt");
+	  }
+	}
 	
 	private Map<String,String> readNameMapping() {
 	  
 	  Map<String,String> map = new HashMap<String, String>();
 	  
 	  try {
-  	  ClassLoader classLoader = EnhanceContext.class.getClassLoader();
-  	  Enumeration<URL> resources = classLoader.getResources("metric-name-mapping.txt");
+  	  Enumeration<URL> resources = getNameMappingResources();
   	  while (resources.hasMoreElements()) {
         URL url = resources.nextElement();
         InputStream inStream = url.openStream();

@@ -31,7 +31,7 @@ public class MainTransform {
 
 		ClassLoader cl = ClassLoader.getSystemClassLoader();
 
-		Transformer t = new Transformer(transformArgs);
+		Transformer t = new Transformer(transformArgs, cl);
 
 		OfflineFileTransform ft = new OfflineFileTransform(t, cl, inDir, inDir);
 
