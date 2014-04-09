@@ -1,6 +1,7 @@
 package org.avaje.metric.agent;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import org.avaje.metric.agent.asm.AnnotationVisitor;
 import org.avaje.metric.agent.asm.ClassVisitor;
@@ -33,9 +34,20 @@ public class ClassAdapterMetric extends ClassVisitor implements Opcodes {
 
   private boolean shouldBeEnhanced;
 
+  private boolean existingStaticInitialiser;
+  
   private String className;
   
-  private ArrayList<String> methodsEnhanced = new ArrayList<String>();
+  /**
+   * List of unique names to support parameter overloading.
+   */
+  private final ArrayList<String> uniqueMethodNames = new ArrayList<String>();
+  
+  /**
+   * The method adapters that detect if a method is enhanced and perform the enhancement.
+   */
+  private final List<AddTimerMetricMethodAdapter> methodAdapters = new ArrayList<AddTimerMetricMethodAdapter>();
+
   
   public ClassAdapterMetric(ClassVisitor cv, EnhanceContext context) {
     super(ASM4, cv);
@@ -74,10 +86,14 @@ public class ClassAdapterMetric extends ClassVisitor implements Opcodes {
 
     AnnotationVisitor av = super.visitAnnotation(desc, visible);
 
-    log(8,"check annotation "+desc);
+    log(8,"... check annotation "+desc);
     
     if (desc.equals("Lorg/avaje/metric/agent/AlreadyEnhancedMarker;")) {
       throw new AlreadyEnhancedException("Already enhanced");
+    }
+
+    if (desc.equals("Lorg/avaje/metric/annotation/NotTimed;")) {
+      throw new NoEnhancementRequiredException("marked as NotTimed");
     }
 
     if (desc.equals("Lorg/avaje/metric/annotation/Timed;")) {
@@ -87,24 +103,35 @@ public class ClassAdapterMetric extends ClassVisitor implements Opcodes {
       return av;
     }
     
-    if (desc.startsWith("Ljavax/ws/rs")) {
+    if (isJaxRsEndpoint(desc)) {
       detectJaxrs = true;
       shouldBeEnhanced = true;
-      return av;
     }
 
+    // We are interested in Service, Controller, Component etc
     if (desc.startsWith("Lorg/springframework/stereotype")) {
       detectSpringComponent = true;
       shouldBeEnhanced = true;
-      return av;
     }
     return av;
   }
 
+  private boolean isJaxRsEndpoint(String desc) {
+        
+    return desc.equals("Ljavax/ws/rs/Path;") ||
+        desc.equals("Ljavax/ws/rs/Produces;") ||
+        desc.equals("Ljavax/ws/rs/Consumes;");
+  }
+  
   private void addMarkerAnnotation() {
     
     if (!markerAnnotationAdded) {
-      log(3,"adding marker annotation - detection explicit:"+detectExplicit+" jaxrs:"+detectJaxrs+" spring:"+detectSpringComponent);
+      if (isLog(3)) {
+        String flagExplicit = (detectExplicit?"EXPLICIT ":"");
+        String flagJaxrs = (detectJaxrs?"JAXRS ":"");
+        String flagSpring = (detectSpringComponent?"SPRING":"");
+        log(3,"enhancing - detection "+flagExplicit+flagJaxrs+flagSpring);        
+      }
       AnnotationVisitor av = cv.visitAnnotation("Lorg/avaje/metric/agent/AlreadyEnhancedMarker;", true);
       if (av != null) {
         av.visitEnd();
@@ -121,7 +148,7 @@ public class ClassAdapterMetric extends ClassVisitor implements Opcodes {
   public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
 
     if (!shouldBeEnhanced) {
-      log(8, "no marker annotations found ");
+      log(8, "... no marker annotations found ");
       throw new NoEnhancementRequiredException();
     } else {
       addMarkerAnnotation();
@@ -130,67 +157,88 @@ public class ClassAdapterMetric extends ClassVisitor implements Opcodes {
     MethodVisitor mv = super.visitMethod(access, name, desc, signature, exceptions);
     if (name.equals("<init>")) {
       // not enhancing constructor
+      log(5, "... not enhancing constructor:"+name+" desc:"+desc);
       return mv;
     }
+    if (name.equals("<clinit>")) {
+      // static initialiser, add call _$initMetrics()
+      log(2, "... <clinit> exists - adding call to _$initMetrics()");
+      existingStaticInitialiser = true;
+      return new StaticInitAdapter(mv, access, name, desc, className);
+    }
     if ((access & Opcodes.ACC_STATIC) != 0) {
-      log(5, "not enhancing static method:"+name);
+      log(5, "... not enhancing static method:"+name+" desc:"+desc);
       return mv;
     }
     boolean publicMethod = isPublicMethod(access);
-    if (publicMethod || isProtectedMethod(access)) {
-      int metricIndex = methodsEnhanced.size();
-      String metricName = addMetricName(className.replace('/', '.')+"."+name);
-      if (isLog(8)) {
-        log("adding timer metric to method:"+name+" metricIndex:"+metricIndex+" metricName:"+metricName);
-      }
-      return new AddTimerMetricMethodAdapter(enhanceContext, publicMethod, className, metricIndex, mv, access, name, desc);
+    int metricIndex = methodAdapters.size();
+    String uniqueMethodName = getUniqueMethodName(className.replace('/', '.')+"."+name);
+    if (isLog(8)) {
+      log("... method:"+name+" public:"+publicMethod+" index:"+metricIndex+" uniqueMethodName:"+uniqueMethodName);
     }
     
-    // not enhancing non-public method
-    log(3,"not enhancing non-public method:"+name);
-    return mv;
+    // Not sure if we are enhancing this method yet ...
+    AddTimerMetricMethodAdapter methodAdapter = createAdapter(publicMethod, metricIndex, uniqueMethodName, mv, access, name, desc);
+    methodAdapters.add(methodAdapter);
+    return methodAdapter;
+  }
+  
+  private AddTimerMetricMethodAdapter createAdapter(boolean publicMethod, int metricIndex, String uniqueMethodName, MethodVisitor mv, int access, String name, String desc) {
+    return new AddTimerMetricMethodAdapter(enhanceContext, publicMethod, className, metricIndex, uniqueMethodName, mv, access, name, desc);
   }
 
+  
   private boolean isPublicMethod(int access) {
     return ((access & Opcodes.ACC_PUBLIC) != 0);
   }
   
-  private boolean isProtectedMethod(int access) {
-    return ((access & Opcodes.ACC_PROTECTED) != 0);
-  }
-  
-  private String addMetricName(String baseMetricName) {
+  /**
+   * Create and return a unique method name in case of parameter overloading.
+   */
+  private String getUniqueMethodName(String baseMetricName) {
     int i = 1;
     String metricName = baseMetricName;
-    while (methodsEnhanced.contains(metricName)) {
+    while (uniqueMethodNames.contains(metricName)) {
       metricName= baseMetricName+(i++);
     }
-    methodsEnhanced.add(metricName);
+    uniqueMethodNames.add(metricName);
     return metricName;
   }
   
+  /**
+   * Return the potentially cut down metric name.
+   */
   private String getMappedName(String rawName) {
     return enhanceContext.getMappedName(rawName);
   }
 
   private void addInitialisers() {
-    MethodVisitor mv = cv.visitMethod(ACC_STATIC, "<clinit>", "()V", null, null);
+    MethodVisitor mv = cv.visitMethod(ACC_PRIVATE + ACC_STATIC, "_$initMetrics", "()V", null, null);
     mv.visitCode();
+
+    log(3, "... adding static _$initMetrics() method");
     
-    for (int i = 0; i < methodsEnhanced.size(); i++) {
+    for (int i = 0; i < methodAdapters.size(); i++) {
       
-      String fullMethodName = methodsEnhanced.get(i);
-      String fullMetricName = getMappedName(fullMethodName);
-            
-      log(1, "#### METRIC["+fullMetricName+"]   METHOD["+fullMethodName+"]");
-      Label l0 = new Label();
-      mv.visitLabel(l0);
-      mv.visitLineNumber(1, l0);
-      mv.visitLdcInsn(fullMetricName);
-      mv.visitMethodInsn(INVOKESTATIC, METRIC_MANAGER, METRIC_MANAGER_GET_METHOD, "(Ljava/lang/String;)"+LCOLLECTOR);
-      mv.visitFieldInsn(PUTSTATIC, className, "_$metric_"+i, LCOLLECTOR);
+      AddTimerMetricMethodAdapter methodAdapter = methodAdapters.get(i);
+      if (!methodAdapter.isEnhanced()) {
+        log(2, "--- not enhanced["+methodAdapter.getUniqueMethodName()+"]");
+        
+      } else {
+        
+        String uniqueMethodName = methodAdapter.getUniqueMethodName();////methodsEnhanced.get(i);
+        String mappedMetricName = getMappedName(uniqueMethodName);
+              
+        log(1, "### METRIC["+mappedMetricName+"]   METHOD["+uniqueMethodName+"] index["+i+"]");
+        Label l0 = new Label();
+        mv.visitLabel(l0);
+        mv.visitLineNumber(1, l0);
+        mv.visitLdcInsn(uniqueMethodName);
+        mv.visitMethodInsn(INVOKESTATIC, METRIC_MANAGER, METRIC_MANAGER_GET_METHOD, "(Ljava/lang/String;)"+LCOLLECTOR);
+        mv.visitFieldInsn(PUTSTATIC, className, "_$metric_"+i, LCOLLECTOR);
+      }
     }
-    
+
     mv.visitInsn(RETURN);
     mv.visitMaxs(1, 0);
     mv.visitEnd();
@@ -199,13 +247,41 @@ public class ClassAdapterMetric extends ClassVisitor implements Opcodes {
   @Override
   public void visitEnd() {
     
-    for (int i = 0; i < methodsEnhanced.size(); i++) {
-      FieldVisitor fv = cv.visitField(ACC_PRIVATE + ACC_STATIC, "_$metric_"+i, LCOLLECTOR, null, null);
-      fv.visitEnd();      
+    for (int i = 0; i < methodAdapters.size(); i++) {
+      AddTimerMetricMethodAdapter methodAdapter = methodAdapters.get(i);
+      if (methodAdapter.isEnhanced()) {
+        log(4, "... init field index["+i+"] METHOD["+methodAdapter.getUniqueMethodName()+"]");
+        FieldVisitor fv = cv.visitField(ACC_PRIVATE + ACC_STATIC, "_$metric_"+i, LCOLLECTOR, null, null);
+        fv.visitEnd();      
+      }
     }
     
     addInitialisers();
     
+    if (!existingStaticInitialiser) {
+      log(3, "... add <clinit> to call _$initMetrics()");
+      addStaticInitialiser();
+    }
+    
     super.visitEnd();
   }
+  
+  /**
+   * Add a static initialisation block when there was not one on the class.
+   */
+  private void addStaticInitialiser() {
+    MethodVisitor mv = cv.visitMethod(ACC_STATIC, "<clinit>", "()V", null, null);
+    mv.visitCode();
+    Label l0 = new Label();
+    mv.visitLabel(l0);
+    mv.visitLineNumber(16, l0);
+    mv.visitMethodInsn(INVOKESTATIC, className, "_$initMetrics", "()V");
+    Label l1 = new Label();
+    mv.visitLabel(l1);
+    mv.visitLineNumber(17, l1);
+    mv.visitInsn(RETURN);
+    mv.visitMaxs(0, 0);
+    mv.visitEnd();
+  }
+  
 }

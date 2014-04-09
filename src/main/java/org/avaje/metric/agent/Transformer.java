@@ -69,7 +69,7 @@ public class Transformer implements ClassFileTransformer {
         return null;
       }
 
-      enhanceContext.log(8, "trying to enhance "+className);
+      enhanceContext.log(8, "look at "+className);
       return enhancement(loader, classfileBuffer);
      
     } catch (NoEnhancementRequiredException e) {
@@ -103,6 +103,9 @@ public class Transformer implements ClassFileTransformer {
       }
 
       if (enhanceContext.isReadOnly()) {
+        if (ca.isLog(3)) {
+          ca.log("readonly mode - not enhanced");
+        }
         return null;
 
       } else {
@@ -117,7 +120,7 @@ public class Transformer implements ClassFileTransformer {
 
     } catch (NoEnhancementRequiredException e) {
       if (ca.isLog(4)) {
-        ca.log("skipping... no enhancement required");
+        ca.log("... skipping, no enhancement required");
       }
       return null;
     }

@@ -9,8 +9,17 @@ public class ExampleService {
 
   public static long timer;
   
-  private static TimedMetric _$metric_1 = MetricManager.getTimedMetric("simpleSerivce.doSomething");
-  private static TimedMetric _$metric_2 = MetricManager.getTimedMetric("simpleSerivce.doSomethingElse");
+  private static TimedMetric _$metric_1;// = MetricManager.getTimedMetric("simpleSerivce.doSomething");
+  private static TimedMetric _$metric_2;// = MetricManager.getTimedMetric("simpleSerivce.doSomethingElse");
+  
+  static {
+    _$initMetrics();
+  }
+  
+  private static void _$initMetrics() {
+    _$metric_1 = MetricManager.getTimedMetric("simpleSerivce.doSomething");
+    _$metric_2 = MetricManager.getTimedMetric("simpleSerivce.doSomethingElse");
+  }
   
   public void doSomething() throws InterruptedException {
 //    long _$metricStart = System.nanoTime();

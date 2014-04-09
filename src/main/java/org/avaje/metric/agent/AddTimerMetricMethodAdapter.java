@@ -16,19 +16,22 @@ public class AddTimerMetricMethodAdapter extends AdviceAdapter {
   private final String methodName;
   
   private final int metricIndex;
-  private int posTimeStart;
+  private final String uniqueMethodName;
   
-  private boolean detectExplicit;
-  private boolean detectJaxrs;
+  private int posTimeStart;
+
+  private boolean detectNotTimed;  
   
   private boolean enhanced;
   
-  public AddTimerMetricMethodAdapter(EnhanceContext context, boolean publicMethod, String className, int metricIndex, MethodVisitor mv, int acc, String name, String desc) {
+  public AddTimerMetricMethodAdapter(EnhanceContext context, boolean publicMethod, String className, 
+      int metricIndex, String uniqueMethodName, MethodVisitor mv, int acc, String name, String desc) {
     super(ASM4, mv, acc, name, desc);
     this.context = context;
     this.className = className;
     this.methodName = name;
     this.metricIndex = metricIndex;
+    this.uniqueMethodName = uniqueMethodName;
     this.enhanced = publicMethod;
   }
   
@@ -39,16 +42,17 @@ public class AddTimerMetricMethodAdapter extends AdviceAdapter {
     return enhanced;
   }
   
+  public String getUniqueMethodName() {
+    return uniqueMethodName;
+  }
+  
+  public int getMetricIndex() {
+    return metricIndex;
+  }
+
   public void visitCode() {
     super.visitCode();
-    if (detectJaxrs) {
-      log(7,"... detected Jaxrs on: "+methodName);
-    }
-    if (detectExplicit) {
-      log(7,"... explicit on: "+methodName);
-    }
     if (enhanced) {
-      log(4,"... enhancing method: "+methodName);
       mv.visitLabel(startFinally);
     }
   }
@@ -61,24 +65,45 @@ public class AddTimerMetricMethodAdapter extends AdviceAdapter {
   public AnnotationVisitor visitAnnotation(String desc, boolean visible) {
     
     AnnotationVisitor av =  super.visitAnnotation(desc, visible);
+    if (detectNotTimed) {
+      // just ignore 
+      return av;
+    }
     
-    log(7,"check method annotation "+desc);
+    log(7,"... check method annotation "+desc);
 
+    if (desc.equals("Lorg/avaje/metric/annotation/NotTimed;")) {
+      // definately don't enhance this method
+      log(4,"... found NotTimed");
+      detectNotTimed = true;
+      enhanced = false;
+      return av;
+    }
+    
     if (desc.equals("Lorg/avaje/metric/annotation/Timed;")) {
-      log(4,"found Timed annotation "+desc);
-      detectExplicit = true;
+      log(4,"... found Timed annotation "+desc);
       enhanced = true;
       return av;
     }
     
-    if (desc.startsWith("Ljavax/ws/rs")) {
-      detectJaxrs = true;
+    if (isJaxrsEndpoint(desc)) {
+      log(4,"... found jaxrs annotation "+desc);
       enhanced = true;
       return av;
     }
     
     return av;
   }
+  
+  private boolean isJaxrsEndpoint(String desc) {
+    if (!desc.startsWith("Ljavax/ws/rs")) {
+      return false;
+    }
+    return desc.equals("Ljavax/ws/rs/Path;") || desc.equals("Ljavax/ws/rs/GET;") 
+        || desc.equals("Ljavax/ws/rs/PUT;") || desc.equals("Ljavax/ws/rs/POST;") 
+        || desc.equals("Ljavax/ws/rs/DELETE;") || desc.equals("Ljavax/ws/rs/OPTIONS;") 
+        || desc.equals("Ljavax/ws/rs/HEAD;");
+  }  
 
   @Override
   public void visitMaxs(int maxStack, int maxLocals) {

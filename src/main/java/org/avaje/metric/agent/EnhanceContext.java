@@ -27,8 +27,6 @@ public class EnhanceContext {
 	private final HashMap<String, String> agentArgsMap;
 
 	private final boolean readOnly;
-
-	private final boolean enhanceJaxrsProtected;
 	
 	private final boolean sysoutOnCollect;
 	
@@ -60,7 +58,6 @@ public class EnhanceContext {
 			}
 		}     
 		this.readOnly = getPropertyBoolean("readonly", false);
-		this.enhanceJaxrsProtected = getPropertyBoolean("jaxrsProtected", false);
 		this.sysoutOnCollect = getPropertyBoolean("sysoutoncollect", false);
 		this.nameMapping = readNameMapping();
 		log(1,"name mappings: "+nameMapping);
@@ -196,11 +193,16 @@ public class EnhanceContext {
 	  return metricName;
 	}
 	
-	
+  /**
+   * Return a potentially cut down metric name.
+   * <p>
+   * For example, trim of extraneous package names or prefix controllers or
+   * jaxrs endpoints with "web" etc.
+   * </p>
+   */
   public String getMappedName(String rawName) {
     for (int i = metricNameMatches.length-1; i >= 0; i--) {
       String name = metricNameMatches[i];
-      //System.out.println("----- name:"+name+" rawName:"+rawName+" starts:"+(rawName.startsWith(name)));
       if (rawName.startsWith(name)) {
         String prefix = nameMapping.get(name);
         if (prefix == null || prefix.length() == 0) {
@@ -214,10 +216,9 @@ public class EnhanceContext {
     return rawName;
   }
 
-  public boolean isEnhanceJaxrsProtected() {
-    return enhanceJaxrsProtected;
-  }
-
+  /**
+   * Return true to add some debug sysout via the enhancement.
+   */
   public boolean isSysoutOnCollect() {
     return sysoutOnCollect;
   }
