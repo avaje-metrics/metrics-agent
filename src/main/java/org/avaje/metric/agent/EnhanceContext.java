@@ -25,6 +25,10 @@ public class EnhanceContext {
 
 	private final ClassLoader classLoader;
 	
+	private final ClassBytesReader classBytesReader = new ClassBytesReader();
+	
+	private final ClassMetaReader reader;
+	 
 	private final IgnoreClassHelper ignoreClassHelper;
 
 	private final HashMap<String, String> agentArgsMap;
@@ -44,10 +48,11 @@ public class EnhanceContext {
 	/**
 	 * Construct a context for enhancement.
 	 */
-	public EnhanceContext(boolean subclassing, String agentArgs, ClassLoader classLoader) {
+	public EnhanceContext(String agentArgs, ClassLoader classLoader) {
 
 	  this.classLoader = classLoader;
 		this.ignoreClassHelper = new IgnoreClassHelper(agentArgs);
+    this.reader = new ClassMetaReader(this);
 		this.agentArgsMap = ArgParser.parse(agentArgs);
 
 		this.logout = System.out;
@@ -132,7 +137,36 @@ public class EnhanceContext {
 		}
 	}
 
-	
+	 /**
+   * Create a new meta object for enhancing a class.
+   */
+  public ClassMeta createClassMeta() {
+    return new ClassMeta(this);
+  }
+  
+  public byte[] getClassBytes(String className, ClassLoader classLoader){
+    return classBytesReader.getClassBytes(className, classLoader);
+  }
+  
+  /**
+   * Read the class meta data for a super class.
+   * <p>
+   * Typically used to read meta data for inheritance hierarchy.
+   * </p>
+   */
+  public ClassMeta getSuperMeta(String superClassName, ClassLoader classLoader) {
+
+    try {
+      if (isIgnoreClass(superClassName)){
+        return null;
+      }
+      return reader.get(superClassName, classLoader);
+      
+    } catch (ClassNotFoundException e) {
+      throw new RuntimeException(e);
+    }
+  }
+  
 	/**
 	 * Return true if this class should be ignored. That is JDK classes and
 	 * known libraries JDBC drivers etc can be skipped.

@@ -1,9 +1,12 @@
 package org.test.web.api;
 
+import javax.management.Query;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 
+import org.avaje.metric.TimedMetric;
 import org.avaje.metric.annotation.NotTimed;
 import org.avaje.metric.annotation.Timed;
 import org.springframework.stereotype.Component;
@@ -65,4 +68,27 @@ public class CustomerResource extends BaseResource {
     System.out.println("IN myTimedPrivateMethod");
     return "Foo";
   }
+  
+  public int hashCode() {
+    return 1;
+  }
+  
+  public String toString() {
+    return "bar";
+  }
+
+    static TimedMetric metric = null;
+
+//    @DELETE
+//    public void deleteNone(){//Long i, String asd) {
+//
+////    @Path("/findall")
+////    protected String findAll(String orderBy) {
+//        long start = System.nanoTime();
+//        try {
+//            super.deleteNone();//deleteX(i, asd);
+//        } finally {
+//            metric.operationEnd(start, 176);
+//        }
+//    }
 }

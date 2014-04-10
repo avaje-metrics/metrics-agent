@@ -24,15 +24,16 @@ public class AddTimerMetricMethodAdapter extends AdviceAdapter {
   
   private boolean enhanced;
   
-  public AddTimerMetricMethodAdapter(EnhanceContext context, boolean publicMethod, String className, 
+  public AddTimerMetricMethodAdapter(EnhanceContext context, boolean enhanceDefault, String className, 
       int metricIndex, String uniqueMethodName, MethodVisitor mv, int acc, String name, String desc) {
+    
     super(ASM4, mv, acc, name, desc);
     this.context = context;
     this.className = className;
     this.methodName = name;
     this.metricIndex = metricIndex;
     this.uniqueMethodName = uniqueMethodName;
-    this.enhanced = publicMethod;
+    this.enhanced = enhanceDefault;
   }
   
   /**
@@ -72,7 +73,7 @@ public class AddTimerMetricMethodAdapter extends AdviceAdapter {
     
     log(7,"... check method annotation "+desc);
 
-    if (desc.equals("Lorg/avaje/metric/annotation/NotTimed;")) {
+    if (AnnotationInfo.isNotTimed(desc)) {
       // definately don't enhance this method
       log(4,"... found NotTimed");
       detectNotTimed = true;
@@ -80,13 +81,13 @@ public class AddTimerMetricMethodAdapter extends AdviceAdapter {
       return av;
     }
     
-    if (desc.equals("Lorg/avaje/metric/annotation/Timed;")) {
+    if (AnnotationInfo.isTimed(desc)) {
       log(4,"... found Timed annotation "+desc);
       enhanced = true;
       return av;
     }
     
-    if (isJaxrsEndpoint(desc)) {
+    if (AnnotationInfo.isJaxrsEndpoint(desc)) {
       log(4,"... found jaxrs annotation "+desc);
       enhanced = true;
       return av;
@@ -95,15 +96,7 @@ public class AddTimerMetricMethodAdapter extends AdviceAdapter {
     return av;
   }
   
-  private boolean isJaxrsEndpoint(String desc) {
-    if (!desc.startsWith("Ljavax/ws/rs")) {
-      return false;
-    }
-    return desc.equals("Ljavax/ws/rs/Path;") || desc.equals("Ljavax/ws/rs/GET;") 
-        || desc.equals("Ljavax/ws/rs/PUT;") || desc.equals("Ljavax/ws/rs/POST;") 
-        || desc.equals("Ljavax/ws/rs/DELETE;") || desc.equals("Ljavax/ws/rs/OPTIONS;") 
-        || desc.equals("Ljavax/ws/rs/HEAD;");
-  }  
+
 
   @Override
   public void visitMaxs(int maxStack, int maxLocals) {
@@ -155,6 +148,10 @@ public class AddTimerMetricMethodAdapter extends AdviceAdapter {
       mv.visitMethodInsn(INVOKESTATIC, "java/lang/System", "nanoTime", "()J");
       mv.visitVarInsn(LSTORE, posTimeStart);
     }
+  }
+
+  public String getNameDescription() {
+    return methodName+methodDesc;
   }
   
 }

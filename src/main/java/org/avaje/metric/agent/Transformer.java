@@ -40,7 +40,7 @@ public class Transformer implements ClassFileTransformer {
   private final EnhanceContext enhanceContext;
 
   public Transformer(String agentArgs, ClassLoader classLoader) {
-    this.enhanceContext = new EnhanceContext(false, agentArgs, classLoader);
+    this.enhanceContext = new EnhanceContext(agentArgs, classLoader);
   }
 
   /**
@@ -92,8 +92,8 @@ public class Transformer implements ClassFileTransformer {
   private byte[] enhancement(ClassLoader loader, byte[] classfileBuffer) {
 
     ClassReader cr = new ClassReader(classfileBuffer);
-    ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
-    ClassAdapterMetric ca = new ClassAdapterMetric(cw, enhanceContext);
+    ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_MAXS);
+    ClassAdapterMetric ca = new ClassAdapterMetric(cw, enhanceContext, loader);
 
     try {
 
