@@ -3,6 +3,7 @@ package org.avaje.metric.agent;
 import org.avaje.metric.agent.asm.AnnotationVisitor;
 import org.avaje.metric.agent.asm.Label;
 import org.avaje.metric.agent.asm.MethodVisitor;
+import org.avaje.metric.agent.asm.Opcodes;
 import org.avaje.metric.agent.asm.Type;
 import org.avaje.metric.agent.asm.commons.AdviceAdapter;
 
@@ -58,6 +59,10 @@ public class AddTimerMetricMethodAdapter extends AdviceAdapter {
     }
   }
   
+  private boolean isLog(int level) {
+    return context.isLog(level);
+  }
+  
   private void log(int level, String msg) {
     context.log(level, msg);
   }
@@ -71,8 +76,9 @@ public class AddTimerMetricMethodAdapter extends AdviceAdapter {
       return av;
     }
     
-    log(7,"... check method annotation "+desc);
-
+    if (isLog(7)) {
+      log(7,"... check method annotation "+desc);
+    }
     if (AnnotationInfo.isNotTimed(desc)) {
       // definately don't enhance this method
       log(4,"... found NotTimed");
@@ -122,6 +128,13 @@ public class AddTimerMetricMethodAdapter extends AdviceAdapter {
         mv.visitMethodInsn(INVOKEVIRTUAL,"java/io/PrintStream", "println","(Ljava/lang/String;)V");
       }
       
+      if (opcode == ATHROW) {
+        if (isLog(8)) {
+          log(8,"... add visitFrame in "+uniqueMethodName);
+        }
+        mv.visitFrame(Opcodes.F_SAME, 1, new Object[]{Opcodes.LONG}, 0, null);
+      }
+            
       Label l5 = new Label();
       mv.visitLabel(l5);
       mv.visitLineNumber(1, l5);

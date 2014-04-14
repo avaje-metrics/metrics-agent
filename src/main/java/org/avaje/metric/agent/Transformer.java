@@ -92,7 +92,7 @@ public class Transformer implements ClassFileTransformer {
   private byte[] enhancement(ClassLoader loader, byte[] classfileBuffer) {
 
     ClassReader cr = new ClassReader(classfileBuffer);
-    ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_MAXS);
+    ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
     ClassAdapterMetric ca = new ClassAdapterMetric(cw, enhanceContext, loader);
 
     try {

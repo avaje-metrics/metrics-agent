@@ -7,21 +7,21 @@ import org.avaje.metric.annotation.Timed;
 @Timed
 public class ExampleService extends BaseService {
 
-  public static long timer;
-
-  private static TimedMetric _$metric_1;// =
-                                        // MetricManager.getTimedMetric("simpleSerivce.doSomething");
-  private static TimedMetric _$metric_2;// =
-                                        // MetricManager.getTimedMetric("simpleSerivce.doSomethingElse");
-
-  static {
-    _$initMetrics();
-  }
-
-  private static void _$initMetrics() {
-    _$metric_1 = MetricManager.getTimedMetric("simpleSerivce.doSomething");
-    _$metric_2 = MetricManager.getTimedMetric("simpleSerivce.doSomethingElse");
-  }
+//  public static long timer;
+//
+//  private static TimedMetric _$metric_1;// =
+//                                        // MetricManager.getTimedMetric("simpleSerivce.doSomething");
+//  private static TimedMetric _$metric_2;// =
+//                                        // MetricManager.getTimedMetric("simpleSerivce.doSomethingElse");
+//
+//  static {
+//    _$initMetrics();
+//  }
+//
+//  private static void _$initMetrics() {
+//    _$metric_1 = MetricManager.getTimedMetric("simpleSerivce.doSomething");
+//    _$metric_2 = MetricManager.getTimedMetric("simpleSerivce.doSomethingElse");
+//  }
 
   public void doSomething() throws InterruptedException {
     // long _$metricStart = System.nanoTime();
@@ -37,7 +37,7 @@ public class ExampleService extends BaseService {
     long start = System.nanoTime();
     System.out.println("not very interesting");
     // int opCode = 123;
-    _$metric_2.operationEnd(System.nanoTime() - start, opCode);
+    //_$metric_2.operationEnd(System.nanoTime() - start, opCode);
   }
 
 //  public String findAll(String orderBy) {
