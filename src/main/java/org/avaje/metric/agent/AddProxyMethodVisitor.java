@@ -55,7 +55,7 @@ public class AddProxyMethodVisitor implements Opcodes {
     mv.visitVarInsn(LLOAD, 1);
     mv.visitInsn(LSUB);
     mv.visitIntInsn(SIPUSH, 176);
-    mv.visitMethodInsn(INVOKEVIRTUAL, "org/avaje/metric/TimedMetric", "operationEnd", "(JI)V");
+    mv.visitMethodInsn(INVOKEINTERFACE, "org/avaje/metric/TimedMetric", "operationEnd", "(JI)V");
     mv.visitInsn(ARETURN);
     mv.visitLabel(l1);
     mv.visitFrame(Opcodes.F_FULL, 2, new Object[]{className, Opcodes.LONG}, 1, new Object[]{"java/lang/Throwable"});
@@ -70,7 +70,7 @@ public class AddProxyMethodVisitor implements Opcodes {
     mv.visitVarInsn(LLOAD, 1);
     mv.visitInsn(LSUB);
     mv.visitIntInsn(SIPUSH, 191);
-    mv.visitMethodInsn(INVOKEVIRTUAL, "org/avaje/metric/TimedMetric", "operationEnd", "(JI)V");
+    mv.visitMethodInsn(INVOKEINTERFACE, "org/avaje/metric/TimedMetric", "operationEnd", "(JI)V");
     mv.visitInsn(ATHROW);
     mv.visitLocalVariable("this", "L"+className+";", null, l0, l1, 0);
     
@@ -145,7 +145,7 @@ public class AddProxyMethodVisitor implements Opcodes {
     mv.visitFieldInsn(GETSTATIC, className, "_$metricP_"+fieldIndex, "Lorg/avaje/metric/TimedMetric;");
     mv.visitVarInsn(LLOAD, timePos);//2);
     mv.visitIntInsn(SIPUSH, 176);
-    mv.visitMethodInsn(INVOKEVIRTUAL, "org/avaje/metric/TimedMetric", "operationEnd", "(JI)V");
+    mv.visitMethodInsn(INVOKEINTERFACE, "org/avaje/metric/TimedMetric", "operationEnd", "(JI)V");
     
     Label l6 = new Label();
     
@@ -176,7 +176,7 @@ public class AddProxyMethodVisitor implements Opcodes {
     
     mv.visitVarInsn(LLOAD, timePos);
     mv.visitIntInsn(SIPUSH, 176);// not 176
-    mv.visitMethodInsn(INVOKEVIRTUAL, "org/avaje/metric/TimedMetric", "operationEnd", "(JI)V");
+    mv.visitMethodInsn(INVOKEINTERFACE, "org/avaje/metric/TimedMetric", "operationEnd", "(JI)V");
     mv.visitVarInsn(ALOAD, throwPos);
     mv.visitInsn(ATHROW);
 

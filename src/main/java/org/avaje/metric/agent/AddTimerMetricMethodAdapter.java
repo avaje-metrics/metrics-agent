@@ -143,7 +143,7 @@ public class AddTimerMetricMethodAdapter extends AdviceAdapter {
       loadLocal(posTimeStart);
       mv.visitInsn(LSUB);
       visitIntInsn(SIPUSH, opcode);
-      mv.visitMethodInsn(INVOKEVIRTUAL, ClassAdapterMetric.COLLECTOR, ClassAdapterMetric.COLLECTOR_END_METHOD, "(JI)V");
+      mv.visitMethodInsn(INVOKEINTERFACE, ClassAdapterMetric.COLLECTOR, ClassAdapterMetric.COLLECTOR_END_METHOD, "(JI)V");
     }
   }
   

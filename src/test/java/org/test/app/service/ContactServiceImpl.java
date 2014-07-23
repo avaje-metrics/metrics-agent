@@ -3,6 +3,7 @@ package org.test.app.service;
 import java.util.List;
 
 import org.avaje.metric.TimedMetric;
+import org.avaje.metric.DefaultTimedMetric;
 import org.springframework.stereotype.Service;
 import org.test.app.model.Contact;
 
@@ -15,7 +16,7 @@ public class ContactServiceImpl implements ContactService {
         this.contactDataLayer = contactDataLayer;
     }
 
-    static TimedMetric _metric3 = new TimedMetric("foo");
+    static TimedMetric _metric3 = new DefaultTimedMetric("foo");
 
     @Override
     public boolean sendAlert(Contact contact) {
