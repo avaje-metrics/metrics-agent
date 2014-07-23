@@ -1,7 +1,13 @@
 package org.avaje.metric;
 
+/**
+ * Test Double - copy of the real API TimedMetric.
+ */
 public interface TimedMetric {
 
-    public void operationEnd(long nanos, int opCode);
+  /**
+   * Method called by the enhanced code.
+   */
+  public void operationEnd(long nanos, int opCode);
 
 }

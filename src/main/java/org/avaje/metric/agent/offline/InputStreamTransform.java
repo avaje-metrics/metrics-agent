@@ -29,8 +29,8 @@ public class InputStreamTransform {
 		this.classLoader = classLoader;
 	}
 	
-	public void log(int level, String msg){
-		transformer.log(level, msg);
+	public void log(int level, String msg, String extra){
+		transformer.log(level, msg, extra);
 	}
 	
 	/**

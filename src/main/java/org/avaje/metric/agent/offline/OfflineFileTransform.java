@@ -14,12 +14,11 @@ import org.avaje.metric.agent.Transformer;
  */
 public class OfflineFileTransform {
 
-	final InputStreamTransform inputStreamTransform;
+	protected final InputStreamTransform inputStreamTransform;
 
-	final String inDir;
+	protected final String inDir;
 
-	final String outDir;
-	//private TransformationListener listener;
+	protected final String outDir;
 
 	/**
 	 * Note that the inDir and outDir can be the same and typically are. That
@@ -37,16 +36,11 @@ public class OfflineFileTransform {
 	 *            the root directory where the enhanced files are written to
 	 */
 	public OfflineFileTransform(Transformer transformer, ClassLoader classLoader, String inDir, String outDir) {
-		this.inputStreamTransform = new InputStreamTransform(transformer, classLoader);
-		inDir = trimSlash(inDir);
-		this.inDir = inDir;
+
+	  this.inputStreamTransform = new InputStreamTransform(transformer, classLoader);
+		this.inDir = trimSlash(inDir);
 		this.outDir = outDir == null ? inDir : outDir;
 	}
-
-//	/** Register a listener to receive event notification */
-//	public void setListener(TransformationListener v) {
-//		this.listener = v;
-//	}
 
 	private String trimSlash(String dir) {
 		if (dir.endsWith("/")){
@@ -92,7 +86,7 @@ public class OfflineFileTransform {
 
 	private void processPackage(String dir, boolean recurse) {
 
-		inputStreamTransform.log(1, "transform> pkg: " + dir);
+		inputStreamTransform.log(1, "transform pkg: ", dir);
 
 		String dirPath = inDir + "/" + dir;
 		File d = new File(dirPath);
@@ -141,13 +135,11 @@ public class OfflineFileTransform {
 
 		if (result != null) {
 			InputStreamTransform.writeBytes(result, file);
-//			if(listener!=null) {
-//				listener.logEvent("Enhanced "+file);
-//			}
 		}
 	}
 
 	private String getClassName(File file) {
+	  
 		String path = file.getPath();
 		path = path.substring(inDir.length() + 1);
 		path = path.substring(0, path.length() - ".class".length());

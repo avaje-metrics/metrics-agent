@@ -51,12 +51,10 @@ public class ClassMetaReader {
 
 		byte[] classBytes = enhanceContext.getClassBytes(className, classLoader);
 		if (classBytes == null){
-			enhanceContext.log(1, "Class ["+className+"] not found.");
+			enhanceContext.log(1, className, " - class not found: ");
 			return null;
 		} else {
-			if (enhanceContext.isLog(3)) {
-				enhanceContext.log(className, "read ClassMeta");
-			}
+		  enhanceContext.log(3, className, " read ClassMeta");
 		}
 		ClassReader cr = new ClassReader(classBytes);
 		ClassMetaReaderVisitor ca = new ClassMetaReaderVisitor(enhanceContext);

@@ -7,6 +7,9 @@ import org.avaje.metric.agent.asm.Opcodes;
 import org.avaje.metric.agent.asm.Type;
 import org.avaje.metric.agent.asm.commons.AdviceAdapter;
 
+/**
+ * Enhances a method adding the TimerMetric collection.
+ */
 public class AddTimerMetricMethodAdapter extends AdviceAdapter {
 
   private final EnhanceContext context;
@@ -14,9 +17,11 @@ public class AddTimerMetricMethodAdapter extends AdviceAdapter {
   private Label startFinally = new Label();
   
   private final String className;
+  
   private final String methodName;
   
   private final int metricIndex;
+  
   private final String uniqueMethodName;
   
   private int posTimeStart;
@@ -52,6 +57,10 @@ public class AddTimerMetricMethodAdapter extends AdviceAdapter {
     return metricIndex;
   }
 
+  public String getNameDescription() {
+    return methodName+methodDesc;
+  }
+  
   public void visitCode() {
     super.visitCode();
     if (enhanced) {
@@ -63,8 +72,8 @@ public class AddTimerMetricMethodAdapter extends AdviceAdapter {
     return context.isLog(level);
   }
   
-  private void log(int level, String msg) {
-    context.log(level, msg);
+  private void log(int level, String msg, String extra) {
+    context.log(level, msg, extra);
   }
 
   @Override
@@ -77,24 +86,24 @@ public class AddTimerMetricMethodAdapter extends AdviceAdapter {
     }
     
     if (isLog(7)) {
-      log(7,"... check method annotation "+desc);
+      log(7,"... check method annotation ", desc);
     }
     if (AnnotationInfo.isNotTimed(desc)) {
-      // definately don't enhance this method
-      log(4,"... found NotTimed");
+      // definitely do not enhance this method
+      log(4,"... found NotTimed", desc);
       detectNotTimed = true;
       enhanced = false;
       return av;
     }
     
     if (AnnotationInfo.isTimed(desc)) {
-      log(4,"... found Timed annotation "+desc);
+      log(4,"... found Timed annotation ", desc);
       enhanced = true;
       return av;
     }
     
     if (AnnotationInfo.isJaxrsEndpoint(desc)) {
-      log(4,"... found jaxrs annotation "+desc);
+      log(4,"... found jaxrs annotation ", desc);
       enhanced = true;
       return av;
     }
@@ -102,7 +111,6 @@ public class AddTimerMetricMethodAdapter extends AdviceAdapter {
     return av;
   }
   
-
 
   @Override
   public void visitMaxs(int maxStack, int maxLocals) {
@@ -119,18 +127,18 @@ public class AddTimerMetricMethodAdapter extends AdviceAdapter {
     }
   }
 
-  
   private void onFinally(int opcode) {
+    
     if (enhanced) {
       if (context.isSysoutOnCollect()) {
         mv.visitFieldInsn(GETSTATIC, "java/lang/System", "err", "Ljava/io/PrintStream;");
-        mv.visitLdcInsn("Exiting method " + methodName);
+        mv.visitLdcInsn("... exiting method " + methodName);
         mv.visitMethodInsn(INVOKEVIRTUAL,"java/io/PrintStream", "println","(Ljava/lang/String;)V");
       }
       
       if (opcode == ATHROW) {
         if (isLog(8)) {
-          log(8,"... add visitFrame in "+uniqueMethodName);
+          log(8,"... add visitFrame in ", uniqueMethodName);
         }
         mv.visitFrame(Opcodes.F_SAME, 1, new Object[]{Opcodes.LONG}, 0, null);
       }
@@ -157,14 +165,10 @@ public class AddTimerMetricMethodAdapter extends AdviceAdapter {
   protected void onMethodEnter() {
     if (enhanced) {
       posTimeStart = newLocal(Type.LONG_TYPE);
-      
       mv.visitMethodInsn(INVOKESTATIC, "java/lang/System", "nanoTime", "()J");
       mv.visitVarInsn(LSTORE, posTimeStart);
     }
   }
 
-  public String getNameDescription() {
-    return methodName+methodDesc;
-  }
-  
+
 }

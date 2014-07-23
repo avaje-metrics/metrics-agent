@@ -9,7 +9,7 @@
   
   <groupId>org.avaje.metric</groupId>
   <artifactId>avaje-metric-agent</artifactId>
-  <version>2.1.1-SNAPSHOT</version>
+  <version>3.0.0-SNAPSHOT</version>
   <name>avaje-metric-agent</name>
   
   <licenses>
@@ -42,8 +42,21 @@
       <version>4.8.2</version>
       <scope>test</scope>
     </dependency>
-    
-    
+
+    <dependency>
+      <groupId>javax.inject</groupId>
+      <artifactId>javax.inject</artifactId>
+      <version>1</version>
+      <scope>test</scope>
+    </dependency>
+  
+    <dependency>
+      <groupId>aopalliance</groupId>
+      <artifactId>aopalliance</artifactId>
+      <version>1.0</version>
+      <scope>test</scope>
+    </dependency>
+      
     <dependency>
       <groupId>org.glassfish.jersey.containers</groupId>
       <artifactId>jersey-container-servlet</artifactId>
@@ -57,20 +70,6 @@
       <version>2.7</version>
       <scope>test</scope>
     </dependency>
-
-<!-- 
-    <dependency>
-      <groupId>org.springframework</groupId>
-      <artifactId>spring-web</artifactId>
-      <version>4.0.3.RELEASE</version>
-      <exclusions>
-        <exclusion>
-          <groupId>commons-logging</groupId>
-          <artifactId>commons-logging</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
- -->    
     
   </dependencies>
 

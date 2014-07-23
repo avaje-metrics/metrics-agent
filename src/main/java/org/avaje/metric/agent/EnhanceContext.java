@@ -21,7 +21,9 @@ import java.util.logging.Logger;
  */
 public class EnhanceContext {
 
-	private static final Logger logger = Logger.getLogger(EnhanceContext.class.getName());
+  private static final Logger logger = Logger.getLogger(EnhanceContext.class.getName());
+
+  private static final String METRIC_NAME_MAPPING_RESOURCE = "metric-name-mapping.txt";
 
 	private final ClassLoader classLoader;
 	
@@ -34,7 +36,9 @@ public class EnhanceContext {
 	private final HashMap<String, String> agentArgsMap;
 
 	private final boolean readOnly;
-	
+
+	private final boolean enhanceSingleton;
+
 	private final boolean sysoutOnCollect;
 	
 	private final Map<String, String> nameMapping;
@@ -68,11 +72,17 @@ public class EnhanceContext {
 		}     
 		this.readOnly = getPropertyBoolean("readonly", false);
 		this.sysoutOnCollect = getPropertyBoolean("sysoutoncollect", false);
+		this.enhanceSingleton = getPropertyBoolean("enhancesingleton", true);
+		
 		this.nameMapping = readNameMapping();
-		log(1,"name mappings: "+nameMapping);
-		log(1,"settings: debug["+debugValue+"] sysoutoncollect["+sysoutOnCollect+"] readonly["+readOnly+"]");
+		if (logLevel > 0) {
+  		log(1,"name mappings: ", nameMapping.toString());
+  		log(1,"settings: debug["+debugValue+"] sysoutoncollect["+sysoutOnCollect+"] readonly["+readOnly+"]", "");
+		}
 		this.metricNameMatches = getMetricNameMatches();
-		System.out.println("match keys: "+Arrays.toString(this.metricNameMatches));
+		if (logLevel > 0) {
+		  log(1, "match keys: ", Arrays.toString(this.metricNameMatches));
+		}
 	}
 	
 	private String[] getMetricNameMatches() {
@@ -85,9 +95,9 @@ public class EnhanceContext {
 
 	private Enumeration<URL> getNameMappingResources() throws IOException {
 	  if (classLoader != null) {
-	    return classLoader.getResources("metric-name-mapping.txt");
+	    return classLoader.getResources(METRIC_NAME_MAPPING_RESOURCE);
 	  } else {
-      return getClass().getClassLoader().getResources("metric-name-mapping.txt");
+      return getClass().getClassLoader().getResources(METRIC_NAME_MAPPING_RESOURCE);
 	  }
 	}
 	
@@ -185,9 +195,9 @@ public class EnhanceContext {
 	/**
 	 * Log some debug output.
 	 */
-	public void log(int level, String msg) {
+	public void log(int level, String msg, String extra) {
 		if (logLevel >= level) {
-			logout.println(msg);
+			logout.println(msg + extra);
 		}
 	}
 	
@@ -229,6 +239,13 @@ public class EnhanceContext {
 	}
 
 	/**
+	 * Return true if classes annotated with Singleton should be enhanced.
+	 */
+	public boolean isEnhanceSingleton() {
+    return enhanceSingleton;
+  }
+
+  /**
 	 * trim off any leading period.
 	 */
 	private String trimMetricName(String metricName) {

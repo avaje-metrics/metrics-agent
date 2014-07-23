@@ -13,7 +13,7 @@ import org.avaje.metric.agent.asm.Opcodes;
  * (silently ignored) if they are not in the class path.
  * </p>
  */
-public class ClassMetaReaderVisitor extends ClassVisitor {//implements EnhanceConstants {
+public class ClassMetaReaderVisitor extends ClassVisitor {
 
   private final EnhanceContext context;
 	private final ClassMeta classMeta;
@@ -32,8 +32,8 @@ public class ClassMetaReaderVisitor extends ClassVisitor {//implements EnhanceCo
 		return context.isLog(level);
 	}
 
-	public void log(int level, String msg) {
-	  context.log(level, msg);
+	public void log(int level, String msg, String extra) {
+	  context.log(level, msg, extra);
 	}
 
 	/**

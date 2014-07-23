@@ -1,6 +1,7 @@
 package org.avaje.metric.agent;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Set;
 
 /**
@@ -8,102 +9,97 @@ import java.util.Set;
  */
 public class AnnotationInfo {
 
+  /**
+   * The Timed annotation.
+   */
   private static final String ANNOTATION_TIMED = "Lorg/avaje/metric/annotation/Timed;";
+  
+  /**
+   * The NotTimed annotation.
+   */
   private static final String ANNOTATION_NOT_TIMED = "Lorg/avaje/metric/annotation/NotTimed;";
 
+  /**
+   * Set of JAXRS annotations we look for to detect web endpoints.
+   */
+  private static final Set<String> JAXRS_ANNOTATIONS = new HashSet<String>();
+  static {
+    JAXRS_ANNOTATIONS.add("Ljavax/ws/rs/Path;");
+    JAXRS_ANNOTATIONS.add("Ljavax/ws/rs/HEAD;");
+    JAXRS_ANNOTATIONS.add("Ljavax/ws/rs/GET;");
+    JAXRS_ANNOTATIONS.add("Ljavax/ws/rs/PUT;");
+    JAXRS_ANNOTATIONS.add("Ljavax/ws/rs/POST;");
+    JAXRS_ANNOTATIONS.add("Ljavax/ws/rs/DELETE;");
+    JAXRS_ANNOTATIONS.add("Ljavax/ws/rs/OPTIONS;");
+  }
+
+  /**
+   * Return true if the annotation is the NotTimed annotation.
+   */
   public static boolean isNotTimed(String desc) {
     return ANNOTATION_NOT_TIMED.equals(desc);
   }
   
+  /**
+   * Return true if the annotation is the Timed annotation.
+   */
   public static boolean isTimed(String desc) {
     return ANNOTATION_TIMED.equals(desc);
   }
   
+  /**
+   * Return true if the annotation indicates a JAX-RS endpoint.
+   */
   public static boolean isJaxrsEndpoint(String desc) {
     if (!desc.startsWith("Ljavax/ws/rs")) {
       return false;
     }
-    return desc.equals("Ljavax/ws/rs/Path;") || desc.equals("Ljavax/ws/rs/GET;") 
-        || desc.equals("Ljavax/ws/rs/PUT;") || desc.equals("Ljavax/ws/rs/POST;") 
-        || desc.equals("Ljavax/ws/rs/DELETE;") || desc.equals("Ljavax/ws/rs/OPTIONS;") 
-        || desc.equals("Ljavax/ws/rs/HEAD;");
+    return JAXRS_ANNOTATIONS.contains(desc);
   }  
   
+  /**
+   * The annotations read keyed by their description.
+   */
 	private final HashMap<String,Object> valueMap = new HashMap<String,Object>();
-
-	//private AnnotationInfo parent;
 	
-	/**
-	 * The parent is typically the class level annotation information
-	 * which could be considered to hold default values.
-	 */
+	private boolean containsJaxRs;
+	
 	public AnnotationInfo(){
-		//this.parent = parent;
 	}
-	
+
+	/**
+	 * Return true if the NotTimed annotation was collected.
+	 */
 	public boolean containsNotTimed() {
 	  return valueMap.keySet().contains(ANNOTATION_NOT_TIMED);
 	}
 	
+  /**
+   * Return true if the Timed annotation was collected.
+   */
   public boolean containsTimed() {
     return valueMap.keySet().contains(ANNOTATION_TIMED);
   }
   
+  /**
+   * Return true if a jaxrs annotation was detected.
+   */
   public boolean containsJaxRs() {
-    Set<String> keySet = valueMap.keySet();
-    for (String desc : keySet) {
-      if (isJaxrsEndpoint(desc)) {
-        return true;
-      }
-    }
-    return false;
+    return containsJaxRs;
   }
-	
-	public String toString() {
-		return valueMap.toString();
-	}
-	
-//	
-//	public AnnotationInfo getParent() {
-//		return parent;
-//	}
-//
-//	public void setParent(AnnotationInfo parent) {
-//		this.parent = parent;
-//	}
 
 	/**
 	 * Add a annotation value.
 	 */
 	public void add(String name, Object value){
+	  
 	  valueMap.put(name, value);
+	  if (isJaxrsEndpoint(name)) {
+	    containsJaxRs = true;
+    }
 	}
-
-//	/**
-//	 * Add a enum annotation value.
-//	 */
-//	public void addEnum(String prefix, String name, String desc, String value){
-//		
-//		add(prefix, name, value);
-//	}
-//	
-//	private String getKey(String prefix, String name){
-//		if (prefix == null){
-//			return name;
-//		} else {
-//			return prefix+"."+name;
-//		}
-//	}
-//	
-//	/**
-//	 * Return a value out of the map.
-//	 */
-//	public Object getValue(String key){
-//		Object o = valueMap.get(key);
-//		if (o == null && parent != null){
-//			// try getting value from parent
-//			o = parent.getValue(key);
-//		}
-//		return o;
-//	}
+  
+  public String toString() {
+    return valueMap.toString();
+  }
 }

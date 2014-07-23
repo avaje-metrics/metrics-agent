@@ -9,9 +9,9 @@ import org.test.app.model.Contact;
 @Repository
 public class ContactRepository implements ContactDataLayer {
 
-    @Override
-    public List<Contact> fetchData() {
-        return Collections.emptyList();
-    }
-    
+  @Override
+  public List<Contact> fetchData() {
+    return Collections.emptyList();
+  }
+
 }

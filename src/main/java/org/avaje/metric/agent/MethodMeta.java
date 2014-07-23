@@ -4,6 +4,9 @@ import org.avaje.metric.agent.asm.ClassVisitor;
 import org.avaje.metric.agent.asm.MethodVisitor;
 import org.avaje.metric.agent.asm.Opcodes;
 
+/**
+ * Meta data for a method.
+ */
 public class MethodMeta {
 
   private final int access;
@@ -12,11 +15,21 @@ public class MethodMeta {
   private final String sig;
   private final String[] exceptions;
   
+  /**
+   * The annotation information.
+   */
   private final AnnotationInfo annotationInfo;
 
+  /**
+   * A unique method name that takes into account overloading (aka different parameters).
+   */
   private String uniqueMethodName;
   
+  /**
+   * Construct with the base method signature.
+   */
   public MethodMeta(int access, String name, String desc, String sig, String[] exceptions) {
+    
     this.annotationInfo = new AnnotationInfo();
     this.access = access;
     this.name = name;

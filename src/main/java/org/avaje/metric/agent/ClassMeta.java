@@ -13,10 +13,6 @@ import org.avaje.metric.agent.asm.Opcodes;
  * Holds the meta data for an entity bean class that is being enhanced.
  */
 public class ClassMeta {
-
-	//private static final Logger logger = Logger.getLogger(ClassMeta.class.getName());
-
-	//private static final String OBJECT_CLASS = Object.class.getName().replace('.', '/');
 	
 	private int access;
 	
@@ -25,10 +21,6 @@ public class ClassMeta {
 	private String superClassName;
 
 	private ClassMeta superMeta;
-
-//	private HashSet<String> existingMethods = new HashSet<String>();
-//
-//	private HashSet<String> existingSuperMethods = new HashSet<String>();
 
 	private HashSet<String> classAnnotation = new HashSet<String>();
 
@@ -64,36 +56,6 @@ public class ClassMeta {
 		return annotationInfo;
 	}
 
-//	/**
-//	 * Return the transactional annotation information for a matching interface method.
-//	 */
-//	public AnnotationInfo getInterfaceTransactionalInfo(String methodName, String methodDesc) {
-//
-//		AnnotationInfo annotationInfo = null;
-//
-//		for (int i = 0; i < methodMetaList.size(); i++) {
-//			MethodMeta meta = methodMetaList.get(i);
-//			if (meta.isMatch(methodName, methodDesc)) {
-//				if (annotationInfo != null) {
-//					String msg = "Error in [" + className + "] searching the transactional methods[" + methodMetaList
-//							+ "] found more than one match for the transactional method:" + methodName + " "
-//							+ methodDesc;
-//					
-//					logger.log(Level.SEVERE, msg);
-//					log(msg);
-//					
-//				} else {
-//					annotationInfo = meta.getAnnotationInfo();
-//					if (isLog(9)){
-//						log("... found transactional info from interface "+className+" "+methodName+" "+methodDesc);
-//					}
-//				}
-//			}
-//		}
-//
-//		return annotationInfo;
-//	}
-
 	/**
 	 * Return true if we should look at this super class and search for methods that we
 	 * should proxy.
@@ -127,7 +89,7 @@ public class ClassMeta {
 	  for (int i = 0; i < methodMetaList.size(); i++) {
 	    MethodMeta methodMeta = methodMetaList.get(i);
 	    boolean proxyCandiate = methodMeta.isProxyCandiate();
-	    log("METHOD PROXY CANDIDATE? "+proxyCandiate+"  "+methodMeta);
+	    log(1, "METHOD PROXY CANDIDATE? "+proxyCandiate, methodMeta.toString());
 	    if (proxyCandiate) {
 	      list.add(methodMeta);
 	    }
@@ -151,11 +113,13 @@ public class ClassMeta {
 		return enhanceContext.isLog(level);
 	}
 
-	public void log(String msg) {
-		if (className != null) {
-			msg = "cls: " + className + "  msg: " + msg;
+	public void log(int level, String msg, String extra) {
+		if (enhanceContext.isLog(level)) {
+	    if (className != null) {
+	      msg = "cls: " + className + "  msg: " + msg;
+	    }
+	    enhanceContext.log(level, msg, extra);		  
 		}
-		enhanceContext.log(1,"transform> " + msg);
 	}
 
 	public ClassMeta getSuperMeta() {
@@ -166,56 +130,12 @@ public class ClassMeta {
 		this.superMeta = superMeta;
 	}
 
-//  /**
-//   * Return true if the class has an Entity, Embeddable, MappedSuperclass or
-//   * LdapDomain annotation.
-//   */
-//  public boolean isEntity() {
-//    if (classAnnotation.contains(EnhanceConstants.ENTITY_ANNOTATION)) {
-//      return true;
-//    }
-//    if (classAnnotation.contains(EnhanceConstants.EMBEDDABLE_ANNOTATION)) {
-//      return true;
-//    }
-//    if (classAnnotation.contains(EnhanceConstants.MAPPEDSUPERCLASS_ANNOTATION)) {
-//      return true;
-//    }
-//    if (classAnnotation.contains(EnhanceConstants.LDAPDOMAIN_ANNOTATION)) {
-//      return true;
-//    }
-//    return false;
-//  }
-
-//	/**
-//	 * Return true for classes not already enhanced and yet annotated with entity, embeddable or mappedSuperclass.
-//	 */
-//	public boolean isEntityEnhancementRequired() {
-//		if (alreadyEnhanced) {
-//			return false;
-//		}
-//		if (isEntity()){
-//			return true;
-//		}
-//		return false;
-//	}
-
 	/**
 	 * Return the className of this entity class.
 	 */
 	public String getClassName() {
 		return className;
 	}
-
-//	/**
-//	 * Return true if this entity bean has a super class that is an entity.
-//	 */
-//	public boolean isSuperClassEntity() {
-//		if (superMeta == null) {
-//			return false;
-//		} else {
-//			return superMeta.isEntity();
-//		}
-//	}
 
 	/**
 	 * Add a class annotation.
@@ -224,38 +144,6 @@ public class ClassMeta {
 		classAnnotation.add(desc);
 	}
 
-//	/**
-//	 * Only for subclassing, add known methods on the original entity class.
-//	 * <p>
-//	 * Used to check that the methods exist. They may not in special cases such
-//	 * as entity beans that use a finder etc with read only properties.
-//	 * </p>
-//	 */
-//	public void addExistingSuperMethod(String methodName, String methodDesc) {
-//		existingSuperMethods.add(methodName + methodDesc);
-//	}
-//
-//	/**
-//	 * Add an existing method.
-//	 */
-//	public void addExistingMethod(String methodName, String methodDesc) {
-//		existingMethods.add(methodName + methodDesc);
-//	}
-//
-//	/**
-//	 * Return true if the method already exists on the bean.
-//	 */
-//	public boolean isExistingMethod(String methodName, String methodDesc) {
-//		return existingMethods.contains(methodName + methodDesc);
-//	}
-//	
-//	/**
-//	 * Only for subclassing return true if the method exists on the original
-//	 * entity class.
-//	 */
-//	public boolean isExistingSuperMethod(String methodName, String methodDesc) {
-//		return existingSuperMethods.contains(methodName + methodDesc);
-//	}
 
 	public MethodVisitor createMethodVisitor(MethodVisitor mv, int access, String name, String desc, String sig, String[] ex) {
 
@@ -265,20 +153,6 @@ public class ClassMeta {
 		return new MethodMetaReader(mv, methodMeta);
 	}
 
-	private static final class MethodMetaReader extends MethodVisitor {
-		//final MethodVisitor mv;
-		final MethodMeta methodMeta;
-
-		MethodMetaReader(MethodVisitor mv, MethodMeta methodMeta) {
-		  super(Opcodes.ASM4, mv);
-			//this.mv = mv;
-			this.methodMeta = methodMeta;
-		}
-
-		public AnnotationVisitor visitAnnotation(String desc, boolean visible) {
-			return new AnnotationInfoVisitor(methodMeta.getAnnotationInfo());
-		}
-	}
 
 	public String getDescription() {
 		StringBuilder sb = new StringBuilder();
@@ -294,5 +168,17 @@ public class ClassMeta {
 		}
 	}
 
-	
+  private static final class MethodMetaReader extends MethodVisitor {
+    
+    final MethodMeta methodMeta;
+
+    MethodMetaReader(MethodVisitor mv, MethodMeta methodMeta) {
+      super(Opcodes.ASM4, mv);
+      this.methodMeta = methodMeta;
+    }
+
+    public AnnotationVisitor visitAnnotation(String desc, boolean visible) {
+      return new AnnotationInfoVisitor(methodMeta.getAnnotationInfo());
+    }
+  }
 }

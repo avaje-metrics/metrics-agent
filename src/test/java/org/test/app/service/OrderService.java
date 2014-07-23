@@ -5,8 +5,8 @@ import org.springframework.stereotype.Service;
 @Service
 public class OrderService {
 
-  @Deprecated
-  public void processOrders() {
+  public void processOrders() throws InterruptedException {
     
+    Thread.sleep(1);
   }
 }

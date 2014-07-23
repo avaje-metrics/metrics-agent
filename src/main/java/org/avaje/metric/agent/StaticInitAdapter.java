@@ -17,6 +17,9 @@ public class StaticInitAdapter extends AdviceAdapter {
     this.className = className;
   }
 
+  /**
+   * Adds the call to the static _$initMetrics() method.
+   */
   @Override
   public void visitCode() {
     super.visitCode();

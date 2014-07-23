@@ -6,8 +6,6 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
-import org.avaje.metric.annotation.NotTimed;
-
 @Consumes({ MediaType.APPLICATION_JSON })
 @Produces({ MediaType.APPLICATION_JSON })
 public abstract class BaseResource {
@@ -19,19 +17,19 @@ public abstract class BaseResource {
     }
     return "something";
   }
-  
-  //@NotTimed
+
+  // @NotTimed
   @DELETE
   public String delete() {
     return "Opps";
   }
-  
+
   @DELETE
   public String deleteX(Long i, String asd) {
     return "Opps";
   }
-  
-//  public void deleteNone() {
-//    
-//  }
+
+  // public void deleteNone() {
+  //
+  // }
 }

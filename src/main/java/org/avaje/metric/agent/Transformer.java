@@ -50,8 +50,8 @@ public class Transformer implements ClassFileTransformer {
     this.enhanceContext.setLogout(logout);
   }
 
-  public void log(int level, String msg) {
-    enhanceContext.log(level, msg);
+  public void log(int level, String msg, String extra) {
+    enhanceContext.log(level, msg, extra);
   }
 
   public int getLogLevel() {
@@ -65,16 +65,16 @@ public class Transformer implements ClassFileTransformer {
       
       // ignore JDK and JDBC classes etc
       if (enhanceContext.isIgnoreClass(className)) {
-        enhanceContext.log(8, "ignore class " + className);
+        enhanceContext.log(8, "ignore class ", className);
         return null;
       }
 
-      enhanceContext.log(8, "look at "+className);
+      enhanceContext.log(8, "look at ", className);
       return enhancement(loader, classfileBuffer);
      
     } catch (NoEnhancementRequiredException e) {
       // the class is an interface
-      log(8, "No Enhancement required " + e.getMessage());
+      log(8, "No Enhancement required ",  e.getMessage());
       return null;
 
     } catch (Exception e) {

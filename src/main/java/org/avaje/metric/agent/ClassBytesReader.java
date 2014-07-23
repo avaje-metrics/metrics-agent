@@ -7,72 +7,58 @@ import java.io.InputStream;
 import java.net.URL;
 
 /**
- * Implementation of ClassBytesReader based on URLClassLoader.
+ * Reads the bytecode bytes for a given class.
+ * <p>
+ * Used to read meta data for a class by visiting the raw class bytes.
  */
 public class ClassBytesReader {
-	
 
-	//private final URL[] urls;
-	
-//	public ClassPathClassBytesReader(URL[] urls) {
-//		this.urls = urls == null ? new URL[0]: urls;
-//	}
-	
-	public ClassBytesReader() {
+  public ClassBytesReader() {
   }
-	
-	public byte[] getClassBytes(String className, ClassLoader classLoader) {
 
-		//URLClassLoader cl = new URLClassLoader(urls, classLoader);
-		try {
-  		String resource = className.replace('.', '/') + ".class";
-  
-  		InputStream is = null;
-  		try {
-  
-  			// read the class bytes, and define the class
-  			URL url = classLoader.getResource(resource);
-  			if (url == null) {
-  				throw new RuntimeException("Class Resource not found for "+resource);
-  			}
-  	
-  			is = url.openStream();
-  			byte[] classBytes = readBytes(is);
-  
-  			return classBytes;
-  			
-  		} catch (IOException e){
-  			throw new RuntimeException("IOException reading bytes for "+className, e);
-  			
-  		} finally {
-  			if (is != null){
-  				try {
-  					is.close();
-  				} catch (IOException e) {
-  					throw new RuntimeException("Error closing InputStream for "+className, e);
-  				}
-  			}
-  		}
-		} finally {
-//		  try {
-//        cl.close();
-//      } catch (IOException e) {
-//        throw new RuntimeException("Error closing URLClassLoader reading bytecode for "+className, e);
-//      }
-		}
-	}
-	
-	 
+  public byte[] getClassBytes(String className, ClassLoader classLoader) {
+
+    String resource = className.replace('.', '/') + ".class";
+
+    InputStream is = null;
+    try {
+
+      // read the class bytes, and define the class
+      URL url = classLoader.getResource(resource);
+      if (url == null) {
+        throw new RuntimeException("Class Resource not found for " + resource);
+      }
+
+      is = url.openStream();
+      return readBytes(is);
+
+    } catch (IOException e) {
+      throw new RuntimeException("IOException reading bytes for " + className, e);
+
+    } finally {
+      if (is != null) {
+        try {
+          is.close();
+        } catch (IOException e) {
+          throw new RuntimeException("Error closing InputStream for " + className, e);
+        }
+      }
+    }
+  }
+
+  /**
+   * Read the inputStream returning as a byte array.
+   */
   public byte[] readBytes(InputStream is) throws IOException {
-    
+
     BufferedInputStream bis = new BufferedInputStream(is);
 
     ByteArrayOutputStream baos = new ByteArrayOutputStream(4096);
 
     byte[] buf = new byte[1028];
-    
+
     int len = 0;
-    while ((len = bis.read(buf, 0, buf.length)) > -1){
+    while ((len = bis.read(buf, 0, buf.length)) > -1) {
       baos.write(buf, 0, len);
     }
     baos.flush();
