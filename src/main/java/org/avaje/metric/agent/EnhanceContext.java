@@ -27,7 +27,7 @@ public class EnhanceContext {
 
 	private final ClassLoader classLoader;
 	
-	private final ClassBytesReader classBytesReader = new ClassBytesReader();
+	private final ClassBytesReader classBytesReader;
 	
 	private final ClassMetaReader reader;
 	 
@@ -74,6 +74,7 @@ public class EnhanceContext {
 		this.sysoutOnCollect = getPropertyBoolean("sysoutoncollect", false);
 		this.enhanceSingleton = getPropertyBoolean("enhancesingleton", true);
 		
+		classBytesReader = new ClassBytesReader(logLevel, logout);
 		this.nameMapping = readNameMapping();
 		if (logLevel > 0) {
   		log(1,"name mappings: ", nameMapping.toString());

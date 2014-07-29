@@ -4,6 +4,7 @@ import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.PrintStream;
 import java.net.URL;
 
 /**
@@ -13,7 +14,13 @@ import java.net.URL;
  */
 public class ClassBytesReader {
 
-  public ClassBytesReader() {
+  private final int logLevel;
+    
+  private final PrintStream logout;
+    
+  public ClassBytesReader(int logLevel, PrintStream logout) {
+    this.logLevel = logLevel;
+    this.logout = logout;
   }
 
   public byte[] getClassBytes(String className, ClassLoader classLoader) {
@@ -26,14 +33,20 @@ public class ClassBytesReader {
       // read the class bytes, and define the class
       URL url = classLoader.getResource(resource);
       if (url == null) {
-        throw new RuntimeException("Class Resource not found for " + resource);
+        if (logLevel > 2) {
+          logout.println("Class Resource not found for " + resource);
+        }
+        return null;
       }
 
       is = url.openStream();
       return readBytes(is);
 
     } catch (IOException e) {
-      throw new RuntimeException("IOException reading bytes for " + className, e);
+      if (logLevel > 2) {
+        logout.println("IOException reading bytes for " + className + " error:"+ e);
+      }
+      return null;
 
     } finally {
       if (is != null) {
