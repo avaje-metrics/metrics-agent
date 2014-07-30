@@ -24,6 +24,10 @@ public class AddTimerMetricMethodAdapter extends AdviceAdapter {
   
   private final String uniqueMethodName;
   
+  private String customName;
+  
+  private String customFullName;
+  
   private int posTimeStart;
 
   private boolean detectNotTimed;  
@@ -48,8 +52,28 @@ public class AddTimerMetricMethodAdapter extends AdviceAdapter {
   public boolean isEnhanced() {
     return enhanced;
   }
-  
+
+  /**
+   * Set by Timed annotation name attribute.
+   */
+  private void setCustomName(String customName) {
+    this.customName = customName;
+  }
+
+  /**
+   * Set by Timed annotation fullName attribute.
+   */
+  private void setCustomFullName(String customFullName) {
+    this.customFullName = customFullName;
+  }
+
   public String getUniqueMethodName() {
+    if (customFullName != null && customFullName.trim().length() > 0) {
+      return customFullName.trim();
+    }
+    if (customName != null && customName.trim().length() > 0) {
+      return className.replace('/', '.') + "." + customName.trim();
+    }
     return uniqueMethodName;
   }
   
@@ -99,7 +123,7 @@ public class AddTimerMetricMethodAdapter extends AdviceAdapter {
     if (AnnotationInfo.isTimed(desc)) {
       log(4,"... found Timed annotation ", desc);
       enhanced = true;
-      return av;
+      return new TimedAnnotationVisitor(av);
     }
     
     if (AnnotationInfo.isJaxrsEndpoint(desc)) {
@@ -111,7 +135,27 @@ public class AddTimerMetricMethodAdapter extends AdviceAdapter {
     return av;
   }
   
+  /**
+   * Helper to read and set the name and fullName attributes of the Timed annotation.
+   */
+  private class TimedAnnotationVisitor extends AnnotationVisitor {
 
+    public TimedAnnotationVisitor(AnnotationVisitor av) {
+      super(ASM4, av);
+    }
+
+    @Override
+    public void visit(String name, Object value) {
+      if ("name".equals(name) && !"".equals(value)) {
+        setCustomName(value.toString());
+      }
+      if ("fullName".equals(name) && !"".equals(value)) {
+        setCustomFullName(value.toString());
+      }
+    }
+  }
+  
+  
   @Override
   public void visitMaxs(int maxStack, int maxLocals) {
     if (!enhanced) {

@@ -243,13 +243,7 @@ public class ClassAdapterMetric extends ClassVisitor implements Opcodes {
       existingStaticInitialiser = true;
       return new StaticInitAdapter(mv, access, name, desc, className);
     }
-    if ((access & Opcodes.ACC_STATIC) != 0) {
-      if (isLog(5)) {
-        log(5, "... not enhancing static method:",  name,  " desc:",  desc);
-      }
-      return mv;
-    }
-
+    
     boolean publicMethod = isPublicMethod(access);
     int metricIndex = methodAdapters.size();
     String uniqueMethodName = deriveUniqueMethodName(name);
@@ -257,8 +251,18 @@ public class ClassAdapterMetric extends ClassVisitor implements Opcodes {
       log("... method:" + name + " public:" + publicMethod + " index:" + metricIndex + " uniqueMethodName:" + uniqueMethodName);
     }
 
+    boolean enhanceByDefault = publicMethod;
+    if ((access & Opcodes.ACC_STATIC) != 0) {
+      // by default not enhancing static method unless it is explicitly
+      // annotated with a Timed annotation
+      enhanceByDefault = false;
+      if (isLog(5)) {
+        log(5, "... static method:",  name,  " desc:",  desc);
+      }
+    }
+    
     // Not sure if we are enhancing this method yet ...
-    AddTimerMetricMethodAdapter methodAdapter = createAdapter(publicMethod, metricIndex, uniqueMethodName, mv, access, name, desc);
+    AddTimerMetricMethodAdapter methodAdapter = createAdapter(enhanceByDefault, metricIndex, uniqueMethodName, mv, access, name, desc);
     methodAdapters.add(methodAdapter);
     return methodAdapter;
   }
@@ -323,15 +327,22 @@ public class ClassAdapterMetric extends ClassVisitor implements Opcodes {
     for (int i = 0; i < methodAdapters.size(); i++) {
 
       AddTimerMetricMethodAdapter methodAdapter = methodAdapters.get(i);
+      String uniqueMethodName = methodAdapter.getUniqueMethodName();
+
       if (!methodAdapter.isEnhanced()) {
-        log(2, "--- not enhanced ", methodAdapter.getUniqueMethodName());
+        log(2, "--- not enhanced ", uniqueMethodName);
 
       } else {
-
-        String uniqueMethodName = methodAdapter.getUniqueMethodName();
+        // apply any metric name mappings to the uniqueMethodName to get
+        // the final metric name that will be used
         String mappedMetricName = getMappedName(uniqueMethodName);
         if (isLog(1)) {
-          log(1, "### METRIC[" + mappedMetricName + "]   METHOD[" + uniqueMethodName + "] index[" + i + "]");
+          if (mappedMetricName.equals(uniqueMethodName)) {
+            log(1, "# Add Metric[" + mappedMetricName + "] index[" + i + "]");
+
+          } else {
+            log(1, "# Add Metric[" + mappedMetricName + "] Method[" + uniqueMethodName + "] index[" + i + "]");            
+          }
         }
         Label l0 = new Label();
         mv.visitLabel(l0);
@@ -428,7 +439,9 @@ public class ClassAdapterMetric extends ClassVisitor implements Opcodes {
         }
       }
       String superClass = superMeta.getClassName();
-      System.out.println("------------------------------- superclass " + superClass);
+      if (isLog(4)) {
+        log(4, "... superclass", superClass);
+      }
 
       for (int i = 0; i < extraProxyMethods.size(); i++) {
         MethodMeta methodMeta = extraProxyMethods.get(i);

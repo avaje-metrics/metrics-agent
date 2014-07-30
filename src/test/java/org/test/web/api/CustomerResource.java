@@ -12,6 +12,15 @@ import org.springframework.stereotype.Component;
 @Path("/general")
 public class CustomerResource extends BaseResource {
 
+  public static void aStaticMethodNotAnnotated() {
+    
+  }
+
+  @Timed(name="staticGeneral")
+  public static void aStaticMethodWithTimedAnnotation() {
+    
+  }
+
   @POST
   public String publicMethodWithJaxrs() {
     System.out.println("IN publicMethodWithJaxrs");

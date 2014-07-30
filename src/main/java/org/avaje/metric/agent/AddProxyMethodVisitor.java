@@ -35,9 +35,7 @@ public class AddProxyMethodVisitor {//implements Opcodes {
 //    mv.visitVarInsn(ALOAD, 0);
 //    
 //    Type[] argumentTypes = Type.getArgumentTypes(methodMeta.getDesc());
-//    for (int i = 0; i < argumentTypes.length; i++) {
-//      System.out.println("----------------------- "+i+" visitVarInsn "+argumentTypes[i].getOpcode(ILOAD)+" == "+ALOAD);
-//
+//    for (int i = 0; i < argumentTypes.length; i++) {//
 //      mv.visitVarInsn(argumentTypes[i].getOpcode(ILOAD), i+1);
 //    }
 //    
@@ -78,7 +76,6 @@ public class AddProxyMethodVisitor {//implements Opcodes {
 //      //mv.visitVarInsn(argumentTypes[i].getOpcode(ILOAD), i+1);
 //      String descriptor = argumentTypes[i].getDescriptor();
 //      //String cn = argumentTypes[i].getClassName().replace('.', '/');
-//      System.out.println("----------------------- "+i+" visitLocalVariable "+descriptor);
 //      mv.visitLocalVariable("a"+i, descriptor, null, l0, l1, 0);
 //    }
 //    
@@ -129,8 +126,6 @@ public class AddProxyMethodVisitor {//implements Opcodes {
 //  //mv.visitVarInsn(ALOAD, 1);
 //    
 //    for (int i = 0; i < argumentTypes.length; i++) {
-//      System.out.println("----------------------- "+i+" visitVarInsn "+argumentTypes[i].getOpcode(ILOAD)+" == "+ALOAD);
-//
 //      mv.visitVarInsn(argumentTypes[i].getOpcode(ILOAD), i+1);
 //    }
 //    
@@ -195,7 +190,6 @@ public class AddProxyMethodVisitor {//implements Opcodes {
 //    //mv.visitLocalVariable("orderBy", "Ljava/lang/String;", null, l4, l5, 1);
 //    for (int i = 0; i < argumentTypes.length; i++) { 
 //      String descriptor = argumentTypes[i].getDescriptor();
-//      //System.out.println("----------------------- "+i+" visitLocalVariable "+descriptor);
 //      mv.visitLocalVariable("a"+i, descriptor, null, l0, l1, i+1);
 //    }
 //    

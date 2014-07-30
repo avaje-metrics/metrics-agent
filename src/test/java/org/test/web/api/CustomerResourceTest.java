@@ -101,4 +101,18 @@ public class CustomerResourceTest extends BaseTest {
       Assert.assertTrue(MetricManager.testLastMetricOpcodeError());
     }
   }
+  
+  @Test
+  public void testCustomerResource_staticMethods() {
+
+    MetricManager.testReset();
+    Assert.assertNull(MetricManager.testLastMetricName());
+    
+    CustomerResource.aStaticMethodNotAnnotated();
+    Assert.assertNull(MetricManager.testLastMetricName());
+
+    CustomerResource.aStaticMethodWithTimedAnnotation();
+    Assert.assertEquals("web.api.CustomerResource.staticGeneral", MetricManager.testLastMetricName());
+
+  }
 }
