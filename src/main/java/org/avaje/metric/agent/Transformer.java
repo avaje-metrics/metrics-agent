@@ -6,6 +6,7 @@ import java.lang.instrument.IllegalClassFormatException;
 import java.lang.instrument.Instrumentation;
 import java.security.ProtectionDomain;
 
+import org.avaje.metric.agent.asm.CLAwareClassWriter;
 import org.avaje.metric.agent.asm.ClassReader;
 import org.avaje.metric.agent.asm.ClassWriter;
 
@@ -92,7 +93,7 @@ public class Transformer implements ClassFileTransformer {
   private byte[] enhancement(ClassLoader loader, byte[] classfileBuffer) {
 
     ClassReader cr = new ClassReader(classfileBuffer);
-    ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
+    ClassWriter cw = new CLAwareClassWriter(ClassWriter.COMPUTE_FRAMES + ClassWriter.COMPUTE_MAXS, loader);
     ClassAdapterMetric ca = new ClassAdapterMetric(cw, enhanceContext, loader);
 
     try {

@@ -1587,7 +1587,16 @@ public class ClassWriter extends ClassVisitor {
         }
         return result.intVal;
     }
-
+    
+    /**
+     * Return the class for the given name (for getCommonSuperClass()).
+     * <p>
+     * This is intended to be overridden as necessary to use a specific ClassLoader.
+     */
+    protected Class<?> classForName(String name) throws ClassNotFoundException {
+        return Class.forName(name, false, getClass().getClassLoader());
+    }
+    
     /**
      * Returns the common super type of the two given types. The default
      * implementation of this method <i>loads<i> the two given classes and uses
@@ -1606,10 +1615,9 @@ public class ClassWriter extends ClassVisitor {
      */
     protected String getCommonSuperClass(final String type1, final String type2) {
         Class<?> c, d;
-        ClassLoader classLoader = getClass().getClassLoader();
         try {
-            c = Class.forName(type1.replace('/', '.'), false, classLoader);
-            d = Class.forName(type2.replace('/', '.'), false, classLoader);
+            c = classForName(type1.replace('/', '.'));
+            d = classForName(type2.replace('/', '.'));
         } catch (Exception e) {
             throw new RuntimeException(e.toString());
         }
