@@ -25,7 +25,7 @@ public class ClassAdapterMetric extends ClassVisitor implements Opcodes {
 
   private static final String ANNOTATION_NOT_TIMED = "Lorg/avaje/metric/annotation/NotTimed;";
 
-  private static final String ANNOTATION_ALREADY_ENHANCED_MARKER = "Lorg/avaje/metric/agent/AlreadyEnhancedMarker;";
+  private static final String ANNOTATION_ALREADY_ENHANCED_MARKER = "Lorg/avaje/metric/spi/AlreadyEnhancedMarker;";
 
   public static final String METRIC_MANAGER = "org/avaje/metric/MetricManager";
 
