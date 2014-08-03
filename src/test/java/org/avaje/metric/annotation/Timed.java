@@ -26,5 +26,7 @@ public @interface Timed {
    * Provides a complete replacement of the metric name.
    */
   String fullName() default "";
+  
+  int[] buckets() default {};
 
 }

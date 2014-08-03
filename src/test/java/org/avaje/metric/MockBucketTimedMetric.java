@@ -3,13 +3,13 @@ package org.avaje.metric;
 /**
  * Test Double
  */
-public class MockTimedMetric implements TimedMetric {
+public class MockBucketTimedMetric implements BucketTimedMetric {
 
   private final String name;
 
   private int count;
   
-  public MockTimedMetric(String name) {
+  public MockBucketTimedMetric(String name) {
     this.name = name;
   }
 

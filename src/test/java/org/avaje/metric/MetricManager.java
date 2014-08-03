@@ -9,6 +9,8 @@ import java.util.Map;
 public class MetricManager {
 
   private static Map<String, TimedMetric> cache = new HashMap<>();
+  
+  private static Map<String, BucketTimedMetric> bucketCache = new HashMap<>();
 
   private static String lastMetricName;
   
@@ -30,6 +32,20 @@ public class MetricManager {
     return timedMetric;
   }
 
+
+  public synchronized static BucketTimedMetric getBucketTimedMetric(String name, int... bucketRanges) {
+    
+    BucketTimedMetric timedMetric = bucketCache.get(name);
+    if (timedMetric == null) {
+      System.out.println("== MetricManager: create BucketTimedMetric " + name);
+      timedMetric = new MockBucketTimedMetric(name);
+      bucketCache.put(name, timedMetric);
+    }
+
+    System.out.println("== MetricManager: return BucketTimedMetric " + name);
+    return timedMetric;
+  }
+  
   /**
    * For testing purpose get the TimedMetric if one has been created.
    */
@@ -37,6 +53,10 @@ public class MetricManager {
     return (MockTimedMetric)cache.get(name);
   }
 
+  public synchronized static MockBucketTimedMetric testGetBucketTimedMetric(String name) {
+    return (MockBucketTimedMetric)bucketCache.get(name);
+  }
+  
   /**
    * Called when a timer ends so that we can assert the call occured.
    */
@@ -66,5 +86,6 @@ public class MetricManager {
   public static boolean testLastMetricOpcodeSuccess() {
     return 191 != lastMetricOpcode && 0 != lastMetricOpcode;
   }
+
   
 }

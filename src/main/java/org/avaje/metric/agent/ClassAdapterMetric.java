@@ -1,13 +1,10 @@
 package org.avaje.metric.agent;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import org.avaje.metric.agent.asm.AnnotationVisitor;
 import org.avaje.metric.agent.asm.ClassVisitor;
-import org.avaje.metric.agent.asm.FieldVisitor;
 import org.avaje.metric.agent.asm.Label;
 import org.avaje.metric.agent.asm.MethodVisitor;
 import org.avaje.metric.agent.asm.Opcodes;
@@ -27,19 +24,9 @@ public class ClassAdapterMetric extends ClassVisitor implements Opcodes {
 
   private static final String ANNOTATION_ALREADY_ENHANCED_MARKER = "Lorg/avaje/metric/spi/AlreadyEnhancedMarker;";
 
-  public static final String METRIC_MANAGER = "org/avaje/metric/MetricManager";
+  protected final EnhanceContext enhanceContext;
 
-  public static final String METRIC_MANAGER_GET_METHOD = "getTimedMetric";
-
-  public static final String COLLECTOR = "org/avaje/metric/TimedMetric";
-
-  public static final String LCOLLECTOR = "L" + COLLECTOR + ";";
-
-  public static final String COLLECTOR_END_METHOD = "operationEnd";
-
-  private final EnhanceContext enhanceContext;
-
-  private final ClassLoader classLoader;
+  protected final ClassLoader classLoader;
 
   private boolean markerAnnotationAdded;
 
@@ -55,13 +42,7 @@ public class ClassAdapterMetric extends ClassVisitor implements Opcodes {
 
   private boolean existingStaticInitialiser;
 
-  private String className;
-
-  private ClassMeta superMeta;
-
-  private Set<String> enhancedMethods;
-
-  private List<MethodMeta> extraProxyMethods;
+  protected String className;
 
   /**
    * List of unique names to support parameter overloading.
@@ -73,6 +54,16 @@ public class ClassAdapterMetric extends ClassVisitor implements Opcodes {
    */
   private final List<AddTimerMetricMethodAdapter> methodAdapters = new ArrayList<AddTimerMetricMethodAdapter>();
 
+  /**
+   * The metric full name that is a common prefix for each method.
+   */
+  private String metricFullName;
+    
+  /**
+   * The buckets defined commonly for all enhanced methods for this class.
+   */
+  private int[] buckets;
+  
   /**
    * Construct with visitor, context and classLoader.
    */
@@ -108,6 +99,54 @@ public class ClassAdapterMetric extends ClassVisitor implements Opcodes {
     enhanceContext.log(className, msg);
   }
 
+  /**
+   * Set default buckets to use for methods enhanced for this class.
+   */
+  protected void setBuckets(Object value) {
+    this.buckets = (int[])value;
+  }
+  
+  /**
+   * Return true if there are default buckets defined at the class level.
+   */
+  protected boolean hasBuckets() {
+    return buckets != null && buckets.length > 0;
+  }
+  
+  /**
+   * Return the bucket ranges.
+   */
+  protected int[] getBuckets() {
+    return buckets;
+  }
+  
+  /**
+   * Return the class level metric name which is used to prefix the metrics created for associated
+   * methods on this class.
+   */
+  protected String getMetricFullName() {
+    return metricFullName;
+  }
+
+  /**
+   * Set the metric name via Timer annotation.
+   */
+  protected void setMetricName(String metricName) {
+    int pos = metricFullName.lastIndexOf('.');
+    if (pos == -1) {
+      this.metricFullName = metricName;
+    } else {
+      this.metricFullName = metricFullName.substring(0, pos) + "." + metricName;
+    }
+  }
+  
+  /**
+   * Set the full metric name for this class.
+   */
+  private void setMetricFullName(String className) {
+    this.metricFullName = className.replace('/', '.');
+  }
+
   @Override
   public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
 
@@ -117,32 +156,7 @@ public class ClassAdapterMetric extends ClassVisitor implements Opcodes {
     }
 
     this.className = name;
-
-    if (!superName.equals("java/lang/Object")) {
-      // read information about superClasses...
-      if (isLog(7)) {
-        log("read information about superClasses " + superName + " to find methods that need ");
-      }
-      ClassMeta superMeta = enhanceContext.getSuperMeta(superName, classLoader);
-      if (superMeta != null && superMeta.isCheckForMethodsToProxy()) {
-        // the superClass is abstract so need to look at it to see if it has
-        // any public methods etc that we should proxy so that the statistics
-        // better reflect what is happening...
-        this.superMeta = superMeta;
-        if (isLog(1)) {
-          log("entity extends " + superMeta.getDescription());
-        }
-      } else {
-        if (isLog(7)) {
-          if (superMeta == null) {
-            log("unable to read superMeta for " + superName);
-          } else {
-            log("superMeta " + superName + " is not an entity/embedded/mappedsuperclass "
-                + superMeta.getClassAnnotations());
-          }
-        }
-      }
-    }
+    setMetricFullName(className);
   }
 
   /**
@@ -167,7 +181,8 @@ public class ClassAdapterMetric extends ClassVisitor implements Opcodes {
       log(5, "found Timed annotation ", desc);
       detectExplicit = true;
       shouldBeEnhanced = true;
-      return av;
+      // read the name and bucket ranges from the class level Timer annotation
+      return new TimedAnnotationVisitor(av);
     }
     
     if (enhanceContext.isEnhanceSingleton() && desc.endsWith(SINGLETON)) {
@@ -214,6 +229,29 @@ public class ClassAdapterMetric extends ClassVisitor implements Opcodes {
   }
 
   /**
+   * Helper to read and set the name and fullName attributes of the Timed annotation.
+   */
+  private class TimedAnnotationVisitor extends AnnotationVisitor {
+
+    public TimedAnnotationVisitor(AnnotationVisitor av) {
+      super(ASM4, av);
+    }
+
+    @Override
+    public void visit(String name, Object value) {
+      if ("name".equals(name) && !"".equals(value)) {
+        setMetricName(value.toString());
+        
+      } else if ("fullName".equals(name) && !"".equals(value)) {
+        setMetricFullName(value.toString());
+        
+      } else if ("buckets".equals(name)) {
+        setBuckets(value);
+      }
+    }
+  }
+  
+  /**
    * Visit the methods specifically looking for method level transactional annotations.
    */
   @Override
@@ -238,7 +276,7 @@ public class ClassAdapterMetric extends ClassVisitor implements Opcodes {
       return mv;
     }
     if (name.equals("<clinit>")) {
-      // static initialiser, add call _$initMetrics()
+      // static initializer, add call _$initMetrics()
       log(2, "... <clinit> exists - adding call to _$initMetrics()", "");
       existingStaticInitialiser = true;
       return new StaticInitAdapter(mv, access, name, desc, className);
@@ -286,7 +324,7 @@ public class ClassAdapterMetric extends ClassVisitor implements Opcodes {
 
   private AddTimerMetricMethodAdapter createAdapter(boolean enhanceDefault, int metricIndex, String uniqueMethodName, MethodVisitor mv, int access, String name, String desc) {
 
-    return new AddTimerMetricMethodAdapter(enhanceContext, enhanceDefault, className, metricIndex, uniqueMethodName, mv, access, name, desc);
+    return new AddTimerMetricMethodAdapter(this, enhanceDefault, metricIndex, uniqueMethodName, mv, access, name, desc);
   }
 
   private boolean isPublicMethod(int access) {
@@ -304,15 +342,31 @@ public class ClassAdapterMetric extends ClassVisitor implements Opcodes {
       uniqueMethodName = methodName + (i++);
     }
     uniqueMethodNames.add(uniqueMethodName);
-    return className.replace('/', '.') + "." + uniqueMethodName;
+    return uniqueMethodName;
   }
 
-  /**
-   * Return the potentially cut down metric name.
-   */
-  private String getMappedName(String rawName) {
-    return enhanceContext.getMappedName(rawName);
+
+  @Override
+  public void visitEnd() {
+
+    addStaticFieldDefinitions();
+    addStaticFieldInitialisers();
+
+    if (!existingStaticInitialiser) {
+      log(3, "... add <clinit> to call _$initMetrics()");
+      addStaticInitialiser();
+    }
+
+    super.visitEnd();
   }
+
+  private void addStaticFieldDefinitions() {
+    for (int i = 0; i < methodAdapters.size(); i++) {
+      AddTimerMetricMethodAdapter methodAdapter = methodAdapters.get(i);
+      methodAdapter.addFieldDefinition(cv, i);
+    }
+  }
+  
 
   /**
    * Add the static _$initMetrics() method.
@@ -327,48 +381,7 @@ public class ClassAdapterMetric extends ClassVisitor implements Opcodes {
     for (int i = 0; i < methodAdapters.size(); i++) {
 
       AddTimerMetricMethodAdapter methodAdapter = methodAdapters.get(i);
-      String uniqueMethodName = methodAdapter.getUniqueMethodName();
-
-      if (!methodAdapter.isEnhanced()) {
-        log(2, "--- not enhanced ", uniqueMethodName);
-
-      } else {
-        // apply any metric name mappings to the uniqueMethodName to get
-        // the final metric name that will be used
-        String mappedMetricName = getMappedName(uniqueMethodName);
-        if (isLog(1)) {
-          if (mappedMetricName.equals(uniqueMethodName)) {
-            log(1, "# Add Metric[" + mappedMetricName + "] index[" + i + "]");
-
-          } else {
-            log(1, "# Add Metric[" + mappedMetricName + "] Method[" + uniqueMethodName + "] index[" + i + "]");            
-          }
-        }
-        Label l0 = new Label();
-        mv.visitLabel(l0);
-        mv.visitLineNumber(1, l0);
-        mv.visitLdcInsn(mappedMetricName);
-        mv.visitMethodInsn(INVOKESTATIC, METRIC_MANAGER, METRIC_MANAGER_GET_METHOD, "(Ljava/lang/String;)" + LCOLLECTOR);
-        mv.visitFieldInsn(PUTSTATIC, className, "_$metric_" + i, LCOLLECTOR);
-      }
-    }
-
-    if (extraProxyMethods != null) {
-      for (int i = 0; i < extraProxyMethods.size(); i++) {
-        MethodMeta methodMeta = extraProxyMethods.get(i);
-        String uniqueMethodName = methodMeta.getUniqueMethodName();
-        String mappedMetricName = getMappedName(uniqueMethodName);
-
-        if (isLog(1)) {
-          log(1, "### PROXY - METRIC[" + mappedMetricName + "] METHOD[" + uniqueMethodName + "] index[" + i + "]");
-        }
-        Label l0 = new Label();
-        mv.visitLabel(l0);
-        mv.visitLineNumber(1, l0);
-        mv.visitLdcInsn(mappedMetricName);
-        mv.visitMethodInsn(INVOKESTATIC, METRIC_MANAGER, METRIC_MANAGER_GET_METHOD, "(Ljava/lang/String;)" + LCOLLECTOR);
-        mv.visitFieldInsn(PUTSTATIC, className, "_$metricP_" + i, LCOLLECTOR);
-      }
+      methodAdapter.addFieldInitialisation(mv, i);
     }
 
     mv.visitInsn(RETURN);
@@ -376,90 +389,11 @@ public class ClassAdapterMetric extends ClassVisitor implements Opcodes {
     mv.visitEnd();
   }
 
-  @Override
-  public void visitEnd() {
-
-    determineProxyMethodsFromSuperclasses();
-
-    addFieldDefinitions();
-
-    addStaticFieldInitialisers();
-
-    if (!existingStaticInitialiser) {
-      log(3, "... add <clinit> to call _$initMetrics()");
-      addStaticInitialiser();
-    }
-
-    super.visitEnd();
-  }
-
-  private void addFieldDefinitions() {
-    for (int i = 0; i < methodAdapters.size(); i++) {
-      AddTimerMetricMethodAdapter methodAdapter = methodAdapters.get(i);
-      if (methodAdapter.isEnhanced()) {
-        if (isLog(4)) {
-          log(4, "... init field index[" + i + "] METHOD[" + methodAdapter.getUniqueMethodName() + "]");
-        }
-        FieldVisitor fv = cv.visitField(ACC_PRIVATE + ACC_STATIC, "_$metric_" + i, LCOLLECTOR, null, null);
-        fv.visitEnd();
-      }
-    }
-
-    if (extraProxyMethods != null) {
-      for (int i = 0; i < extraProxyMethods.size(); i++) {
-        MethodMeta methodMeta = extraProxyMethods.get(i);
-        if (isLog(4)) {
-          log(4, "... init proxy field index[" + i + "] METHOD[" + methodMeta.getUniqueMethodName() + "]");
-        }
-        FieldVisitor fv = cv.visitField(ACC_PRIVATE + ACC_STATIC, "_$metricP_" + i, LCOLLECTOR, null, null);
-        fv.visitEnd();
-      }
-    }
-  }
-
-  private void determineProxyMethodsFromSuperclasses() {
-
-    if (superMeta != null) {
-      enhancedMethods = new HashSet<String>();
-      extraProxyMethods = new ArrayList<MethodMeta>();
-      for (int i = 0; i < methodAdapters.size(); i++) {
-        enhancedMethods.add(methodAdapters.get(i).getNameDescription());
-      }
-
-      List<MethodMeta> allMethodMeta = superMeta.getAllMethodMeta();
-      log(5, "... check inherited methods ", allMethodMeta.toString());
-      for (MethodMeta methodMeta : allMethodMeta) {
-        String methodNameDesc = methodMeta.getNameDescription();
-        if (enhancedMethods.add(methodNameDesc)) {
-          // going to add a proxy method - get a unique method name for the metric
-          String uniqueMethodName = deriveUniqueMethodName(methodMeta.getName());
-          methodMeta.setUniqueMethodName(uniqueMethodName);
-          // add it to our list of proxy methods to generate
-          extraProxyMethods.add(methodMeta);
-        }
-      }
-      String superClass = superMeta.getClassName();
-      if (isLog(4)) {
-        log(4, "... superclass", superClass);
-      }
-
-      for (int i = 0; i < extraProxyMethods.size(); i++) {
-        MethodMeta methodMeta = extraProxyMethods.get(i);
-        if (isLog(4)) {
-          log(4, "... SKIP add proxy method for index[" + i + "] METHOD[" + methodMeta.getUniqueMethodName() + "]");
-        }
-        // AddProxyMethodVisitor proxyAdd = new AddProxyMethodVisitor(methodMeta, className,
-        // superClass);
-        // proxyAdd.start(cv, i);
-      }
-
-    }
-  }
-
   /**
-   * Add a static initialisation block when there was not one on the class.
+   * Add a static initialization block when there was not one on the class.
    */
   private void addStaticInitialiser() {
+    
     MethodVisitor mv = cv.visitMethod(ACC_STATIC, "<clinit>", "()V", null, null);
     mv.visitCode();
     Label l0 = new Label();

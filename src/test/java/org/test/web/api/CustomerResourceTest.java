@@ -1,9 +1,8 @@
 package org.test.web.api;
 
-import junit.framework.Assert;
-
-import org.avaje.metric.MockTimedMetric;
 import org.avaje.metric.MetricManager;
+import org.avaje.metric.MockTimedMetric;
+import org.junit.Assert;
 import org.junit.Test;
 
 public class CustomerResourceTest extends BaseTest {

@@ -1,8 +1,9 @@
 package org.test.web.api;
 
-import junit.framework.Assert;
+
 
 import org.avaje.metric.MetricManager;
+import org.junit.Assert;
 import org.junit.Test;
 
 public class CustomTimedResourceTest extends BaseTest {
