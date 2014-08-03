@@ -328,7 +328,7 @@ public class AddTimerMetricMethodAdapter extends AdviceAdapter {
           push(mv, buckets[j]);
           mv.visitInsn(IASTORE);
         }
-        mv.visitMethodInsn(INVOKESTATIC, METRIC_MANAGER, "getBucketTimedMetric", "(Ljava/lang/String;[I)Lorg/avaje/metric/BucketTimedMetric;");
+        mv.visitMethodInsn(INVOKESTATIC, METRIC_MANAGER, "getTimedMetric", "(Ljava/lang/String;[I)Lorg/avaje/metric/BucketTimedMetric;");
         mv.visitFieldInsn(PUTSTATIC, className, "_$metric_"+i, LBUCKET_TIMED_METRIC);
       }
     }

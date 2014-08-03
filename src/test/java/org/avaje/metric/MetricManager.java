@@ -33,7 +33,7 @@ public class MetricManager {
   }
 
 
-  public synchronized static BucketTimedMetric getBucketTimedMetric(String name, int... bucketRanges) {
+  public synchronized static BucketTimedMetric getTimedMetric(String name, int... bucketRanges) {
     
     BucketTimedMetric timedMetric = bucketCache.get(name);
     if (timedMetric == null) {
