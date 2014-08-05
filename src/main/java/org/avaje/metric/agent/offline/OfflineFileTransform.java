@@ -1,6 +1,7 @@
 package org.avaje.metric.agent.offline;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.lang.instrument.IllegalClassFormatException;
 
@@ -57,7 +58,7 @@ public class OfflineFileTransform {
 	 * system, and the class files are found and processed.
 	 * </p>
 	 */
-	public void process(String packageNames) {
+	public void process(String packageNames) throws IOException {
 
 		if (packageNames == null) {
 			processPackage("", true);
@@ -84,15 +85,14 @@ public class OfflineFileTransform {
 		}
 	}
 
-	private void processPackage(String dir, boolean recurse) {
+	private void processPackage(String dir, boolean recurse) throws IOException {
 
 		inputStreamTransform.log(1, "transform pkg: ", dir);
 
 		String dirPath = inDir + "/" + dir;
 		File d = new File(dirPath);
 		if (!d.exists()) {
-			String m = "File not found " + dirPath;
-			throw new RuntimeException(m);
+			throw new FileNotFoundException("File not found " + dirPath);
 		}
 
 		File[] files = d.listFiles();
@@ -100,29 +100,28 @@ public class OfflineFileTransform {
 		File file = null;
 
 		try {
-			for (int i = 0; i < files.length; i++) {
-				file = files[i];
-				if (file.isDirectory()) {
-					if (recurse) {
-						String subdir = dir + "/" + file.getName();
-						processPackage(subdir, recurse);
-					}
-				} else {
-					String fileName = file.getName();
-					if (fileName.endsWith(".java")) {
-						// possibly a common mistake... mixing .java and .class
-						System.err.println("Expecting a .class file but got " + fileName + " ... ignoring");
+      for (int i = 0; i < files.length; i++) {
+        file = files[i];
+        if (file.isDirectory()) {
+          if (recurse) {
+            String subdir = dir + "/" + file.getName();
+            processPackage(subdir, recurse);
+          }
+        } else {
+          String fileName = file.getName();
+          if (fileName.endsWith(".java")) {
+            // possibly a common mistake... mixing .java and .class
+            System.err.println("Expecting a .class file but got " + fileName + " ... ignoring");
 
-					} else if (fileName.endsWith(".class")) {
-						transformFile(file);
-					}
-				}
-			}
+          } else if (fileName.endsWith(".class")) {
+            transformFile(file);
+          }
+        }
+      }
 
-		} catch (Exception e) {
+		} catch (IllegalClassFormatException e) {
 			String fileName = file == null ? "null" : file.getName();
-			String m = "Error transforming file " + fileName;
-			throw new RuntimeException(m, e);
+			throw new IOException("Error transforming file: " + fileName, e);
 		}
 
 	}
