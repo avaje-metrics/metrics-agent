@@ -2,12 +2,14 @@ package org.avaje.metric.agent.offline;
 
 import org.avaje.metric.agent.Transformer;
 
+import java.io.IOException;
+
 /**
  * A utility object to run transformation from a main method.
  */
 public class MainTransform {
 
-	public static void main(String[] args) {
+	public static void main(String[] args) throws IOException {
 
 		if (isHelp(args)) {
 			printHelp();
