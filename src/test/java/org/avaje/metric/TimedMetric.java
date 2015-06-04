@@ -8,7 +8,7 @@ public interface TimedMetric {
   /**
    * Method called by the enhanced code.
    */
-  void operationEnd(int opCode, long startNanos, boolean requestTiming);
+  void operationEnd(int opCode, long startNanos, boolean activeThreadContext);
 
-  boolean isRequestTiming();
+  boolean isActiveThreadContext();
 }

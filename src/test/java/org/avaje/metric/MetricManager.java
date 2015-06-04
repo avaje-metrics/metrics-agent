@@ -16,7 +16,7 @@ public class MetricManager {
   
   private static int lastMetricOpcode;
 
-  private static boolean lastRequestTiming;
+  private static boolean lastActiveThreadContext;
   
   /**
    * Method called by the enhancement code.
@@ -62,10 +62,10 @@ public class MetricManager {
   /**
    * Called when a timer ends so that we can assert the call occured.
    */
-  protected static void operationEnd(String name, int opCode, boolean requestTiming) {
+  protected static void operationEnd(String name, int opCode, boolean activeThreadContext) {
     lastMetricName  = name;
     lastMetricOpcode = opCode;
-    lastRequestTiming = requestTiming;
+    lastActiveThreadContext = activeThreadContext;
   }
   
   public static String testLastMetricName() {
@@ -76,8 +76,8 @@ public class MetricManager {
     return 191 == lastMetricOpcode;
   }
 
-  public static boolean testLastRequestTiming() {
-    return lastRequestTiming;
+  public static boolean testLastActiveThreadContext() {
+    return lastActiveThreadContext;
   }
   
   public static int testLastMetricOpcode() {
@@ -87,7 +87,7 @@ public class MetricManager {
   public static void testReset() {
     lastMetricName = null;
     lastMetricOpcode = 0;
-    lastRequestTiming = false;
+    lastActiveThreadContext = false;
   }
 
   public static boolean testLastMetricOpcodeSuccess() {

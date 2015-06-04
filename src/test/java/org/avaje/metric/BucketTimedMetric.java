@@ -10,6 +10,6 @@ public interface BucketTimedMetric {
    */
   void operationEnd(int opCode, long startNanos, boolean requestTiming);
 
-  boolean isRequestTiming();
+  boolean isActiveThreadContext();
 
 }

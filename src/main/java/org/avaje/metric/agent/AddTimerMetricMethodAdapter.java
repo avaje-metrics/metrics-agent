@@ -29,7 +29,7 @@ public class AddTimerMetricMethodAdapter extends AdviceAdapter {
 
   public static final String METHOD_OPERATION_END = "operationEnd";
 
-  public static final String METHOD_IS_REQUEST_TIMING = "isRequestTiming";
+  public static final String METHOD_IS_ACTIVE_THREAD_CONTEXT = "isActiveThreadContext";
 
   private final ClassAdapterMetric classAdapter;
   
@@ -272,7 +272,7 @@ public class AddTimerMetricMethodAdapter extends AdviceAdapter {
     if (enhanced) {
       posUseContext = newLocal(Type.BOOLEAN_TYPE);
       mv.visitFieldInsn(GETSTATIC, className, "_$metric_"+metricIndex, getLMetricType());
-      mv.visitMethodInsn(INVOKEINTERFACE, getMetricType(), METHOD_IS_REQUEST_TIMING, "()Z");
+      mv.visitMethodInsn(INVOKEINTERFACE, getMetricType(), METHOD_IS_ACTIVE_THREAD_CONTEXT, "()Z");
       mv.visitVarInsn(ISTORE, posUseContext);
       posTimeStart = newLocal(Type.LONG_TYPE);
       mv.visitMethodInsn(INVOKESTATIC, "java/lang/System", "nanoTime", "()J");
