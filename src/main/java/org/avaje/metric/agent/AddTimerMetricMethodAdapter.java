@@ -27,9 +27,11 @@ public class AddTimerMetricMethodAdapter extends AdviceAdapter {
 
   public static final String METRIC_MANAGER = "org/avaje/metric/MetricManager";
 
-  public static final String OPERATION_END = "operationEnd";
-  
-  private final ClassAdapterMetric classAdpater;
+  public static final String METHOD_OPERATION_END = "operationEnd";
+
+  public static final String METHOD_IS_REQUEST_TIMING = "isRequestTiming";
+
+  private final ClassAdapterMetric classAdapter;
   
   private final EnhanceContext context;
   
@@ -46,20 +48,22 @@ public class AddTimerMetricMethodAdapter extends AdviceAdapter {
   private String metricFullName;
   
   private int[] buckets;
-  
+
+  private int posUseContext;
+
   private int posTimeStart;
 
   private boolean detectNotTimed;  
   
   private boolean enhanced;
   
-  public AddTimerMetricMethodAdapter(ClassAdapterMetric classAdpater, boolean enhanceDefault, 
+  public AddTimerMetricMethodAdapter(ClassAdapterMetric classAdapter, boolean enhanceDefault,
       int metricIndex, String uniqueMethodName, MethodVisitor mv, int acc, String name, String desc) {
     
     super(ASM4, mv, acc, name, desc);
-    this.classAdpater = classAdpater;
-    this.context = classAdpater.enhanceContext;
-    this.className = classAdpater.className;
+    this.classAdapter = classAdapter;
+    this.context = classAdapter.enhanceContext;
+    this.className = classAdapter.className;
     this.methodName = name;
     this.metricIndex = metricIndex;
     this.metricName = uniqueMethodName;
@@ -104,14 +108,14 @@ public class AddTimerMetricMethodAdapter extends AdviceAdapter {
     if (buckets != null && buckets.length > 0) {
       return buckets;
     }
-    return classAdpater.getBuckets();
+    return classAdapter.getBuckets();
   }
   
   /**
    * Return true if there are bucket defined.
    */
   public boolean hasBuckets() {
-    return buckets != null && buckets.length > 0 || classAdpater.hasBuckets();
+    return buckets != null && buckets.length > 0 || classAdapter.hasBuckets();
   }
 
   /**
@@ -135,18 +139,7 @@ public class AddTimerMetricMethodAdapter extends AdviceAdapter {
     if (metricFullName != null && metricFullName.trim().length() > 0) {
       return metricFullName.trim();
     }
-    return classAdpater.getMetricFullName() + "." + metricName.trim();
-  }
-  
-  /**
-   * Return the index position of the method/metric.
-   */
-  public int getMetricIndex() {
-    return metricIndex;
-  }
-
-  public String getNameDescription() {
-    return methodName+methodDesc;
+    return classAdapter.getMetricFullName() + "." + metricName.trim();
   }
   
   public void visitCode() {
@@ -263,7 +256,8 @@ public class AddTimerMetricMethodAdapter extends AdviceAdapter {
       mv.visitFieldInsn(GETSTATIC, className, "_$metric_"+metricIndex, getLMetricType());
       visitIntInsn(SIPUSH, opcode);
       loadLocal(posTimeStart);
-      mv.visitMethodInsn(INVOKEINTERFACE, getMetricType(), OPERATION_END, "(IJ)V");
+      loadLocal(posUseContext);
+      mv.visitMethodInsn(INVOKEINTERFACE, getMetricType(), METHOD_OPERATION_END, "(IJZ)V");
     }
   }
   
@@ -276,6 +270,10 @@ public class AddTimerMetricMethodAdapter extends AdviceAdapter {
   @Override
   protected void onMethodEnter() {
     if (enhanced) {
+      posUseContext = newLocal(Type.BOOLEAN_TYPE);
+      mv.visitFieldInsn(GETSTATIC, className, "_$metric_"+metricIndex, getLMetricType());
+      mv.visitMethodInsn(INVOKEINTERFACE, getMetricType(), METHOD_IS_REQUEST_TIMING, "()Z");
+      mv.visitVarInsn(ISTORE, posUseContext);
       posTimeStart = newLocal(Type.LONG_TYPE);
       mv.visitMethodInsn(INVOKESTATIC, "java/lang/System", "nanoTime", "()J");
       mv.visitVarInsn(LSTORE, posTimeStart);
@@ -355,7 +353,7 @@ public class AddTimerMetricMethodAdapter extends AdviceAdapter {
     } else if (value >= Short.MIN_VALUE && value <= Short.MAX_VALUE) {
       mv.visitIntInsn(Opcodes.SIPUSH, value);
     } else {
-      mv.visitLdcInsn(new Integer(value));
+      mv.visitLdcInsn(value);
     }
   }
 

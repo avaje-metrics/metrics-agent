@@ -15,6 +15,8 @@ public class MetricManager {
   private static String lastMetricName;
   
   private static int lastMetricOpcode;
+
+  private static boolean lastRequestTiming;
   
   /**
    * Method called by the enhancement code.
@@ -60,9 +62,10 @@ public class MetricManager {
   /**
    * Called when a timer ends so that we can assert the call occured.
    */
-  protected static void operationEnd(String name, int opCode) {
+  protected static void operationEnd(String name, int opCode, boolean requestTiming) {
     lastMetricName  = name;
     lastMetricOpcode = opCode;
+    lastRequestTiming = requestTiming;
   }
   
   public static String testLastMetricName() {
@@ -73,6 +76,9 @@ public class MetricManager {
     return 191 == lastMetricOpcode;
   }
 
+  public static boolean testLastRequestTiming() {
+    return lastRequestTiming;
+  }
   
   public static int testLastMetricOpcode() {
     return lastMetricOpcode;
@@ -81,6 +87,7 @@ public class MetricManager {
   public static void testReset() {
     lastMetricName = null;
     lastMetricOpcode = 0;
+    lastRequestTiming = false;
   }
 
   public static boolean testLastMetricOpcodeSuccess() {

@@ -14,11 +14,15 @@ public class MockBucketTimedMetric implements BucketTimedMetric {
   }
 
   @Override
-  public void operationEnd(int opCode, long startNanos) {
+  public void operationEnd(int opCode, long startNanos, boolean requestTiming) {
     long exeNanos = System.nanoTime() - startNanos;
     System.out.println("... " + name + " operationEnd exe:" + exeNanos + " opCode:" + opCode);
     count++;
-    MetricManager.operationEnd(name, opCode);
+    MetricManager.operationEnd(name, opCode, requestTiming);
+  }
+
+  public boolean isRequestTiming() {
+    return true;
   }
 
   /**

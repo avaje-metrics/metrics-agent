@@ -28,11 +28,11 @@ public class ExampleService extends BaseService {
       System.out.println("123");
       // Thread.sleep(100);
       int opCode = 100;
-      _$metric_1.operationEnd(opCode, _$metricStart);
+      _$metric_1.operationEnd(opCode, _$metricStart, false);
     } catch (RuntimeException e) {
       //int opCode = 191;
       //_$metric_1.addEventSince(opCode != 191, _$metricStart);
-      _$metric_1.operationEnd(191, _$metricStart);
+      _$metric_1.operationEnd(191, _$metricStart, false);
     }
   }
   
@@ -43,11 +43,11 @@ public class ExampleService extends BaseService {
       System.out.println("123");
       // Thread.sleep(100);
       int opCode = 100;
-      _$metric_3.operationEnd(opCode, _$metricStart);
+      _$metric_3.operationEnd(opCode, _$metricStart, false);
     } catch (RuntimeException e) {
       //int opCode = 191;
       //_$metric_1.addEventSince(opCode != 191, _$metricStart);
-      _$metric_3.operationEnd(191, _$metricStart);
+      _$metric_3.operationEnd(191, _$metricStart, false);
     }
   }
 
@@ -56,7 +56,7 @@ public class ExampleService extends BaseService {
     System.out.println("not very interesting");
     // int opCode = 123;
     //_$metric_2.operationEnd(System.nanoTime() - start, opCode);
-    _$metric_2.operationEnd(opCode, start);
+    _$metric_2.operationEnd(opCode, start, false);
   }
 
   // public String findAll(String orderBy) {

@@ -8,9 +8,8 @@ public interface BucketTimedMetric {
   /**
    * Method called by the enhanced code.
    */
-  //public void operationEnd(long nanos, int opCode);
-  public void operationEnd(int opCode, long startNanos);
+  void operationEnd(int opCode, long startNanos, boolean requestTiming);
 
-  //public void addEventSince(boolean success, long startNanos);
-  
+  boolean isRequestTiming();
+
 }
