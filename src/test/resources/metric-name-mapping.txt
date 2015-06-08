@@ -1,4 +1,5 @@
 #org.test.app.service=sv
 #org.test.app=
 #org.test.web.api=web
-org.test= 
+org.test=
+orange.truck=na

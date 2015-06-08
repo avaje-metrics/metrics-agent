@@ -1,18 +1,7 @@
 package org.avaje.metric.agent;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.io.PrintStream;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -23,10 +12,6 @@ public class EnhanceContext {
 
   private static final Logger logger = Logger.getLogger(EnhanceContext.class.getName());
 
-  private static final String METRIC_NAME_MAPPING_RESOURCE = "metric-name-mapping.txt";
-
-	private final ClassLoader classLoader;
-	
 	private final ClassBytesReader classBytesReader;
 	
 	private final ClassMetaReader reader;
@@ -40,25 +25,23 @@ public class EnhanceContext {
 	private final boolean enhanceSingleton;
 
 	private final boolean sysoutOnCollect;
-	
-	private final Map<String, String> nameMapping;
-
-  private final String[] metricNameMatches;
 
 	private PrintStream logout;
 
 	private int logLevel;
+
+	private final NameMapping nameMapping;
 
 	/**
 	 * Construct a context for enhancement.
 	 */
 	public EnhanceContext(String agentArgs, ClassLoader classLoader) {
 
-	  this.classLoader = classLoader;
 		this.ignoreClassHelper = new IgnoreClassHelper(agentArgs);
     this.reader = new ClassMetaReader(this);
 		this.agentArgsMap = ArgParser.parse(agentArgs);
 
+		this.nameMapping = new NameMapping(classLoader);
 		this.logout = System.out;
 
 		String debugValue = agentArgsMap.get("debug");
@@ -75,63 +58,27 @@ public class EnhanceContext {
 		this.enhanceSingleton = getPropertyBoolean("enhancesingleton", true);
 		
 		classBytesReader = new ClassBytesReader(logLevel, logout);
-		this.nameMapping = readNameMapping();
+
 		if (logLevel > 0) {
-  		log(1,"name mappings: ", nameMapping.toString());
+  		log(1, "name mappings: ", nameMapping.toString());
   		log(1,"settings: debug["+debugValue+"] sysoutoncollect["+sysoutOnCollect+"] readonly["+readOnly+"]", "");
 		}
-		this.metricNameMatches = getMetricNameMatches();
 		if (logLevel > 0) {
-		  log(1, "match keys: ", Arrays.toString(this.metricNameMatches));
+		  log(1, "match keys: ", nameMapping.getMatches());
 		}
 	}
-	
-	private String[] getMetricNameMatches() {
-	  List<String> keys = new ArrayList<String>();
-	  keys.addAll(this.nameMapping.keySet());
-	  Collections.sort(keys);
-	  System.out.println("KEYS: "+keys);
-	  return keys.toArray(new String[keys.size()]);
+
+	/**
+	 * Return a potentially cut down metric name.
+	 * <p>
+	 * For example, trim of extraneous package names or prefix controllers or
+	 * JAX-RS endpoints with "web" etc.
+	 * </p>
+	 */
+	public String getMappedName(String rawName) {
+		return nameMapping.getMappedName(rawName);
 	}
 
-	private Enumeration<URL> getNameMappingResources() throws IOException {
-	  if (classLoader != null) {
-	    return classLoader.getResources(METRIC_NAME_MAPPING_RESOURCE);
-	  } else {
-      return getClass().getClassLoader().getResources(METRIC_NAME_MAPPING_RESOURCE);
-	  }
-	}
-	
-	private Map<String,String> readNameMapping() {
-	  
-	  Map<String,String> map = new HashMap<String, String>();
-	  
-	  try {
-  	  Enumeration<URL> resources = getNameMappingResources();
-  	  while (resources.hasMoreElements()) {
-        URL url = resources.nextElement();
-        InputStream inStream = url.openStream();
-        try {
-          Properties props = new Properties();
-          props.load(inStream);
-          
-          Set<String> stringPropertyNames = props.stringPropertyNames();
-          for (String propName : stringPropertyNames) {
-            map.put(propName, props.getProperty(propName));
-          }
-        } finally {
-          if (inStream != null) {
-            inStream.close();
-          }
-        }
-      }
-	  } catch (Exception e) {
-	    System.err.println("Error trying to read metric-name-mapping.properties resources");
-	    e.printStackTrace();
-	  }
-	  return map;
-	}
-	
 	/**
 	 * Return a value from the agent arguments using its key.
 	 */
@@ -244,39 +191,6 @@ public class EnhanceContext {
 	 */
 	public boolean isEnhanceSingleton() {
     return enhanceSingleton;
-  }
-
-  /**
-	 * trim off any leading period.
-	 */
-	private String trimMetricName(String metricName) {
-	  if (metricName.startsWith(".")) {
-	    return metricName.substring(1);
-	  }
-	  return metricName;
-	}
-	
-  /**
-   * Return a potentially cut down metric name.
-   * <p>
-   * For example, trim of extraneous package names or prefix controllers or
-   * jaxrs endpoints with "web" etc.
-   * </p>
-   */
-  public String getMappedName(String rawName) {
-    for (int i = metricNameMatches.length-1; i >= 0; i--) {
-      String name = metricNameMatches[i];
-      if (rawName.startsWith(name)) {
-        String prefix = nameMapping.get(name);
-        if (prefix == null || prefix.length() == 0) {
-          return trimMetricName(rawName.substring(name.length()));
-          
-        } else {
-          return trimMetricName(prefix + rawName.substring(name.length()));
-        }
-      }
-    }
-    return rawName;
   }
 
   /**
