@@ -9,7 +9,7 @@
   
   <groupId>org.avaje.metric</groupId>
   <artifactId>avaje-metric-agent</artifactId>
-  <version>4.0.2-SNAPSHOT</version>
+  <version>4.1.1-SNAPSHOT</version>
   <name>avaje-metric-agent</name>
   
   <licenses>
