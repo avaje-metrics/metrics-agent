@@ -47,12 +47,12 @@ public class ClassAdapterMetric extends ClassVisitor implements Opcodes {
   /**
    * List of unique names to support parameter overloading.
    */
-  private final ArrayList<String> uniqueMethodNames = new ArrayList<String>();
+  private final ArrayList<String> uniqueMethodNames = new ArrayList<>();
 
   /**
    * The method adapters that detect if a method is enhanced and perform the enhancement.
    */
-  private final List<AddTimerMetricMethodAdapter> methodAdapters = new ArrayList<AddTimerMetricMethodAdapter>();
+  private final List<AddTimerMetricMethodAdapter> methodAdapters = new ArrayList<>();
 
   /**
    * The metric full name that is a common prefix for each method.
@@ -213,12 +213,12 @@ public class ClassAdapterMetric extends ClassVisitor implements Opcodes {
   private void addMarkerAnnotation() {
 
     if (!markerAnnotationAdded) {
-      if (isLog(3)) {
+      if (isLog(4)) {
         String flagExplicit = (detectExplicit ? "EXPLICIT " : "");
         String flagJaxrs = (detectJaxrs ? "JAXRS " : "");
         String flagSpring = (detectSpringComponent ? "SPRING " : "");
         String flagSingleton = (detectSingleton ? "SINGLETON" : "");
-        log(3, "enhancing - detection ", flagExplicit + flagJaxrs + flagSpring + flagSingleton );
+        log(4, "enhancing - detection ", flagExplicit + flagJaxrs + flagSpring + flagSingleton );
       }
       AnnotationVisitor av = cv.visitAnnotation(ANNOTATION_ALREADY_ENHANCED_MARKER, true);
       if (av != null) {
@@ -270,14 +270,14 @@ public class ClassAdapterMetric extends ClassVisitor implements Opcodes {
       log(5, "... not enhancing constructor:", name, " desc:", desc);
       return mv;
     }
-    if (isCommonMethod(name, desc)) {
+    if (isCommonMethod(name)) {
       // not enhancing constructor
       log(5, "... not enhancing:",  name, " desc:", desc);
       return mv;
     }
     if (name.equals("<clinit>")) {
       // static initializer, add call _$initMetrics()
-      log(2, "... <clinit> exists - adding call to _$initMetrics()", "");
+      log(5, "... <clinit> exists - adding call to _$initMetrics()", "");
       existingStaticInitialiser = true;
       return new StaticInitAdapter(mv, access, name, desc, className);
     }
@@ -308,18 +308,9 @@ public class ClassAdapterMetric extends ClassVisitor implements Opcodes {
   /**
    * Return true if a equals, hashCode or toString method - these are not enhanced.
    */
-  private boolean isCommonMethod(String name, String desc) {
-    
-    if (name.equals("equals")) {
-      return true;
-    }
-    if (name.equals("hashCode")) {
-      return true;
-    }
-    if (name.equals("toString")) {
-      return true;
-    }
-    return false;
+  private boolean isCommonMethod(String name) {
+
+    return name.equals("equals") || name.equals("hashCode") || name.equals("toString");
   }
 
   private AddTimerMetricMethodAdapter createAdapter(boolean enhanceDefault, int metricIndex, String uniqueMethodName, MethodVisitor mv, int access, String name, String desc) {
@@ -353,7 +344,7 @@ public class ClassAdapterMetric extends ClassVisitor implements Opcodes {
     addStaticFieldInitialisers();
 
     if (!existingStaticInitialiser) {
-      log(3, "... add <clinit> to call _$initMetrics()");
+      log(5, "... add <clinit> to call _$initMetrics()");
       addStaticInitialiser();
     }
 
@@ -376,7 +367,7 @@ public class ClassAdapterMetric extends ClassVisitor implements Opcodes {
     MethodVisitor mv = cv.visitMethod(ACC_PRIVATE + ACC_STATIC, "_$initMetrics", "()V", null, null);
     mv.visitCode();
 
-    log(3, "... adding static _$initMetrics() method");
+    log(4, "... adding static _$initMetrics() method");
 
     for (int i = 0; i < methodAdapters.size(); i++) {
 
