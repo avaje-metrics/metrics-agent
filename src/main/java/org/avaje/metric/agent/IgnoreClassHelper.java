@@ -148,9 +148,6 @@ public class IgnoreClassHelper {
       return true;
     }
     // ignore $Proxy classes
-    if (className.startsWith("$")) {
-      return true;
-    }
-    return false;
+    return className.startsWith("$");
   }
 }
