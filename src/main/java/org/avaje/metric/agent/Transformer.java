@@ -95,7 +95,6 @@ public class Transformer implements ClassFileTransformer {
     }
   }
 
-
   /**
    * Perform enhancement.
    */

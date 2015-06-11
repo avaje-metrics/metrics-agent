@@ -22,6 +22,7 @@ import org.avaje.metric.agent.Transformer;
 public class InputStreamTransform {
 
 	final Transformer transformer;
+
 	final ClassLoader classLoader;
 	
 	public InputStreamTransform(Transformer transformer, ClassLoader classLoader){
@@ -51,9 +52,7 @@ public class InputStreamTransform {
 	public byte[] transform(String className, InputStream is) throws IOException, IllegalClassFormatException {
 
 		try {
-			
 			byte[] classBytes = readBytes(is);
-			
 			return transformer.transform(classLoader, className, null, null, classBytes);
 			
 		} finally {
@@ -81,7 +80,7 @@ public class InputStreamTransform {
 		
 		byte[] buf = new byte[1028];
 		
-		int len = 0;
+		int len;
 		while ((len = bis.read(buf, 0, buf.length)) > -1){
 			bos.write(buf, 0, len);
 		}
@@ -101,7 +100,7 @@ public class InputStreamTransform {
 
 		byte[] buf = new byte[1028];
 		
-		int len = 0;
+		int len;
 		while ((len = bis.read(buf, 0, buf.length)) > -1){
 			baos.write(buf, 0, len);
 		}

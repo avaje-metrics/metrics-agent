@@ -105,7 +105,7 @@ public class OfflineFileTransform {
         if (file.isDirectory()) {
           if (recurse) {
             String subdir = dir + "/" + file.getName();
-            processPackage(subdir, recurse);
+            processPackage(subdir, true);
           }
         } else {
           String fileName = file.getName();
@@ -120,8 +120,7 @@ public class OfflineFileTransform {
       }
 
 		} catch (IllegalClassFormatException e) {
-			String fileName = file == null ? "null" : file.getName();
-			throw new IOException("Error transforming file: " + fileName, e);
+			throw new IOException("Error transforming file: " + file.getName(), e);
 		}
 
 	}
