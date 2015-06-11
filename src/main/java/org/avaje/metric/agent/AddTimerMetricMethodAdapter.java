@@ -285,7 +285,7 @@ public class AddTimerMetricMethodAdapter extends AdviceAdapter {
     
 
     if (!isEnhanced()) {
-      log(2, "--- not enhanced ", methodName);
+      log(2, "--- not enhanced (maybe protected/private) ", methodName);
 
     } else {
       // apply any metric name mappings to the uniqueMethodName to get

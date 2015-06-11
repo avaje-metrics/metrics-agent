@@ -40,13 +40,6 @@ public class Transformer implements ClassFileTransformer {
   private final EnhanceContext enhanceContext;
 
   /**
-   * Construct additionally specifying the classBytesReader implementation.
-   */
-  public Transformer(String agentArgs, ClassLoader classLoader, ClassBytesReader classBytesReader) {
-    this.enhanceContext = new EnhanceContext(agentArgs, classLoader, classBytesReader);
-  }
-
-  /**
    * Construct using the default classBytesReader implementation.
    */
   public Transformer(String agentArgs, ClassLoader classLoader) {

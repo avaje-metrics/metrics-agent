@@ -12,10 +12,6 @@ public class EnhanceContext {
 
   private static final Logger logger = Logger.getLogger(EnhanceContext.class.getName());
 
-	private final ClassBytesReader classBytesReader;
-	
-	private final ClassMetaReader reader;
-	 
 	private final IgnoreClassHelper ignoreClassHelper;
 
 	private final HashMap<String, String> agentArgsMap;
@@ -33,19 +29,11 @@ public class EnhanceContext {
 	private final NameMapping nameMapping;
 
 	/**
-	 * Construct a context for enhancement using the DefaultClassBytesReader.
-	 */
-	public EnhanceContext(String agentArgs, ClassLoader classLoader) {
-		this(agentArgs, classLoader, null);
-	}
-
-	/**
 	 * Construct a context for enhancement.
 	 */
-	public EnhanceContext(String agentArgs, ClassLoader classLoader, ClassBytesReader reader) {
+	public EnhanceContext(String agentArgs, ClassLoader classLoader) {
 
 		this.ignoreClassHelper = new IgnoreClassHelper(agentArgs);
-    this.reader = new ClassMetaReader(this);
 		this.agentArgsMap = ArgParser.parse(agentArgs);
 
 		this.nameMapping = new NameMapping(classLoader);
@@ -60,8 +48,7 @@ public class EnhanceContext {
 				logger.log(Level.WARNING, msg);
 			}
 		}
-		// use DefaultClassBytesReader if a reader has not been supplied
-		this.classBytesReader = (reader != null) ? reader : new DefaultClassBytesReader(logLevel, logout);
+
 		this.readOnly = getPropertyBoolean("readonly", false);
 		this.sysoutOnCollect = getPropertyBoolean("sysoutoncollect", false);
 		this.enhanceSingleton = getPropertyBoolean("enhancesingleton", true);
@@ -101,36 +88,6 @@ public class EnhanceContext {
 			return s.trim().equalsIgnoreCase("true");
 		}
 	}
-
-	 /**
-   * Create a new meta object for enhancing a class.
-   */
-  public ClassMeta createClassMeta() {
-    return new ClassMeta(this);
-  }
-  
-  public byte[] getClassBytes(String className, ClassLoader classLoader){
-    return classBytesReader.getClassBytes(className, classLoader);
-  }
-  
-  /**
-   * Read the class meta data for a super class.
-   * <p>
-   * Typically used to read meta data for inheritance hierarchy.
-   * </p>
-   */
-  public ClassMeta getSuperMeta(String superClassName, ClassLoader classLoader) {
-
-    try {
-      if (isIgnoreClass(superClassName)){
-        return null;
-      }
-      return reader.get(superClassName, classLoader);
-      
-    } catch (ClassNotFoundException e) {
-      throw new RuntimeException("Unable to read superClass meta data for - "+superClassName, e);
-    }
-  }
   
 	/**
 	 * Return true if this class should be ignored. That is JDK classes and
