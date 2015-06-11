@@ -33,9 +33,16 @@ public class EnhanceContext {
 	private final NameMapping nameMapping;
 
 	/**
-	 * Construct a context for enhancement.
+	 * Construct a context for enhancement using the DefaultClassBytesReader.
 	 */
 	public EnhanceContext(String agentArgs, ClassLoader classLoader) {
+		this(agentArgs, classLoader, null);
+	}
+
+	/**
+	 * Construct a context for enhancement.
+	 */
+	public EnhanceContext(String agentArgs, ClassLoader classLoader, ClassBytesReader reader) {
 
 		this.ignoreClassHelper = new IgnoreClassHelper(agentArgs);
     this.reader = new ClassMetaReader(this);
@@ -52,12 +59,12 @@ public class EnhanceContext {
 				String msg = "Agent debug argument [" + debugValue+ "] is not an int?";
 				logger.log(Level.WARNING, msg);
 			}
-		}     
+		}
+		// use DefaultClassBytesReader if a reader has not been supplied
+		this.classBytesReader = (reader != null) ? reader : new DefaultClassBytesReader(logLevel, logout);
 		this.readOnly = getPropertyBoolean("readonly", false);
 		this.sysoutOnCollect = getPropertyBoolean("sysoutoncollect", false);
 		this.enhanceSingleton = getPropertyBoolean("enhancesingleton", true);
-		
-		classBytesReader = new ClassBytesReader(logLevel, logout);
 
 		if (logLevel > 0) {
   		log(1, "name mappings: ", nameMapping.toString());
@@ -121,7 +128,7 @@ public class EnhanceContext {
       return reader.get(superClassName, classLoader);
       
     } catch (ClassNotFoundException e) {
-      throw new RuntimeException(e);
+      throw new RuntimeException("Unable to read superClass meta data for - "+superClassName, e);
     }
   }
   

@@ -88,9 +88,11 @@
             <version>1.0.0</version>
           </docletArtifact>
           <additionalparam>
-            -Xdoclint:none
-            -include-basedir ${project.basedir}
           </additionalparam>
+<!--
+          -Xdoclint:none
+          -include-basedir ${project.basedir}
+-->
           <linksource>true</linksource>
         </configuration>
         <executions>

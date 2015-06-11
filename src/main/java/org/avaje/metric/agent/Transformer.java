@@ -13,8 +13,7 @@ import org.avaje.metric.agent.asm.ClassWriter;
 /**
  * A Class file Transformer that enhances entity beans.
  * <p>
- * This is used as both a javaagent or via an ANT task (or other off line
- * approach).
+ * This is used as both a javaagent or via an ANT task (or other off line approach).
  * </p>
  */
 public class Transformer implements ClassFileTransformer {
@@ -40,6 +39,16 @@ public class Transformer implements ClassFileTransformer {
 
   private final EnhanceContext enhanceContext;
 
+  /**
+   * Construct additionally specifying the classBytesReader implementation.
+   */
+  public Transformer(String agentArgs, ClassLoader classLoader, ClassBytesReader classBytesReader) {
+    this.enhanceContext = new EnhanceContext(agentArgs, classLoader, classBytesReader);
+  }
+
+  /**
+   * Construct using the default classBytesReader implementation.
+   */
   public Transformer(String agentArgs, ClassLoader classLoader) {
     this.enhanceContext = new EnhanceContext(agentArgs, classLoader);
   }
