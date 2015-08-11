@@ -29,6 +29,7 @@
  */
 package org.avaje.metric.agent.asm.commons;
 
+
 import org.avaje.metric.agent.asm.Label;
 
 /**

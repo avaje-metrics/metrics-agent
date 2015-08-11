@@ -3,13 +3,12 @@ package org.avaje.metric.agent.asm.commons;
 import org.avaje.metric.agent.asm.Label;
 import org.avaje.metric.agent.asm.MethodVisitor;
 
-
 public abstract class FinallyAdapter extends AdviceAdapter {
 
 	protected Label startFinally = new Label();
 
-	public FinallyAdapter(MethodVisitor mv, int acc, String name, String desc) {
-		super(ASM4, mv, acc, name, desc);
+	public FinallyAdapter(final int api, MethodVisitor mv, int acc, String name, String desc) {
+		super(api, mv, acc, name, desc);
 	}
 
 	public void visitCode() {

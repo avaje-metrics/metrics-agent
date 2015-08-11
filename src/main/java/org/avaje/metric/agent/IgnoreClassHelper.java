@@ -93,6 +93,9 @@ public class IgnoreClassHelper {
    */
   public boolean isIgnoreClass(String className) {
 
+    if (className == null) {
+      return true;
+    }
     className = className.replace('.', '/');
 
     if (processPackages.length > 0) {
@@ -105,7 +108,8 @@ public class IgnoreClassHelper {
     // process (they won't contain entity beans etc).
 
     // ignore the JDK classes ...
-    if (className.startsWith("java/") || className.startsWith("javax/")) {
+    if (className.startsWith("java/") || className.startsWith("javax/")
+        || className.startsWith("play/") || className.startsWith("sbt/") || className.startsWith("scala/")) {
       return true;
     }
     if (className.startsWith("sun/") || className.startsWith("sunw/") || className.startsWith("com/sun/")) {

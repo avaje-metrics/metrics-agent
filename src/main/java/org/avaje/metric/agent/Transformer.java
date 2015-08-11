@@ -65,10 +65,10 @@ public class Transformer implements ClassFileTransformer {
       ProtectionDomain protectionDomain, byte[] classfileBuffer) throws IllegalClassFormatException {
 
     try {
-      
+
       // ignore JDK and JDBC classes etc
       if (enhanceContext.isIgnoreClass(className)) {
-        enhanceContext.log(8, "ignore class ", className);
+        enhanceContext.log(9, "ignore class ", className);
         return null;
       }
 
@@ -121,7 +121,7 @@ public class Transformer implements ClassFileTransformer {
       return null;
 
     } catch (NoEnhancementRequiredException e) {
-      if (ca.isLog(4)) {
+      if (ca.isLog(9)) {
         ca.log("... skipping, no enhancement required");
       }
       return null;

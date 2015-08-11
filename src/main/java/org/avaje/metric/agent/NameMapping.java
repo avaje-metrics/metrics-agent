@@ -1,5 +1,7 @@
 package org.avaje.metric.agent;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -11,12 +13,21 @@ import java.util.*;
 public class NameMapping {
 
   private static final String METRIC_NAME_MAPPING_RESOURCE = "metric-name-mapping.txt";
+  private static final String MATCH_INCLUDE = "match.include.";
+  private static final String MATCH_EXCLUDE = "match.exclude.";
+
+  public static final String MATCH = "match.";
+  private static final String BUCKETS = ".buckets";
 
   private final ClassLoader classLoader;
 
   private final Map<String, String> nameMapping;
 
   private final String[] metricNameMatches;
+
+  private final List<Match> matchIncludes = new ArrayList<>();
+
+  private final List<Match> matches = new ArrayList<>();
 
   /**
    * Create with a classLoader.
@@ -28,6 +39,10 @@ public class NameMapping {
     this.classLoader = classLoader;
     this.nameMapping = readNameMapping();
     this.metricNameMatches = getMetricNameMatches();
+  }
+
+  public String toString() {
+    return nameMapping.toString();
   }
 
   public String getMatches() {
@@ -106,13 +121,7 @@ public class NameMapping {
         URL url = resources.nextElement();
         InputStream inStream = url.openStream();
         try {
-          Properties props = new Properties();
-          props.load(inStream);
-
-          Set<String> stringPropertyNames = props.stringPropertyNames();
-          for (String propName : stringPropertyNames) {
-            map.put(propName, props.getProperty(propName));
-          }
+          loadAsProperties(map, inStream);
         } finally {
           if (inStream != null) {
             inStream.close();
@@ -124,5 +133,152 @@ public class NameMapping {
       e.printStackTrace();
     }
     return map;
+  }
+
+  /**
+   * Load an external name mapping file.
+   */
+  public void loadFile(String fileName) {
+
+    File file = new File(fileName.trim());
+    if (!file.exists()) {
+      System.err.println("Unable to load from file["+fileName+"] - file does not exist");
+    }
+    try {
+      FileInputStream is = new FileInputStream(file);
+      try {
+        loadAsProperties(nameMapping, is);
+      } catch (IOException e) {
+        System.err.println("Error trying to process file ["+fileName+"]");
+        e.printStackTrace();
+      } finally {
+        if (is != null) {
+          is.close();
+        }
+      }
+    } catch (IOException e) {
+      System.err.println("Error trying to process file ["+fileName+"]");
+      e.printStackTrace();
+    }
+  }
+
+  private void loadAsProperties(Map<String, String> map, InputStream inStream) throws IOException {
+
+    Properties props = new Properties();
+    props.load(inStream);
+
+    Set<String> stringPropertyNames = props.stringPropertyNames();
+    for (String propName : stringPropertyNames) {
+      String value = props.getProperty(propName);
+      if (propName.startsWith(MATCH)) {
+        addMatcher(propName, value, props);
+      } else {
+        map.put(propName, value);
+      }
+    }
+  }
+
+  /**
+   * Add a matcher in the form of match.id=... and match.id.buckets=... or match.exclude.id=...
+   */
+  private void addMatcher(String propName, String pattern, Properties props) {
+
+    if (propName.startsWith(MATCH_INCLUDE)) {
+      matchIncludes.add(new Match(pattern));
+
+    } else if (propName.startsWith(MATCH_EXCLUDE)) {
+      matches.add(new Match(pattern));
+
+    } else if (!propName.endsWith(BUCKETS)) {
+      String bucketKey = propName + BUCKETS;
+      String buckets = props.getProperty(bucketKey);
+      matches.add(new Match(pattern, parseBuckets(buckets)));
+    }
+  }
+
+  private int[] parseBuckets(String buckets) {
+    if (buckets == null) {
+      return null;
+    }
+    try {
+      String[] split = buckets.split(",");
+      int[] values = new int[split.length];
+      for (int i = 0; i < split.length; i++) {
+        values[i] = Integer.parseInt(split[i].trim());
+      }
+      return values;
+
+    } catch (RuntimeException e) {
+      // send to sys err as we don't know if logging is setup during enhancement
+      System.err.println("Error in org.avaje.metric.agent.NameMapping parsing buckets ["+buckets+"]");
+      e.printStackTrace();
+
+      // we will carry on without buckets specified
+      return null;
+    }
+  }
+
+  public List<Match> getPatternMatch() {
+    return matches;
+  }
+
+  /**
+   * Return true if at least match.include is specified.
+   */
+  public boolean hasMatchIncludes() {
+    return !matchIncludes.isEmpty();
+  }
+
+  /**
+   * Return true if the class matches our list of includes.
+   */
+  public boolean matchInclude(String className) {
+
+    for (int i = 0; i < matchIncludes.size(); i++) {
+      if (matches.get(i).like.matches(className)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  public Match findMatch(String className) {
+
+    for (int i = 0; i < matches.size(); i++) {
+      if (matches.get(i).like.matches(className)) {
+        return matches.get(i);
+      }
+    }
+    return null;
+  }
+
+
+  public static class Match {
+
+    public final boolean include;
+
+    public final LikeMatcher like;
+
+    public final String pattern;
+
+    public final int[] buckets;
+
+    public Match(String pattern) {
+      this.include = false;
+      this.pattern = pattern;
+      this.like = new LikeMatcher(pattern);
+      this.buckets = null;
+    }
+
+    public Match(String pattern, int[] buckets) {
+      this.include = true;
+      this.pattern = pattern;
+      this.like = new LikeMatcher(pattern);
+      this.buckets = buckets;
+    }
+
+    public String toString() {
+      return "include:" + include + " pattern:" + pattern;
+    }
   }
 }

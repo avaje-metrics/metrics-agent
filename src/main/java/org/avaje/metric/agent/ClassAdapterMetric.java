@@ -157,6 +157,17 @@ public class ClassAdapterMetric extends ClassVisitor implements Opcodes {
 
     this.className = name;
     setMetricFullName(className);
+
+    NameMapping.Match match = enhanceContext.findMatch(metricFullName);
+    if (match != null) {
+      if (!match.include) {
+        throw new NoEnhancementRequiredException("Excluded by match "+match.pattern);
+      } else {
+        detectExplicit = true;
+        shouldBeEnhanced = true;
+        buckets = match.buckets;
+      }
+    }
   }
 
   /**

@@ -29,16 +29,16 @@
  */
 package org.avaje.metric.agent.asm.commons;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import org.avaje.metric.agent.asm.Handle;
 import org.avaje.metric.agent.asm.Label;
 import org.avaje.metric.agent.asm.MethodVisitor;
 import org.avaje.metric.agent.asm.Opcodes;
 import org.avaje.metric.agent.asm.Type;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * A {@link org.avaje.metric.agent.asm.MethodVisitor} to insert before, after and around
@@ -83,7 +83,7 @@ public abstract class AdviceAdapter extends GeneratorAdapter implements Opcodes 
      * 
      * @param api
      *            the ASM API version implemented by this visitor. Must be one
-     *            of {@link Opcodes#ASM4}.
+     *            of {@link Opcodes#ASM4} or {@link Opcodes#ASM5}.
      * @param mv
      *            the method visitor to which this adapter delegates calls.
      * @param access
@@ -413,10 +413,31 @@ public abstract class AdviceAdapter extends GeneratorAdapter implements Opcodes 
         }
     }
 
+    @Deprecated
     @Override
     public void visitMethodInsn(final int opcode, final String owner,
             final String name, final String desc) {
-        mv.visitMethodInsn(opcode, owner, name, desc);
+        if (api >= Opcodes.ASM5) {
+            super.visitMethodInsn(opcode, owner, name, desc);
+            return;
+        }
+        doVisitMethodInsn(opcode, owner, name, desc,
+                opcode == Opcodes.INVOKEINTERFACE);
+    }
+
+    @Override
+    public void visitMethodInsn(final int opcode, final String owner,
+            final String name, final String desc, final boolean itf) {
+        if (api < Opcodes.ASM5) {
+            super.visitMethodInsn(opcode, owner, name, desc, itf);
+            return;
+        }
+        doVisitMethodInsn(opcode, owner, name, desc, itf);
+    }
+
+    private void doVisitMethodInsn(int opcode, final String owner,
+            final String name, final String desc, final boolean itf) {
+        mv.visitMethodInsn(opcode, owner, name, desc, itf);
         if (constructor) {
             Type[] types = Type.getArgumentTypes(desc);
             for (int i = 0; i < types.length; i++) {

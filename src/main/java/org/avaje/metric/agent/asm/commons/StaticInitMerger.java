@@ -29,9 +29,7 @@
  */
 package org.avaje.metric.agent.asm.commons;
 
-import org.avaje.metric.agent.asm.ClassVisitor;
-import org.avaje.metric.agent.asm.MethodVisitor;
-import org.avaje.metric.agent.asm.Opcodes;
+import org.avaje.metric.agent.asm.*;
 
 /**
  * A {@link ClassVisitor} that merges clinit methods into a single one.
@@ -49,7 +47,7 @@ public class StaticInitMerger extends ClassVisitor {
     private int counter;
 
     public StaticInitMerger(final String prefix, final ClassVisitor cv) {
-        this(Opcodes.ASM4, prefix, cv);
+        this(Opcodes.ASM5, prefix, cv);
     }
 
     protected StaticInitMerger(final int api, final String prefix,
@@ -78,7 +76,8 @@ public class StaticInitMerger extends ClassVisitor {
             if (clinit == null) {
                 clinit = cv.visitMethod(a, name, desc, null, null);
             }
-            clinit.visitMethodInsn(Opcodes.INVOKESTATIC, this.name, n, desc);
+            clinit.visitMethodInsn(Opcodes.INVOKESTATIC, this.name, n, desc,
+                    false);
         } else {
             mv = cv.visitMethod(access, name, desc, signature, exceptions);
         }

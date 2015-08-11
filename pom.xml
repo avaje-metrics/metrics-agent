@@ -9,7 +9,7 @@
   
   <groupId>org.avaje.metric</groupId>
   <artifactId>avaje-metric-agent</artifactId>
-  <version>4.2.2-SNAPSHOT</version>
+  <version>4.3.1-SNAPSHOT</version>
   <name>avaje-metric-agent</name>
   
   <licenses>
@@ -75,6 +75,19 @@
 
   <build>
     <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+        <version>2.3.2</version>
+        <configuration>
+          <archive>
+            <manifestEntries>
+              <build-version>${project.version}</build-version>
+            </manifestEntries>
+            <manifestFile>src/main/resources/META-INF/MANIFEST.MF</manifestFile>
+          </archive>
+        </configuration>
+      </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-javadoc-plugin</artifactId>

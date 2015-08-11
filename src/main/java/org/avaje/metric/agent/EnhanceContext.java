@@ -33,32 +33,37 @@ public class EnhanceContext {
 	 */
 	public EnhanceContext(String agentArgs, ClassLoader classLoader) {
 
-		this.ignoreClassHelper = new IgnoreClassHelper(agentArgs);
-		this.agentArgsMap = ArgParser.parse(agentArgs);
-
-		this.nameMapping = new NameMapping(classLoader);
-		this.logout = System.out;
+ 		this.ignoreClassHelper = new IgnoreClassHelper(agentArgs);
+ 		this.agentArgsMap = ArgParser.parse(agentArgs);
+ 		this.nameMapping = new NameMapping(classLoader);
+ 		this.logout = System.out;
 
 		String debugValue = agentArgsMap.get("debug");
-		if (debugValue != null) {
+ 		if (debugValue != null) {
 			try {
-				logLevel = Integer.parseInt(debugValue);
+				logLevel = Integer.parseInt(debugValue.trim());
 			} catch (NumberFormatException e) {
-				String msg = "Agent debug argument [" + debugValue+ "] is not an int?";
+				String msg = "Avaje metrics agent debug argument [" + debugValue+ "] is not an int? ignoring.";
+        System.err.println(msg);
 				logger.log(Level.WARNING, msg);
 			}
 		}
 
-		this.readOnly = getPropertyBoolean("readonly", false);
+    String nameFile = agentArgsMap.get("namefile");
+    if (nameFile != null) {
+      log(1, "loading metric name mapping file: ", nameFile);
+      nameMapping.loadFile(nameFile);
+    }
+
+    this.readOnly = getPropertyBoolean("readonly", false);
 		this.sysoutOnCollect = getPropertyBoolean("sysoutoncollect", false);
 		this.enhanceSingleton = getPropertyBoolean("enhancesingleton", true);
 
 		if (logLevel > 0) {
+      log(8, "settings: debug["+debugValue+"] sysoutoncollect["+sysoutOnCollect+"] readonly["+readOnly+"]", "");
   		log(1, "name mappings: ", nameMapping.toString());
-  		log(1,"settings: debug["+debugValue+"] sysoutoncollect["+sysoutOnCollect+"] readonly["+readOnly+"]", "");
-		}
-		if (logLevel > 0) {
-		  log(1, "match keys: ", nameMapping.getMatches());
+      log(1, "match patterns: ", nameMapping.getPatternMatch().toString());
+      log(1, "match keys: ", nameMapping.getMatches());
 		}
 	}
 
@@ -94,6 +99,9 @@ public class EnhanceContext {
 	 * known libraries JDBC drivers etc can be skipped.
 	 */
 	public boolean isIgnoreClass(String className) {
+    if (nameMapping.hasMatchIncludes()) {
+      return !nameMapping.matchInclude(className);
+    }
 		return ignoreClassHelper.isIgnoreClass(className);
 	}
 
@@ -164,4 +172,11 @@ public class EnhanceContext {
     return sysoutOnCollect;
   }
 
+  /**
+   * Return a Match object for the metric. Can be used to assign
+   * buckets or explicitly exclude.
+   */
+  public NameMapping.Match findMatch(String metricFullName) {
+    return nameMapping.findMatch(metricFullName);
+  }
 }

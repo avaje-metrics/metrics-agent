@@ -29,10 +29,7 @@
  */
 package org.avaje.metric.agent.asm.commons;
 
-import org.avaje.metric.agent.asm.Handle;
-import org.avaje.metric.agent.asm.Label;
-import org.avaje.metric.agent.asm.MethodVisitor;
-import org.avaje.metric.agent.asm.Opcodes;
+import org.avaje.metric.agent.asm.*;
 
 /**
  * A {@link MethodVisitor} that can be used to approximate method size.
@@ -46,7 +43,7 @@ public class CodeSizeEvaluator extends MethodVisitor implements Opcodes {
     private int maxSize;
 
     public CodeSizeEvaluator(final MethodVisitor mv) {
-        this(Opcodes.ASM4, mv);
+        this(Opcodes.ASM5, mv);
     }
 
     protected CodeSizeEvaluator(final int api, final MethodVisitor mv) {
@@ -120,9 +117,30 @@ public class CodeSizeEvaluator extends MethodVisitor implements Opcodes {
         }
     }
 
+    @Deprecated
     @Override
     public void visitMethodInsn(final int opcode, final String owner,
             final String name, final String desc) {
+        if (api >= Opcodes.ASM5) {
+            super.visitMethodInsn(opcode, owner, name, desc);
+            return;
+        }
+        doVisitMethodInsn(opcode, owner, name, desc,
+                opcode == Opcodes.INVOKEINTERFACE);
+    }
+
+    @Override
+    public void visitMethodInsn(final int opcode, final String owner,
+            final String name, final String desc, final boolean itf) {
+        if (api < Opcodes.ASM5) {
+            super.visitMethodInsn(opcode, owner, name, desc, itf);
+            return;
+        }
+        doVisitMethodInsn(opcode, owner, name, desc, itf);
+    }
+
+    private void doVisitMethodInsn(int opcode, final String owner,
+            final String name, final String desc, final boolean itf) {
         if (opcode == INVOKEINTERFACE) {
             minSize += 5;
             maxSize += 5;
@@ -131,7 +149,7 @@ public class CodeSizeEvaluator extends MethodVisitor implements Opcodes {
             maxSize += 3;
         }
         if (mv != null) {
-            mv.visitMethodInsn(opcode, owner, name, desc);
+            mv.visitMethodInsn(opcode, owner, name, desc, itf);
         }
     }
 

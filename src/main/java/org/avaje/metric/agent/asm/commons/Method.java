@@ -29,10 +29,10 @@
  */
 package org.avaje.metric.agent.asm.commons;
 
+import org.avaje.metric.agent.asm.Type;
+
 import java.util.HashMap;
 import java.util.Map;
-
-import org.avaje.metric.agent.asm.Type;
 
 /**
  * A named method descriptor.
@@ -176,7 +176,7 @@ public class Method {
         }
         String returnType = method.substring(0, space);
         String methodName = method.substring(space + 1, start - 1).trim();
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         sb.append('(');
         int p;
         do {
@@ -200,7 +200,7 @@ public class Method {
             return type;
         }
 
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         int index = 0;
         while ((index = type.indexOf("[]", index) + 1) > 0) {
             sb.append('[');

@@ -1,3 +1,16 @@
+
+match.1=com.myapp.*Controller
+match.1.buckets=100,500
+
+match.2=com.myapp.*Service
+match.2.buckets=100,300,500
+
+match.3=com.myapp.service.*
+match.3.buckets=500
+
+match.exclude.1=com.myapp.*.ExcludeMe*
+
+com.myapp.something.controller=web.ctl
 #org.test.app.service=sv
 #org.test.app=
 #org.test.web.api=web

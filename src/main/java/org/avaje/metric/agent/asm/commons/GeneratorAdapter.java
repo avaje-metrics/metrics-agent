@@ -29,10 +29,6 @@
  */
 package org.avaje.metric.agent.asm.commons;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
 import org.avaje.metric.agent.asm.ClassVisitor;
 import org.avaje.metric.agent.asm.Handle;
 import org.avaje.metric.agent.asm.Label;
@@ -40,8 +36,12 @@ import org.avaje.metric.agent.asm.MethodVisitor;
 import org.avaje.metric.agent.asm.Opcodes;
 import org.avaje.metric.agent.asm.Type;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 /**
- * A {@link org.avaje.metric.agent.asm.MethodVisitor} with convenient methods to generate
+ * A {@link MethodVisitor} with convenient methods to generate
  * code. For example, using this adapter, the class below
  * 
  * <pre>
@@ -255,10 +255,15 @@ public class GeneratorAdapter extends LocalVariablesSorter {
      *            the method's name.
      * @param desc
      *            the method's descriptor (see {@link Type Type}).
+     * @throws IllegalStateException
+     *             If a subclass calls this constructor.
      */
     public GeneratorAdapter(final MethodVisitor mv, final int access,
             final String name, final String desc) {
-        this(Opcodes.ASM4, mv, access, name, desc);
+        this(Opcodes.ASM5, mv, access, name, desc);
+        if (getClass() != GeneratorAdapter.class) {
+            throw new IllegalStateException();
+        }
     }
 
     /**
@@ -266,7 +271,7 @@ public class GeneratorAdapter extends LocalVariablesSorter {
      * 
      * @param api
      *            the ASM API version implemented by this visitor. Must be one
-     *            of {@link Opcodes#ASM4}.
+     *            of {@link Opcodes#ASM4} or {@link Opcodes#ASM5}.
      * @param mv
      *            the method visitor to which this adapter delegates calls.
      * @param access
@@ -1371,11 +1376,11 @@ public class GeneratorAdapter extends LocalVariablesSorter {
      *            the method to be invoked.
      */
     private void invokeInsn(final int opcode, final Type type,
-            final Method method) {
+            final Method method, final boolean itf) {
         String owner = type.getSort() == Type.ARRAY ? type.getDescriptor()
                 : type.getInternalName();
         mv.visitMethodInsn(opcode, owner, method.getName(),
-                method.getDescriptor());
+                method.getDescriptor(), itf);
     }
 
     /**
@@ -1387,7 +1392,7 @@ public class GeneratorAdapter extends LocalVariablesSorter {
      *            the method to be invoked.
      */
     public void invokeVirtual(final Type owner, final Method method) {
-        invokeInsn(Opcodes.INVOKEVIRTUAL, owner, method);
+        invokeInsn(Opcodes.INVOKEVIRTUAL, owner, method, false);
     }
 
     /**
@@ -1399,7 +1404,7 @@ public class GeneratorAdapter extends LocalVariablesSorter {
      *            the constructor to be invoked.
      */
     public void invokeConstructor(final Type type, final Method method) {
-        invokeInsn(Opcodes.INVOKESPECIAL, type, method);
+        invokeInsn(Opcodes.INVOKESPECIAL, type, method, false);
     }
 
     /**
@@ -1411,7 +1416,7 @@ public class GeneratorAdapter extends LocalVariablesSorter {
      *            the method to be invoked.
      */
     public void invokeStatic(final Type owner, final Method method) {
-        invokeInsn(Opcodes.INVOKESTATIC, owner, method);
+        invokeInsn(Opcodes.INVOKESTATIC, owner, method, false);
     }
 
     /**
@@ -1423,7 +1428,7 @@ public class GeneratorAdapter extends LocalVariablesSorter {
      *            the method to be invoked.
      */
     public void invokeInterface(final Type owner, final Method method) {
-        invokeInsn(Opcodes.INVOKEINTERFACE, owner, method);
+        invokeInsn(Opcodes.INVOKEINTERFACE, owner, method, true);
     }
 
     /**

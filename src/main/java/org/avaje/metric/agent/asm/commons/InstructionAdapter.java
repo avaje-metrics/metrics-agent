@@ -30,11 +30,7 @@
 
 package org.avaje.metric.agent.asm.commons;
 
-import org.avaje.metric.agent.asm.Handle;
-import org.avaje.metric.agent.asm.Label;
-import org.avaje.metric.agent.asm.MethodVisitor;
-import org.avaje.metric.agent.asm.Opcodes;
-import org.avaje.metric.agent.asm.Type;
+import org.avaje.metric.agent.asm.*;
 
 /**
  * A {@link MethodVisitor} providing a more detailed API to generate and
@@ -53,9 +49,14 @@ public class InstructionAdapter extends MethodVisitor {
      * 
      * @param mv
      *            the method visitor to which this adapter delegates calls.
+     * @throws IllegalStateException
+     *             If a subclass calls this constructor.
      */
     public InstructionAdapter(final MethodVisitor mv) {
-        this(Opcodes.ASM4, mv);
+        this(Opcodes.ASM5, mv);
+        if (getClass() != InstructionAdapter.class) {
+            throw new IllegalStateException();
+        }
     }
 
     /**
@@ -63,7 +64,7 @@ public class InstructionAdapter extends MethodVisitor {
      * 
      * @param api
      *            the ASM API version implemented by this visitor. Must be one
-     *            of {@link Opcodes#ASM4}.
+     *            of {@link Opcodes#ASM4} or {@link Opcodes#ASM5}.
      * @param mv
      *            the method visitor to which this adapter delegates calls.
      */
@@ -507,18 +508,39 @@ public class InstructionAdapter extends MethodVisitor {
         }
     }
 
+    @Deprecated
     @Override
     public void visitMethodInsn(final int opcode, final String owner,
             final String name, final String desc) {
+        if (api >= Opcodes.ASM5) {
+            super.visitMethodInsn(opcode, owner, name, desc);
+            return;
+        }
+        doVisitMethodInsn(opcode, owner, name, desc,
+                opcode == Opcodes.INVOKEINTERFACE);
+    }
+
+    @Override
+    public void visitMethodInsn(final int opcode, final String owner,
+            final String name, final String desc, final boolean itf) {
+        if (api < Opcodes.ASM5) {
+            super.visitMethodInsn(opcode, owner, name, desc, itf);
+            return;
+        }
+        doVisitMethodInsn(opcode, owner, name, desc, itf);
+    }
+
+    private void doVisitMethodInsn(int opcode, final String owner,
+            final String name, final String desc, final boolean itf) {
         switch (opcode) {
         case Opcodes.INVOKESPECIAL:
-            invokespecial(owner, name, desc);
+            invokespecial(owner, name, desc, itf);
             break;
         case Opcodes.INVOKEVIRTUAL:
-            invokevirtual(owner, name, desc);
+            invokevirtual(owner, name, desc, itf);
             break;
         case Opcodes.INVOKESTATIC:
-            invokestatic(owner, name, desc);
+            invokestatic(owner, name, desc, itf);
             break;
         case Opcodes.INVOKEINTERFACE:
             invokeinterface(owner, name, desc);
@@ -985,24 +1007,78 @@ public class InstructionAdapter extends MethodVisitor {
         mv.visitFieldInsn(Opcodes.PUTFIELD, owner, name, desc);
     }
 
+    @Deprecated
     public void invokevirtual(final String owner, final String name,
             final String desc) {
+        if (api >= Opcodes.ASM5) {
+            invokevirtual(owner, name, desc, false);
+            return;
+        }
         mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, owner, name, desc);
     }
 
+    public void invokevirtual(final String owner, final String name,
+            final String desc, final boolean itf) {
+        if (api < Opcodes.ASM5) {
+            if (itf) {
+                throw new IllegalArgumentException(
+                        "INVOKEVIRTUAL on interfaces require ASM 5");
+            }
+            invokevirtual(owner, name, desc);
+            return;
+        }
+        mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, owner, name, desc, itf);
+    }
+
+    @Deprecated
     public void invokespecial(final String owner, final String name,
             final String desc) {
-        mv.visitMethodInsn(Opcodes.INVOKESPECIAL, owner, name, desc);
+        if (api >= Opcodes.ASM5) {
+            invokespecial(owner, name, desc, false);
+            return;
+        }
+        mv.visitMethodInsn(Opcodes.INVOKESPECIAL, owner, name, desc, false);
+    }
+
+    public void invokespecial(final String owner, final String name,
+            final String desc, final boolean itf) {
+        if (api < Opcodes.ASM5) {
+            if (itf) {
+                throw new IllegalArgumentException(
+                        "INVOKESPECIAL on interfaces require ASM 5");
+            }
+            invokespecial(owner, name, desc);
+            return;
+        }
+        mv.visitMethodInsn(Opcodes.INVOKESPECIAL, owner, name, desc, itf);
+    }
+
+    @Deprecated
+    public void invokestatic(final String owner, final String name,
+            final String desc) {
+        if (api >= Opcodes.ASM5) {
+            invokestatic(owner, name, desc, false);
+            return;
+        }
+        mv.visitMethodInsn(Opcodes.INVOKESTATIC, owner, name, desc, false);
     }
 
     public void invokestatic(final String owner, final String name,
-            final String desc) {
-        mv.visitMethodInsn(Opcodes.INVOKESTATIC, owner, name, desc);
+            final String desc, final boolean itf) {
+        if (api < Opcodes.ASM5) {
+            if (itf) {
+                throw new IllegalArgumentException(
+                        "INVOKESTATIC on interfaces require ASM 5");
+            }
+            invokestatic(owner, name, desc);
+            return;
+        }
+        mv.visitMethodInsn(Opcodes.INVOKESTATIC, owner, name, desc, itf);
     }
 
     public void invokeinterface(final String owner, final String name,
             final String desc) {
-        mv.visitMethodInsn(Opcodes.INVOKEINTERFACE, owner, name, desc);
+        mv.visitMethodInsn(Opcodes.INVOKEINTERFACE, owner, name, desc, true);
     }
 
     public void invokedynamic(String name, String desc, Handle bsm,

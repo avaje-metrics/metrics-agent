@@ -303,7 +303,7 @@ public class Type {
 
     /**
      * Returns the Java method type corresponding to the given method.
-     * 
+     *
      * @param m
      *            a {@link Method Method} object.
      * @return the Java method type corresponding to the given method.
@@ -315,7 +315,7 @@ public class Type {
     /**
      * Returns the Java types corresponding to the argument types of the given
      * method descriptor.
-     * 
+     *
      * @param methodDescriptor
      *            a method descriptor.
      * @return the Java types corresponding to the argument types of the given
@@ -351,7 +351,7 @@ public class Type {
     /**
      * Returns the Java types corresponding to the argument types of the given
      * method.
-     * 
+     *
      * @param method
      *            a method.
      * @return the Java types corresponding to the argument types of the given
@@ -369,7 +369,7 @@ public class Type {
     /**
      * Returns the Java type corresponding to the return type of the given
      * method descriptor.
-     * 
+     *
      * @param methodDescriptor
      *            a method descriptor.
      * @return the Java type corresponding to the return type of the given
@@ -383,7 +383,7 @@ public class Type {
     /**
      * Returns the Java type corresponding to the return type of the given
      * method.
-     * 
+     *
      * @param method
      *            a method.
      * @return the Java type corresponding to the return type of the given
@@ -395,14 +395,14 @@ public class Type {
 
     /**
      * Computes the size of the arguments and of the return value of a method.
-     * 
+     *
      * @param desc
      *            the descriptor of a method.
      * @return the size of the arguments of the method (plus one for the
      *         implicit this argument), argSize, and the size of its return
      *         value, retSize, packed into a single int i =
-     *         <tt>(argSize << 2) | retSize</tt> (argSize is therefore equal to
-     *         <tt>i >> 2</tt>, and retSize to <tt>i & 0x03</tt>).
+     *         <tt>(argSize &lt;&lt; 2) | retSize</tt> (argSize is therefore equal to
+     *         <tt>i &gt;&gt; 2</tt>, and retSize to <tt>i &amp; 0x03</tt>).
      */
     public static int getArgumentsAndReturnSizes(final String desc) {
         int n = 1;
@@ -436,7 +436,7 @@ public class Type {
      * Returns the Java type corresponding to the given type descriptor. For
      * method descriptors, buf is supposed to contain nothing more than the
      * descriptor itself.
-     * 
+     *
      * @param buf
      *            a buffer containing a type descriptor.
      * @param off
@@ -494,7 +494,7 @@ public class Type {
 
     /**
      * Returns the sort of this Java type.
-     * 
+     *
      * @return {@link #VOID VOID}, {@link #BOOLEAN BOOLEAN}, {@link #CHAR CHAR},
      *         {@link #BYTE BYTE}, {@link #SHORT SHORT}, {@link #INT INT},
      *         {@link #FLOAT FLOAT}, {@link #LONG LONG}, {@link #DOUBLE DOUBLE},
@@ -508,7 +508,7 @@ public class Type {
     /**
      * Returns the number of dimensions of this array type. This method should
      * only be used for an array type.
-     * 
+     *
      * @return the number of dimensions of this array type.
      */
     public int getDimensions() {
@@ -522,7 +522,7 @@ public class Type {
     /**
      * Returns the type of the elements of this array type. This method should
      * only be used for an array type.
-     * 
+     *
      * @return Returns the type of the elements of this array type.
      */
     public Type getElementType() {
@@ -532,7 +532,7 @@ public class Type {
     /**
      * Returns the binary name of the class corresponding to this type. This
      * method must not be used on method types.
-     * 
+     *
      * @return the binary name of the class corresponding to this type.
      */
     public String getClassName() {
@@ -556,11 +556,11 @@ public class Type {
         case DOUBLE:
             return "double";
         case ARRAY:
-            StringBuffer b = new StringBuffer(getElementType().getClassName());
+            StringBuilder sb = new StringBuilder(getElementType().getClassName());
             for (int i = getDimensions(); i > 0; --i) {
-                b.append("[]");
+                sb.append("[]");
             }
-            return b.toString();
+            return sb.toString();
         case OBJECT:
             return new String(buf, off, len).replace('/', '.');
         default:
@@ -573,7 +573,7 @@ public class Type {
      * array type. The internal name of a class is its fully qualified name (as
      * returned by Class.getName(), where '.' are replaced by '/'. This method
      * should only be used for an object or array type.
-     * 
+     *
      * @return the internal name of the class corresponding to this object type.
      */
     public String getInternalName() {
@@ -583,7 +583,7 @@ public class Type {
     /**
      * Returns the argument types of methods of this type. This method should
      * only be used for method types.
-     * 
+     *
      * @return the argument types of methods of this type.
      */
     public Type[] getArgumentTypes() {
@@ -593,7 +593,7 @@ public class Type {
     /**
      * Returns the return type of methods of this type. This method should only
      * be used for method types.
-     * 
+     *
      * @return the return type of methods of this type.
      */
     public Type getReturnType() {
@@ -603,12 +603,13 @@ public class Type {
     /**
      * Returns the size of the arguments and of the return value of methods of
      * this type. This method should only be used for method types.
-     * 
+     *
      * @return the size of the arguments (plus one for the implicit this
      *         argument), argSize, and the size of the return value, retSize,
-     *         packed into a single int i = <tt>(argSize << 2) | retSize</tt>
-     *         (argSize is therefore equal to <tt>i >> 2</tt>, and retSize to
-     *         <tt>i & 0x03</tt>).
+     *         packed into a single
+     *         int i = <tt>(argSize &lt;&lt; 2) | retSize</tt>
+     *         (argSize is therefore equal to <tt>i &gt;&gt; 2</tt>,
+     *         and retSize to <tt>i &amp; 0x03</tt>).
      */
     public int getArgumentsAndReturnSizes() {
         return getArgumentsAndReturnSizes(getDescriptor());
@@ -620,7 +621,7 @@ public class Type {
 
     /**
      * Returns the descriptor corresponding to this Java type.
-     * 
+     *
      * @return the descriptor corresponding to this Java type.
      */
     public String getDescriptor() {
@@ -632,7 +633,7 @@ public class Type {
     /**
      * Returns the descriptor corresponding to the given argument and return
      * types.
-     * 
+     *
      * @param returnType
      *            the return type of the method.
      * @param argumentTypes
@@ -655,7 +656,7 @@ public class Type {
     /**
      * Appends the descriptor corresponding to this Java type to the given
      * string buffer.
-     * 
+     *
      * @param buf
      *            the string buffer to which the descriptor must be appended.
      */
@@ -682,7 +683,7 @@ public class Type {
      * Returns the internal name of the given class. The internal name of a
      * class is its fully qualified name, as returned by Class.getName(), where
      * '.' are replaced by '/'.
-     * 
+     *
      * @param c
      *            an object or array class.
      * @return the internal name of the given class.
@@ -693,7 +694,7 @@ public class Type {
 
     /**
      * Returns the descriptor corresponding to the given Java type.
-     * 
+     *
      * @param c
      *            an object class, a primitive class or an array class.
      * @return the descriptor corresponding to the given class.
@@ -706,7 +707,7 @@ public class Type {
 
     /**
      * Returns the descriptor corresponding to the given constructor.
-     * 
+     *
      * @param c
      *            a {@link Constructor Constructor} object.
      * @return the descriptor of the given constructor.
@@ -723,7 +724,7 @@ public class Type {
 
     /**
      * Returns the descriptor corresponding to the given method.
-     * 
+     *
      * @param m
      *            a {@link Method Method} object.
      * @return the descriptor of the given method.
