@@ -304,9 +304,9 @@ public class ClassAdapterMetric extends ClassVisitor implements Opcodes {
     if ((access & Opcodes.ACC_STATIC) != 0) {
       // by default not enhancing static method unless it is explicitly
       // annotated with a Timed annotation
-      enhanceByDefault = false;
+      enhanceByDefault = enhanceContext.isIncludeStaticMethods();
       if (isLog(5)) {
-        log(5, "... static method:",  name,  " desc:",  desc);
+        log(5, "... static method:", name, " desc:", desc + " - enhanceByDefault" + enhanceByDefault);
       }
     }
     

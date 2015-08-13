@@ -22,6 +22,8 @@ public class EnhanceContext {
 
 	private final boolean sysoutOnCollect;
 
+  private final boolean includeStaticMethods;
+
 	private PrintStream logout;
 
 	private int logLevel;
@@ -55,6 +57,7 @@ public class EnhanceContext {
       nameMapping.loadFile(nameFile);
     }
 
+    this.includeStaticMethods = getPropertyBoolean("includestaticmethods", false);
     this.readOnly = getPropertyBoolean("readonly", false);
 		this.sysoutOnCollect = getPropertyBoolean("sysoutoncollect", false);
 		this.enhanceSingleton = getPropertyBoolean("enhancesingleton", true);
@@ -178,5 +181,12 @@ public class EnhanceContext {
    */
   public NameMapping.Match findMatch(String metricFullName) {
     return nameMapping.findMatch(metricFullName);
+  }
+
+  /**
+   * Return true if static methods should be included by default.
+   */
+  public boolean isIncludeStaticMethods() {
+    return includeStaticMethods;
   }
 }
