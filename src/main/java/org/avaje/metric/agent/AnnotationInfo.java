@@ -49,6 +49,13 @@ public class AnnotationInfo {
   }
 
   /**
+   * Return true if the annotation is the Timed annotation.
+   */
+  public static boolean isPostConfigured(String desc) {
+    return desc.endsWith("PostConfigured;");
+  }
+
+  /**
    * Return true if the annotation indicates a JAX-RS endpoint.
    */
   public static boolean isJaxrsEndpoint(String desc) {

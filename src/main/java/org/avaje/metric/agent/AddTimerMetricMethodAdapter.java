@@ -182,7 +182,14 @@ public class AddTimerMetricMethodAdapter extends AdviceAdapter {
       enhanced = true;
       return new TimedAnnotationVisitor(av);
     }
-    
+
+    if (AnnotationInfo.isPostConfigured(desc)) {
+      log(4,"... found postConfigured annotation ", desc);
+      detectNotTimed = true;
+      enhanced = false;
+      return av;
+    }
+
     if (AnnotationInfo.isJaxrsEndpoint(desc)) {
       log(4,"... found jaxrs annotation ", desc);
       enhanced = true;

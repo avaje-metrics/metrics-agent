@@ -87,7 +87,7 @@ public class OfflineFileTransform {
 
 	private void processPackage(String dir, boolean recurse) throws IOException {
 
-		inputStreamTransform.log(1, "transform pkg: ", dir);
+		inputStreamTransform.log(5, "transform pkg: ", dir);
 
 		String dirPath = inDir + "/" + dir;
 		File d = new File(dirPath);

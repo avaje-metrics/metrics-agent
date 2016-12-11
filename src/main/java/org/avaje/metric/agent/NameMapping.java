@@ -232,11 +232,23 @@ public class NameMapping {
   /**
    * Return true if the class matches our list of includes.
    */
-  public boolean matchInclude(String className) {
-
+  public boolean matchIncludeClass(String className) {
     for (int i = 0; i < matchIncludes.size(); i++) {
-      if (matches.get(i).like.matches(className)) {
+      if (matchIncludes.get(i).like.matches(className)) {
         return true;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Return true if the class matches our list of includes.
+   */
+  public boolean matchExcludeMethod(String classNameAndMethod) {
+    for (int i = 0; i < matches.size(); i++) {
+      Match match = matches.get(i);
+      if (match.like.matches(classNameAndMethod)) {
+        return !match.include;
       }
     }
     return false;

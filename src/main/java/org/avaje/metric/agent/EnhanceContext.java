@@ -103,7 +103,7 @@ public class EnhanceContext {
 	 */
 	public boolean isIgnoreClass(String className) {
     if (nameMapping.hasMatchIncludes()) {
-      return !nameMapping.matchInclude(className);
+      return !nameMapping.matchIncludeClass(className);
     }
 		return ignoreClassHelper.isIgnoreClass(className);
 	}
@@ -189,4 +189,8 @@ public class EnhanceContext {
   public boolean isIncludeStaticMethods() {
     return includeStaticMethods;
   }
+
+	public boolean isMatchExcludeMethod(String className, String method) {
+		return nameMapping.matchExcludeMethod(className+"."+method);
+	}
 }

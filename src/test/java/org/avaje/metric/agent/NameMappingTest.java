@@ -6,10 +6,10 @@ import static org.junit.Assert.*;
 
 public class NameMappingTest {
 
+  NameMapping nameMapping = new NameMapping(NameMappingTest.class.getClassLoader());
+
   @Test
   public void testGetMappedName() throws Exception {
-
-    NameMapping nameMapping = new NameMapping(NameMappingTest.class.getClassLoader());
 
     assertEquals("junk", nameMapping.getMappedName("org.test.junk"));
 
@@ -41,5 +41,11 @@ public class NameMappingTest {
     assertEquals(2, match.buckets.length);
     assertEquals(100, match.buckets[0]);
     assertEquals(500, match.buckets[1]);
+  }
+
+  @Test
+  public void excludeMethod() {
+
+    assertTrue(nameMapping.matchExcludeMethod("com.myapp.something.nice.ExcludeMeService.foo"));
   }
 }

@@ -58,7 +58,8 @@ public class ClassAdapterMetric extends ClassVisitor implements Opcodes {
    * The metric full name that is a common prefix for each method.
    */
   private String metricFullName;
-    
+  private String originalMetricName;
+
   /**
    * The buckets defined commonly for all enhanced methods for this class.
    */
@@ -145,6 +146,7 @@ public class ClassAdapterMetric extends ClassVisitor implements Opcodes {
    */
   private void setMetricFullName(String className) {
     this.metricFullName = className.replace('/', '.');
+    this.originalMetricName = metricFullName;
   }
 
   @Override
@@ -281,6 +283,10 @@ public class ClassAdapterMetric extends ClassVisitor implements Opcodes {
       log(5, "... not enhancing constructor:", name, " desc:", desc);
       return mv;
     }
+    if (enhanceContext.isMatchExcludeMethod(originalMetricName, name)) {
+      log(5, "... exclude method:", name, " desc:", desc);
+      return mv;
+    }
     if (isCommonMethod(name)) {
       // not enhancing constructor
       log(5, "... not enhancing:",  name, " desc:", desc);
@@ -309,7 +315,12 @@ public class ClassAdapterMetric extends ClassVisitor implements Opcodes {
         log(5, "... static method:", name, " desc:", desc + " - enhanceByDefault" + enhanceByDefault);
       }
     }
-    
+    if (isPostConfiguredMethod(name)) {
+      if (isLog(8)) {
+        log("... method:" + name + " not enhanced by default (as postConfigured or init method)");
+      }
+      enhanceByDefault = false;
+    }
     // Not sure if we are enhancing this method yet ...
     AddTimerMetricMethodAdapter methodAdapter = createAdapter(enhanceByDefault, metricIndex, uniqueMethodName, mv, access, name, desc);
     methodAdapters.add(methodAdapter);
@@ -322,6 +333,13 @@ public class ClassAdapterMetric extends ClassVisitor implements Opcodes {
   private boolean isCommonMethod(String name) {
 
     return name.equals("equals") || name.equals("hashCode") || name.equals("toString");
+  }
+
+  /**
+   * By default ignore these postConfigured/init type methods.
+   */
+  private boolean isPostConfiguredMethod(String name) {
+    return name.equals("init") || name.equals("postConfigured");
   }
 
   private AddTimerMetricMethodAdapter createAdapter(boolean enhanceDefault, int metricIndex, String uniqueMethodName, MethodVisitor mv, int access, String name, String desc) {
