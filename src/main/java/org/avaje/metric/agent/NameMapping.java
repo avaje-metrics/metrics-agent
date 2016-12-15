@@ -220,6 +220,7 @@ public class NameMapping {
    * Return true if the class matches our list of includes.
    */
   boolean matchIncludeClass(String className) {
+    className = className.replace('/', '.');
     for (Match matchInclude : matchIncludes) {
       if (matchInclude.like.matches(className)) {
         return true;

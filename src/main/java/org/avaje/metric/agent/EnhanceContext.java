@@ -104,7 +104,6 @@ class EnhanceContext {
 			return true;
 		}
     if (nameMapping.hasMatchIncludes()) {
-			className = className.replace('/', '.');
 			return !nameMapping.matchIncludeClass(className);
     }
 		return ignoreClassHelper.isIgnoreClass(className);
