@@ -4,7 +4,6 @@ import org.junit.Test;
 
 import java.io.IOException;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.LinkedHashMap;
@@ -14,7 +13,7 @@ import static org.junit.Assert.*;
 
 public class NameMappingTest {
 
-  NameMapping nameMapping = new NameMapping(NameMappingTest.class.getClassLoader(), null);
+  private NameMapping nameMapping = new NameMapping(NameMappingTest.class.getClassLoader(), null);
 
   @Test
   public void testGetMappedName() throws Exception {
@@ -179,6 +178,16 @@ public class NameMappingTest {
 
     match = nameMapping.findMatch("com.FooData.inc");
     assertNull(match);
+  }
+
+  @Test
+  public void includeClassWild() {
+    Map<String,String> map = new LinkedHashMap<>();
+    map.put("match.include.1", "nz.c*Resource");
+
+    TD nameMapping = new TD(map);
+
+    assertTrue(nameMapping.matchIncludeClass("nz/co/foo/MyResource"));
   }
 
 

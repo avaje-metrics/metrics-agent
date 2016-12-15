@@ -1,6 +1,8 @@
 package org.avaje.metric.agent;
 
 import java.io.PrintStream;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
@@ -34,9 +36,9 @@ class EnhanceContext {
 	 */
 	EnhanceContext(String agentArgs, ClassLoader classLoader, Map<String, String> properties) {
 
- 		this.ignoreClassHelper = new IgnoreClassHelper(agentArgs);
  		this.agentArgsMap = ArgParser.parse(agentArgs);
- 		this.nameMapping = new NameMapping(classLoader, properties);
+		this.ignoreClassHelper = new IgnoreClassHelper(splitPackages(agentArgsMap.get("packages")));
+		this.nameMapping = new NameMapping(classLoader, properties);
  		this.logout = System.out;
 
 		String debugValue = agentArgsMap.get("debug");
@@ -60,6 +62,10 @@ class EnhanceContext {
       log(1, "match patterns: ", nameMapping.getPatternMatch().toString());
       log(1, "match keys: ", nameMapping.getMatches());
 		}
+	}
+
+	private Collection<String> splitPackages(String packages) {
+		return packages != null ? Arrays.asList(packages.split(",")) : null;
 	}
 
 	/**
@@ -94,8 +100,12 @@ class EnhanceContext {
 	 * known libraries JDBC drivers etc can be skipped.
 	 */
 	boolean isIgnoreClass(String className) {
+		if (className == null) {
+			return true;
+		}
     if (nameMapping.hasMatchIncludes()) {
-      return !nameMapping.matchIncludeClass(className);
+			className = className.replace('/', '.');
+			return !nameMapping.matchIncludeClass(className);
     }
 		return ignoreClassHelper.isIgnoreClass(className);
 	}
