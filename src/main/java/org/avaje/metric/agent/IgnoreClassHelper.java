@@ -15,11 +15,11 @@ import java.util.HashMap;
  * then be ignored.
  * </p>
  */
-public class IgnoreClassHelper {
+class IgnoreClassHelper {
 
   private final String[] processPackages;
 
-  public IgnoreClassHelper(String agentArgs) {
+  IgnoreClassHelper(String agentArgs) {
 
     HashMap<String, String> args = ArgParser.parse(agentArgs);
     String packages = args.get("packages");
@@ -91,7 +91,7 @@ public class IgnoreClassHelper {
    *          the className of the class being defined.
    * @return true if this class should not be processed.
    */
-  public boolean isIgnoreClass(String className) {
+  boolean isIgnoreClass(String className) {
 
     if (className == null) {
       return true;

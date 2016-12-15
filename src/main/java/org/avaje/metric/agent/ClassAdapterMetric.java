@@ -24,7 +24,7 @@ public class ClassAdapterMetric extends ClassVisitor implements Opcodes {
 
   private static final String ANNOTATION_ALREADY_ENHANCED_MARKER = "Lorg/avaje/metric/spi/AlreadyEnhancedMarker;";
 
-  protected final EnhanceContext enhanceContext;
+  final EnhanceContext enhanceContext;
 
   protected final ClassLoader classLoader;
 
@@ -68,56 +68,56 @@ public class ClassAdapterMetric extends ClassVisitor implements Opcodes {
   /**
    * Construct with visitor, context and classLoader.
    */
-  public ClassAdapterMetric(ClassVisitor cv, EnhanceContext context, ClassLoader classLoader) {
+  ClassAdapterMetric(ClassVisitor cv, EnhanceContext context, ClassLoader classLoader) {
     super(ASM5, cv);
     this.enhanceContext = context;
     this.classLoader = classLoader;
   }
 
-  protected boolean isLog(int level) {
+  boolean isLog(int level) {
     return enhanceContext.isLog(level);
   }
   
-  protected void log(int level, String msg) {
+  private void log(int level, String msg) {
     if (isLog(level)) {
       enhanceContext.log(className, msg);
     }
   }
 
-  protected void log(int level, String msg, String extra, String extra2, String extra3) {
+  private void log(int level, String msg, String extra, String extra2, String extra3) {
     if (isLog(level)) {
       enhanceContext.log(className, msg + extra + extra2 + extra3);
     }
   }
 
-  protected void log(int level, String msg, String extra) {
+  private void log(int level, String msg, String extra) {
     if (isLog(level)) {
       enhanceContext.log(className, msg + extra);
     }
   }
 
-  protected void log(String msg) {
+  void log(String msg) {
     enhanceContext.log(className, msg);
   }
 
   /**
    * Set default buckets to use for methods enhanced for this class.
    */
-  protected void setBuckets(Object value) {
+  private void setBuckets(Object value) {
     this.buckets = (int[])value;
   }
   
   /**
    * Return true if there are default buckets defined at the class level.
    */
-  protected boolean hasBuckets() {
+  boolean hasBuckets() {
     return buckets != null && buckets.length > 0;
   }
   
   /**
    * Return the bucket ranges.
    */
-  protected int[] getBuckets() {
+  int[] getBuckets() {
     return buckets;
   }
   
@@ -125,14 +125,14 @@ public class ClassAdapterMetric extends ClassVisitor implements Opcodes {
    * Return the class level metric name which is used to prefix the metrics created for associated
    * methods on this class.
    */
-  protected String getMetricFullName() {
+  String getMetricFullName() {
     return metricFullName;
   }
 
   /**
    * Set the metric name via Timer annotation.
    */
-  protected void setMetricName(String metricName) {
+  private void setMetricName(String metricName) {
     int pos = metricFullName.lastIndexOf('.');
     if (pos == -1) {
       this.metricFullName = metricName;
@@ -246,7 +246,7 @@ public class ClassAdapterMetric extends ClassVisitor implements Opcodes {
    */
   private class TimedAnnotationVisitor extends AnnotationVisitor {
 
-    public TimedAnnotationVisitor(AnnotationVisitor av) {
+    TimedAnnotationVisitor(AnnotationVisitor av) {
       super(ASM4, av);
     }
 

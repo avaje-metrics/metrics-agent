@@ -16,7 +16,7 @@ public class NameMapping {
   private static final String MATCH_INCLUDE = "match.include.";
   private static final String MATCH_EXCLUDE = "match.exclude.";
 
-  public static final String MATCH = "match.";
+  private static final String MATCH = "match.";
   private static final String BUCKETS = ".buckets";
 
   private final ClassLoader classLoader;
@@ -35,7 +35,7 @@ public class NameMapping {
    * The classLoader is used for loading metric-name-mapping.txt resources (if any).
    * </p>
    */
-  public NameMapping(ClassLoader classLoader) {
+  NameMapping(ClassLoader classLoader) {
     this.classLoader = classLoader;
     this.nameMapping = readNameMapping();
     this.metricNameMatches = getMetricNameMatches();
@@ -45,7 +45,7 @@ public class NameMapping {
     return nameMapping.toString();
   }
 
-  public String getMatches() {
+  String getMatches() {
     return Arrays.toString(this.metricNameMatches);
   }
 
@@ -56,7 +56,7 @@ public class NameMapping {
    * JAX-RS endpoints with "web" etc.
    * </p>
    */
-  public String getMappedName(String rawName) {
+  String getMappedName(String rawName) {
 
     // search for a match in reverse order
     for (int i = metricNameMatches.length-1; i >= 0; i--) {
@@ -138,7 +138,7 @@ public class NameMapping {
   /**
    * Load an external name mapping file.
    */
-  public void loadFile(String fileName) {
+  void loadFile(String fileName) {
 
     File file = new File(fileName.trim());
     if (!file.exists()) {
@@ -152,9 +152,7 @@ public class NameMapping {
         System.err.println("Error trying to process file ["+fileName+"]");
         e.printStackTrace();
       } finally {
-        if (is != null) {
-          is.close();
-        }
+        is.close();
       }
     } catch (IOException e) {
       System.err.println("Error trying to process file ["+fileName+"]");
@@ -218,23 +216,23 @@ public class NameMapping {
     }
   }
 
-  public List<Match> getPatternMatch() {
+  List<Match> getPatternMatch() {
     return matches;
   }
 
   /**
    * Return true if at least match.include is specified.
    */
-  public boolean hasMatchIncludes() {
+  boolean hasMatchIncludes() {
     return !matchIncludes.isEmpty();
   }
 
   /**
    * Return true if the class matches our list of includes.
    */
-  public boolean matchIncludeClass(String className) {
-    for (int i = 0; i < matchIncludes.size(); i++) {
-      if (matchIncludes.get(i).like.matches(className)) {
+  boolean matchIncludeClass(String className) {
+    for (Match matchInclude : matchIncludes) {
+      if (matchInclude.like.matches(className)) {
         return true;
       }
     }
@@ -244,9 +242,8 @@ public class NameMapping {
   /**
    * Return true if the class matches our list of includes.
    */
-  public boolean matchExcludeMethod(String classNameAndMethod) {
-    for (int i = 0; i < matches.size(); i++) {
-      Match match = matches.get(i);
+  boolean matchExcludeMethod(String classNameAndMethod) {
+    for (Match match : matches) {
       if (match.like.matches(classNameAndMethod)) {
         return !match.include;
       }
@@ -254,11 +251,11 @@ public class NameMapping {
     return false;
   }
 
-  public Match findMatch(String className) {
+  Match findMatch(String className) {
 
-    for (int i = 0; i < matches.size(); i++) {
-      if (matches.get(i).like.matches(className)) {
-        return matches.get(i);
+    for (Match matche : matches) {
+      if (matche.like.matches(className)) {
+        return matche;
       }
     }
     return null;
@@ -267,22 +264,22 @@ public class NameMapping {
 
   public static class Match {
 
-    public final boolean include;
+    final boolean include;
 
-    public final LikeMatcher like;
+    final LikeMatcher like;
 
-    public final String pattern;
+    final String pattern;
 
-    public final int[] buckets;
+    final int[] buckets;
 
-    public Match(String pattern) {
+    Match(String pattern) {
       this.include = false;
       this.pattern = pattern;
       this.like = new LikeMatcher(pattern);
       this.buckets = null;
     }
 
-    public Match(String pattern, int[] buckets) {
+    Match(String pattern, int[] buckets) {
       this.include = true;
       this.pattern = pattern;
       this.like = new LikeMatcher(pattern);

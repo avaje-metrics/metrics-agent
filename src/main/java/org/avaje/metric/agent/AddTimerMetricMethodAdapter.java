@@ -25,11 +25,11 @@ public class AddTimerMetricMethodAdapter extends AdviceAdapter {
   
   private static final String LBUCKET_TIMED_METRIC = "Lorg/avaje/metric/BucketTimedMetric;";
 
-  public static final String METRIC_MANAGER = "org/avaje/metric/MetricManager";
+  private static final String METRIC_MANAGER = "org/avaje/metric/MetricManager";
 
-  public static final String METHOD_OPERATION_END = "operationEnd";
+  private static final String METHOD_OPERATION_END = "operationEnd";
 
-  public static final String METHOD_IS_ACTIVE_THREAD_CONTEXT = "isActiveThreadContext";
+  private static final String METHOD_IS_ACTIVE_THREAD_CONTEXT = "isActiveThreadContext";
 
   private final ClassAdapterMetric classAdapter;
   
@@ -57,7 +57,7 @@ public class AddTimerMetricMethodAdapter extends AdviceAdapter {
   
   private boolean enhanced;
   
-  public AddTimerMetricMethodAdapter(ClassAdapterMetric classAdapter, boolean enhanceDefault,
+  AddTimerMetricMethodAdapter(ClassAdapterMetric classAdapter, boolean enhanceDefault,
       int metricIndex, String uniqueMethodName, MethodVisitor mv, int acc, String name, String desc) {
     
     super(ASM5, mv, acc, name, desc);
@@ -73,7 +73,7 @@ public class AddTimerMetricMethodAdapter extends AdviceAdapter {
   /**
    * Return true if this method was enhanced.
    */
-  public boolean isEnhanced() {
+  private boolean isEnhanced() {
     return enhanced;
   }
 
@@ -114,7 +114,7 @@ public class AddTimerMetricMethodAdapter extends AdviceAdapter {
   /**
    * Return true if there are bucket defined.
    */
-  public boolean hasBuckets() {
+  private boolean hasBuckets() {
     return buckets != null && buckets.length > 0 || classAdapter.hasBuckets();
   }
 
@@ -135,7 +135,7 @@ public class AddTimerMetricMethodAdapter extends AdviceAdapter {
   /**
    * Get the unique metric name.
    */
-  public String getUniqueMetricName() {
+  private String getUniqueMetricName() {
     if (metricFullName != null && metricFullName.trim().length() > 0) {
       return metricFullName.trim();
     }
@@ -204,7 +204,7 @@ public class AddTimerMetricMethodAdapter extends AdviceAdapter {
    */
   private class TimedAnnotationVisitor extends AnnotationVisitor {
 
-    public TimedAnnotationVisitor(AnnotationVisitor av) {
+    TimedAnnotationVisitor(AnnotationVisitor av) {
       super(ASM4, av);
     }
 
@@ -288,9 +288,8 @@ public class AddTimerMetricMethodAdapter extends AdviceAdapter {
   }
   
 
-  public void addFieldInitialisation(MethodVisitor mv, int i) {
+  void addFieldInitialisation(MethodVisitor mv, int i) {
     
-
     if (!isEnhanced()) {
       log(2, "--- not enhanced (maybe protected/private) ", methodName);
 
@@ -339,7 +338,7 @@ public class AddTimerMetricMethodAdapter extends AdviceAdapter {
     }
   }
 
-  public void addFieldDefinition(ClassVisitor cv, int i) {
+  void addFieldDefinition(ClassVisitor cv, int i) {
     if (isEnhanced()) {
       if (isLog(4)) {
         log(4, "... init field index[" + i + "] METHOD[" + getUniqueMetricName() + "]","");

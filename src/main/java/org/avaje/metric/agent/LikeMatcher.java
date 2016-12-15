@@ -5,7 +5,7 @@ import java.util.regex.Pattern;
 /**
  * String matching using "*" as wildcards.
  */
-public class LikeMatcher {
+class LikeMatcher {
 
   private final boolean allMatch;
 
@@ -36,7 +36,7 @@ public class LikeMatcher {
    *
    * }</pre>
    */
-  public LikeMatcher(String expr) {
+  LikeMatcher(String expr) {
 
     allMatch = (expr == null || expr.trim().length() == 0);
 
@@ -56,7 +56,7 @@ public class LikeMatcher {
   /**
    * Return true if the values matches the pattern.
    */
-  public boolean matches(String value) {
+  boolean matches(String value) {
 
     return value != null && (allMatch || pattern.matcher(value.toLowerCase()).matches());
   }

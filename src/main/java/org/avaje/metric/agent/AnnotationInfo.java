@@ -37,28 +37,28 @@ public class AnnotationInfo {
   /**
    * Return true if the annotation is the NotTimed annotation.
    */
-  public static boolean isNotTimed(String desc) {
+  static boolean isNotTimed(String desc) {
     return ANNOTATION_NOT_TIMED.equals(desc);
   }
 
   /**
    * Return true if the annotation is the Timed annotation.
    */
-  public static boolean isTimed(String desc) {
+  static boolean isTimed(String desc) {
     return ANNOTATION_TIMED.equals(desc);
   }
 
   /**
    * Return true if the annotation is the Timed annotation.
    */
-  public static boolean isPostConfigured(String desc) {
+  static boolean isPostConfigured(String desc) {
     return desc.endsWith("PostConfigured;");
   }
 
   /**
    * Return true if the annotation indicates a JAX-RS endpoint.
    */
-  public static boolean isJaxrsEndpoint(String desc) {
+  static boolean isJaxrsEndpoint(String desc) {
     return desc.startsWith("Ljavax/ws/rs") && JAXRS_ANNOTATIONS.contains(desc);
   }
 

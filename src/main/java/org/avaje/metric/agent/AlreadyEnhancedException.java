@@ -12,7 +12,7 @@ public class AlreadyEnhancedException extends RuntimeException {
 
 	protected final String className;
 	
-	public AlreadyEnhancedException(String className) {
+	AlreadyEnhancedException(String className) {
 		this.className = className;
 	}
 
