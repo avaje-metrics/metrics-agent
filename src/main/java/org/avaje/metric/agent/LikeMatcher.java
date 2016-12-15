@@ -45,7 +45,7 @@ class LikeMatcher {
       this.pattern = Pattern.compile(".*");
 
     } else {
-      expr = expr.toLowerCase().trim();
+      expr = expr.trim();
       expr = expr.replace(".", "\\.");
       expr = expr.replace("*", ".*");
 
@@ -58,6 +58,6 @@ class LikeMatcher {
    */
   boolean matches(String value) {
 
-    return value != null && (allMatch || pattern.matcher(value.toLowerCase()).matches());
+    return value != null && (allMatch || pattern.matcher(value).matches());
   }
 }

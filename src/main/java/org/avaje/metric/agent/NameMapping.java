@@ -1,11 +1,17 @@
 package org.avaje.metric.agent;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
 
 /**
  * Name mapping used to provide shorter metric names with common prefixes.
@@ -15,9 +21,8 @@ public class NameMapping {
   private static final String METRIC_NAME_MAPPING_RESOURCE = "metric-name-mapping.txt";
   private static final String MATCH_INCLUDE = "match.include.";
   private static final String MATCH_EXCLUDE = "match.exclude.";
-
+  private static final String MATCH_BUCKETS = "match.buckets.";
   private static final String MATCH = "match.";
-  private static final String BUCKETS = ".buckets";
 
   private final ClassLoader classLoader;
 
@@ -35,9 +40,9 @@ public class NameMapping {
    * The classLoader is used for loading metric-name-mapping.txt resources (if any).
    * </p>
    */
-  NameMapping(ClassLoader classLoader) {
+  NameMapping(ClassLoader classLoader, Map<String, String> properties) {
     this.classLoader = classLoader;
-    this.nameMapping = readNameMapping();
+    this.nameMapping = readNameMapping(properties);
     this.metricNameMatches = getMetricNameMatches();
   }
 
@@ -59,7 +64,7 @@ public class NameMapping {
   String getMappedName(String rawName) {
 
     // search for a match in reverse order
-    for (int i = metricNameMatches.length-1; i >= 0; i--) {
+    for (int i = metricNameMatches.length - 1; i >= 0; i--) {
       String name = metricNameMatches[i];
       if (rawName.startsWith(name)) {
         String prefix = nameMapping.get(name);
@@ -99,7 +104,7 @@ public class NameMapping {
   /**
    * Return all the metric-name-mapping.txt resources (if any).
    */
-  private Enumeration<URL> getNameMappingResources() throws IOException {
+  protected Enumeration<URL> getNameMappingResources() throws IOException {
 
     if (classLoader != null) {
       return classLoader.getResources(METRIC_NAME_MAPPING_RESOURCE);
@@ -111,20 +116,22 @@ public class NameMapping {
   /**
    * Return all the mappings as a Map.
    */
-  private Map<String,String> readNameMapping() {
+  private Map<String, String> readNameMapping(Map<String, String> external) {
 
-    Map<String,String> map = new HashMap<>();
-
+    Properties props = new Properties();
+    if (external != null) {
+      props.putAll(external);
+    }
     try {
       Enumeration<URL> resources = getNameMappingResources();
       while (resources.hasMoreElements()) {
         URL url = resources.nextElement();
-        InputStream inStream = url.openStream();
+        InputStream is = url.openStream();
         try {
-          loadAsProperties(map, inStream);
+          props.load(is);
         } finally {
-          if (inStream != null) {
-            inStream.close();
+          if (is != null) {
+            is.close();
           }
         }
       }
@@ -132,38 +139,12 @@ public class NameMapping {
       System.err.println("Error trying to read metric-name-mapping.properties resources");
       e.printStackTrace();
     }
-    return map;
+    return process(props);
   }
 
-  /**
-   * Load an external name mapping file.
-   */
-  void loadFile(String fileName) {
+  private Map<String, String> process(Properties props) {
 
-    File file = new File(fileName.trim());
-    if (!file.exists()) {
-      System.err.println("Unable to load from file["+fileName+"] - file does not exist");
-    }
-    try {
-      FileInputStream is = new FileInputStream(file);
-      try {
-        loadAsProperties(nameMapping, is);
-      } catch (IOException e) {
-        System.err.println("Error trying to process file ["+fileName+"]");
-        e.printStackTrace();
-      } finally {
-        is.close();
-      }
-    } catch (IOException e) {
-      System.err.println("Error trying to process file ["+fileName+"]");
-      e.printStackTrace();
-    }
-  }
-
-  private void loadAsProperties(Map<String, String> map, InputStream inStream) throws IOException {
-
-    Properties props = new Properties();
-    props.load(inStream);
+    Map<String, String> map = new HashMap<>();
 
     Set<String> stringPropertyNames = props.stringPropertyNames();
     for (String propName : stringPropertyNames) {
@@ -174,6 +155,8 @@ public class NameMapping {
         map.put(propName, value);
       }
     }
+
+    return map;
   }
 
   /**
@@ -187,10 +170,16 @@ public class NameMapping {
     } else if (propName.startsWith(MATCH_EXCLUDE)) {
       matches.add(new Match(pattern));
 
-    } else if (!propName.endsWith(BUCKETS)) {
-      String bucketKey = propName + BUCKETS;
-      String buckets = props.getProperty(bucketKey);
-      matches.add(new Match(pattern, parseBuckets(buckets)));
+    } else if (propName.startsWith(MATCH_BUCKETS)) {
+      String patternAndBuckets = props.getProperty(propName);
+      String[] split = patternAndBuckets.split("\\|");
+      if (split.length == 2) {
+        String buckPat = split[0].trim();
+        String buckets = split[1].trim();
+        matches.add(new Match(buckPat, parseBuckets(buckets)));
+      } else {
+        System.err.println("Expecting pipe '|' to separate bucket pattern and ranges in " + patternAndBuckets);
+      }
     }
   }
 
@@ -208,7 +197,7 @@ public class NameMapping {
 
     } catch (RuntimeException e) {
       // send to sys err as we don't know if logging is setup during enhancement
-      System.err.println("Error in org.avaje.metric.agent.NameMapping parsing buckets ["+buckets+"]");
+      System.err.println("Error in org.avaje.metric.agent.NameMapping parsing buckets [" + buckets + "]");
       e.printStackTrace();
 
       // we will carry on without buckets specified
@@ -251,11 +240,11 @@ public class NameMapping {
     return false;
   }
 
-  Match findMatch(String className) {
+  Match findMatch(String metricFullName) {
 
-    for (Match matche : matches) {
-      if (matche.like.matches(className)) {
-        return matche;
+    for (Match match : matches) {
+      if (match.like.matches(metricFullName)) {
+        return match;
       }
     }
     return null;

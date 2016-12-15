@@ -2,6 +2,7 @@ package org.avaje.metric.agent;
 
 import java.io.PrintStream;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -31,11 +32,11 @@ class EnhanceContext {
 	/**
 	 * Construct a context for enhancement.
 	 */
-	EnhanceContext(String agentArgs, ClassLoader classLoader) {
+	EnhanceContext(String agentArgs, ClassLoader classLoader, Map<String, String> properties) {
 
  		this.ignoreClassHelper = new IgnoreClassHelper(agentArgs);
  		this.agentArgsMap = ArgParser.parse(agentArgs);
- 		this.nameMapping = new NameMapping(classLoader);
+ 		this.nameMapping = new NameMapping(classLoader, properties);
  		this.logout = System.out;
 
 		String debugValue = agentArgsMap.get("debug");
@@ -48,12 +49,6 @@ class EnhanceContext {
 				logger.log(Level.WARNING, msg);
 			}
 		}
-
-    String nameFile = agentArgsMap.get("namefile");
-    if (nameFile != null) {
-      log(1, "loading metric name mapping file: ", nameFile);
-      nameMapping.loadFile(nameFile);
-    }
 
     this.includeStaticMethods = getPropertyBoolean("includestaticmethods", false);
     this.readOnly = getPropertyBoolean("readonly", false);

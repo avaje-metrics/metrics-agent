@@ -11,8 +11,8 @@ public class LikeMatcherTest {
   public void testStartsWith() throws Exception {
 
     LikeMatcher startsWith = new LikeMatcher("web.*");
-    assertTrue(startsWith.matches("Web.foo"));
-    assertTrue(startsWith.matches("Web."));
+    assertTrue(startsWith.matches("web.foo"));
+    assertTrue(startsWith.matches("web."));
     assertTrue(startsWith.matches("web.foo"));
     assertFalse(startsWith.matches("xweb.foo"));
     assertFalse(startsWith.matches("webx.foo"));
@@ -26,9 +26,9 @@ public class LikeMatcherTest {
     assertTrue(startsWith.matches("Web.Resource"));
     assertTrue(startsWith.matches("Resource"));
     assertTrue(startsWith.matches("SomeResource"));
-    assertTrue(startsWith.matches("resource"));
-    assertTrue(startsWith.matches("someresource"));
-    assertTrue(startsWith.matches("some_resource"));
+    assertTrue(startsWith.matches("Resource"));
+    assertTrue(startsWith.matches("someResource"));
+    assertTrue(startsWith.matches("some_Resource"));
 
     assertFalse(startsWith.matches("xweb.fooResources"));
     assertFalse(startsWith.matches("webx.fooResourc"));
@@ -42,13 +42,13 @@ public class LikeMatcherTest {
     assertTrue(startsWith.matches("Web.Resource"));
     assertTrue(startsWith.matches("Resource"));
     assertTrue(startsWith.matches("SomeResource"));
-    assertTrue(startsWith.matches("resource"));
-    assertTrue(startsWith.matches("someresource"));
-    assertTrue(startsWith.matches("some_resource"));
+    assertTrue(startsWith.matches("Resource"));
+    assertTrue(startsWith.matches("someResource"));
+    assertTrue(startsWith.matches("some_Resource"));
 
     assertTrue(startsWith.matches("xweb.fooResources"));
     assertTrue(startsWith.matches("xweb.fooResourceBar"));
-    assertTrue(startsWith.matches("xweb.fooresourcebar"));
+    assertTrue(startsWith.matches("xweb.fooResourcebar"));
     assertFalse(startsWith.matches("webx.fooResourc"));
   }
 
@@ -56,12 +56,12 @@ public class LikeMatcherTest {
   public void testStartsAndContains() throws Exception {
 
     LikeMatcher like = new LikeMatcher("web.*Customer*");
-    assertTrue(like.matches("Web.foo.CustomerResource"));
+    assertTrue(like.matches("web.foo.CustomerResource"));
     assertTrue(like.matches("web.Customer"));
-    assertTrue(like.matches("Web.CustomerService"));
-    assertTrue(like.matches("Web.CustomerService"));
+    assertTrue(like.matches("web.CustomerService"));
+    assertTrue(like.matches("web.CustomerService"));
     assertTrue(like.matches("web.Customer"));
-    assertTrue(like.matches("Web.Customer.Service"));
+    assertTrue(like.matches("web.Customer.Service"));
 
     assertFalse(like.matches("webCustomerService"));
     assertFalse(like.matches("srv.CustomerService"));
@@ -73,13 +73,13 @@ public class LikeMatcherTest {
   @Test
   public void testStartsContainsEnds() throws Exception {
 
-    LikeMatcher like = new LikeMatcher("web.*customer*resource");
+    LikeMatcher like = new LikeMatcher("web.*Customer*Resource");
     assertTrue(like.matches("web.foo.CustomerResource"));
     assertTrue(like.matches("web.CustomerResource"));
     assertFalse(like.matches("webCustomerResource"));
-    assertTrue(like.matches("Web.foo.CustomerResource"));
+    assertTrue(like.matches("web.foo.CustomerResource"));
     assertFalse(like.matches("web.Customer"));
-    assertFalse(like.matches("Web.CustomerService"));
+    assertFalse(like.matches("web.CustomerService"));
     assertFalse(like.matches("eb.foo.CustomerResource"));
     assertFalse(like.matches("zeb.foo.CustomerResource"));
     assertFalse(like.matches("xweb.foo.CustomerResource"));

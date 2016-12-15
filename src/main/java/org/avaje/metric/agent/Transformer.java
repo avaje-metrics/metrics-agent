@@ -5,6 +5,7 @@ import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.IllegalClassFormatException;
 import java.lang.instrument.Instrumentation;
 import java.security.ProtectionDomain;
+import java.util.Map;
 
 import org.avaje.metric.agent.asm.CLAwareClassWriter;
 import org.avaje.metric.agent.asm.ClassReader;
@@ -43,7 +44,14 @@ public class Transformer implements ClassFileTransformer {
    * Construct using the default classBytesReader implementation.
    */
   public Transformer(String agentArgs, ClassLoader classLoader) {
-    this.enhanceContext = new EnhanceContext(agentArgs, classLoader);
+    this.enhanceContext = new EnhanceContext(agentArgs, classLoader, null);
+  }
+
+  /**
+   * Construct with metric name mapping pre-loaded (e.g. IDE enhancement).
+   */
+  public Transformer(String agentArgs, ClassLoader classLoader, Map<String,String> mapping) {
+    this.enhanceContext = new EnhanceContext(agentArgs, classLoader, mapping);
   }
 
   /**

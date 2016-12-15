@@ -1,12 +1,7 @@
 
-match.1=com.myapp.*Controller
-match.1.buckets=100,500
-
-match.2=com.myapp.*Service
-match.2.buckets=100,300,500
-
-match.3=com.myapp.service.*
-match.3.buckets=500
+match.buckets.1=com.myapp.*Controller | 100,500
+match.buckets.2=com.myapp.*Service    | 100,300,500
+match.buckets.3=com.myapp.service.*   | 500
 
 match.exclude.1=com.myapp.*.ExcludeMe*
 
