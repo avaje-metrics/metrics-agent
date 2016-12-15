@@ -117,7 +117,7 @@ final class FieldWriter extends FieldVisitor {
      *            the field's constant value. May be <tt>null</tt>.
      */
     FieldWriter(final ClassWriter cw, final int access, final String name,
-            final String desc, final String signature, final Object value) {
+                final String desc, final String signature, final Object value) {
         super(Opcodes.ASM5);
         if (cw.firstField == null) {
             cw.firstField = this;
@@ -143,7 +143,7 @@ final class FieldWriter extends FieldVisitor {
 
     @Override
     public AnnotationVisitor visitAnnotation(final String desc,
-            final boolean visible) {
+                                             final boolean visible) {
         if (!ClassReader.ANNOTATIONS) {
             return null;
         }
@@ -163,7 +163,7 @@ final class FieldWriter extends FieldVisitor {
 
     @Override
     public AnnotationVisitor visitTypeAnnotation(final int typeRef,
-            final TypePath typePath, final String desc, final boolean visible) {
+                                                 final TypePath typePath, final String desc, final boolean visible) {
         if (!ClassReader.ANNOTATIONS) {
             return null;
         }

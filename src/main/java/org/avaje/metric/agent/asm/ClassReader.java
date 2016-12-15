@@ -374,7 +374,7 @@ public class ClassReader {
      *            the {@link ClassWriter} to copy bootstrap methods into.
      */
     private void copyBootstrapMethods(final ClassWriter classWriter,
-            final Item[] items, final char[] c) {
+                                      final Item[] items, final char[] c) {
         // finds the "BootstrapMethods" attribute
         int u = getAttributes();
         boolean found = false;
@@ -426,7 +426,7 @@ public class ClassReader {
 
     /**
      * Constructs a new {@link ClassReader} object.
-     *
+     * 
      * @param name
      *            the binary qualified name of the class to be read.
      * @throws IOException
@@ -440,7 +440,7 @@ public class ClassReader {
 
     /**
      * Reads the bytecode of a class.
-     *
+     * 
      * @param is
      *            an input stream from which to read the class.
      * @param close
@@ -528,7 +528,7 @@ public class ClassReader {
      *            , {@link #SKIP_FRAMES}, {@link #SKIP_CODE}.
      */
     public void accept(final ClassVisitor classVisitor,
-            final Attribute[] attrs, final int flags) {
+                       final Attribute[] attrs, final int flags) {
         int u = header; // current offset in the class file
         char[] c = new char[maxStringLength]; // buffer used to read strings
 
@@ -709,7 +709,7 @@ public class ClassReader {
      * @return the offset of the first byte following the field in the class.
      */
     private int readField(final ClassVisitor classVisitor,
-            final Context context, int u) {
+                          final Context context, int u) {
         // reads the field declaration
         char[] c = context.buffer;
         int access = readUnsignedShort(u);
@@ -827,7 +827,7 @@ public class ClassReader {
      * @return the offset of the first byte following the method in the class.
      */
     private int readMethod(final ClassVisitor classVisitor,
-            final Context context, int u) {
+                           final Context context, int u) {
         // reads the method declaration
         char[] c = context.buffer;
         context.access = readUnsignedShort(u);
@@ -1170,7 +1170,14 @@ public class ClassReader {
                         if (labels[label] == null) {
                             readLabel(label, labels).status |= Label.DEBUG;
                         }
-                        labels[label].line = readUnsignedShort(v + 12);
+                        Label l = labels[label];
+                        while (l.line > 0) {
+                            if (l.next == null) {
+                                l.next = new Label();
+                            }
+                            l = l.next;
+                        }
+                        l.line = readUnsignedShort(v + 12);
                         v += 4;
                     }
                 }
@@ -1285,9 +1292,15 @@ public class ClassReader {
             // visits the label and line number for this offset, if any
             Label l = labels[offset];
             if (l != null) {
+                Label next = l.next;
+                l.next = null;
                 mv.visitLabel(l);
                 if ((context.flags & SKIP_DEBUG) == 0 && l.line > 0) {
                     mv.visitLineNumber(l.line, l);
+                    while (next != null) {
+                        mv.visitLineNumber(next.line, l);
+                        next = next.next;
+                    }
                 }
             }
 
@@ -1571,7 +1584,7 @@ public class ClassReader {
      * @return the start offset of each type annotation in the parsed table.
      */
     private int[] readTypeAnnotations(final MethodVisitor mv,
-            final Context context, int u, boolean visible) {
+                                      final Context context, int u, boolean visible) {
         char[] c = context.buffer;
         int[] offsets = new int[readUnsignedShort(u)];
         u += 2;
@@ -1723,7 +1736,7 @@ public class ClassReader {
      *            runtime.
      */
     private void readParameterAnnotations(final MethodVisitor mv,
-            final Context context, int v, final boolean visible) {
+                                          final Context context, int v, final boolean visible) {
         int i;
         int n = b[v++] & 0xFF;
         // workaround for a bug in javac (javac compiler generates a parameter
@@ -1828,8 +1841,7 @@ public class ClassReader {
             v += 2;
             break;
         case 'B': // pointer to CONSTANT_Byte
-            av.visit(name,
-                    new Byte((byte) readInt(items[readUnsignedShort(v)])));
+            av.visit(name, (byte) readInt(items[readUnsignedShort(v)]));
             v += 2;
             break;
         case 'Z': // pointer to CONSTANT_Boolean
@@ -1839,13 +1851,11 @@ public class ClassReader {
             v += 2;
             break;
         case 'S': // pointer to CONSTANT_Short
-            av.visit(name, new Short(
-                    (short) readInt(items[readUnsignedShort(v)])));
+            av.visit(name, (short) readInt(items[readUnsignedShort(v)]));
             v += 2;
             break;
         case 'C': // pointer to CONSTANT_Char
-            av.visit(name, new Character(
-                    (char) readInt(items[readUnsignedShort(v)])));
+            av.visit(name, (char) readInt(items[readUnsignedShort(v)]));
             v += 2;
             break;
         case 's': // pointer to CONSTANT_Utf8
@@ -2237,8 +2247,8 @@ public class ClassReader {
      *         attribute.
      */
     private Attribute readAttribute(final Attribute[] attrs, final String type,
-            final int off, final int len, final char[] buf, final int codeOff,
-            final Label[] labels) {
+                                    final int off, final int len, final char[] buf, final int codeOff,
+                                    final Label[] labels) {
         for (int i = 0; i < attrs.length; ++i) {
             if (attrs[i].type.equals(type)) {
                 return attrs[i].read(this, off, len, buf, codeOff, labels);
@@ -2469,13 +2479,13 @@ public class ClassReader {
         int index = items[item];
         switch (b[index - 1]) {
         case ClassWriter.INT:
-            return new Integer(readInt(index));
+            return readInt(index);
         case ClassWriter.FLOAT:
-            return new Float(Float.intBitsToFloat(readInt(index)));
+            return Float.intBitsToFloat(readInt(index));
         case ClassWriter.LONG:
-            return new Long(readLong(index));
+            return readLong(index);
         case ClassWriter.DOUBLE:
-            return new Double(Double.longBitsToDouble(readLong(index)));
+            return Double.longBitsToDouble(readLong(index));
         case ClassWriter.CLASS:
             return Type.getObjectType(readUTF8(index, buf));
         case ClassWriter.STR:
@@ -2486,11 +2496,12 @@ public class ClassReader {
             int tag = readByte(index);
             int[] items = this.items;
             int cpIndex = items[readUnsignedShort(index + 1)];
+            boolean itf = b[cpIndex - 1] == ClassWriter.IMETH;
             String owner = readClass(cpIndex, buf);
             cpIndex = items[readUnsignedShort(cpIndex + 2)];
             String name = readUTF8(cpIndex, buf);
             String desc = readUTF8(cpIndex + 2, buf);
-            return new Handle(tag, owner, name, desc);
+            return new Handle(tag, owner, name, desc, itf);
         }
     }
 }

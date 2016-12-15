@@ -76,11 +76,6 @@ public class LocalVariablesSorter extends MethodVisitor {
     protected int nextLocal;
 
     /**
-     * Indicates if at least one local variable has moved due to remapping.
-     */
-    private boolean changed;
-
-    /**
      * Creates a new {@link LocalVariablesSorter}. <i>Subclasses must not use
      * this constructor</i>. Instead, they must use the
      * {@link #LocalVariablesSorter(int, int, String, MethodVisitor)} version.
@@ -172,16 +167,16 @@ public class LocalVariablesSorter extends MethodVisitor {
 
     @Override
     public void visitLocalVariable(final String name, final String desc,
-            final String signature, final Label start, final Label end,
-            final int index) {
+                                   final String signature, final Label start, final Label end,
+                                   final int index) {
         int newIndex = remap(index, Type.getType(desc));
         mv.visitLocalVariable(name, desc, signature, start, end, newIndex);
     }
 
     @Override
     public AnnotationVisitor visitLocalVariableAnnotation(int typeRef,
-            TypePath typePath, Label[] start, Label[] end, int[] index,
-            String desc, boolean visible) {
+                                                          TypePath typePath, Label[] start, Label[] end, int[] index,
+                                                          String desc, boolean visible) {
         Type t = Type.getType(desc);
         int[] newIndex = new int[index.length];
         for (int i = 0; i < newIndex.length; ++i) {
@@ -197,11 +192,6 @@ public class LocalVariablesSorter extends MethodVisitor {
         if (type != Opcodes.F_NEW) { // uncompressed frame
             throw new IllegalStateException(
                     "ClassReader.accept() should be called with EXPAND_FRAMES flag");
-        }
-
-        if (!changed) { // optimization for the case where mapping = identity
-            mv.visitFrame(type, nLocal, local, nStack, stack);
-            return;
         }
 
         // creates a copy of newLocals
@@ -299,7 +289,6 @@ public class LocalVariablesSorter extends MethodVisitor {
         int local = newLocalMapping(type);
         setLocalType(local, type);
         setFrameLocal(local, t);
-        changed = true;
         return local;
     }
 
@@ -324,7 +313,7 @@ public class LocalVariablesSorter extends MethodVisitor {
      */
     protected void updateNewLocals(Object[] newLocals) {
     }
-
+    
     /**
      * Notifies subclasses that a local variable has been added or remapped. The
      * default implementation of this method does nothing.
@@ -366,9 +355,6 @@ public class LocalVariablesSorter extends MethodVisitor {
             mapping[key] = value + 1;
         } else {
             value--;
-        }
-        if (value != var) {
-            changed = true;
         }
         return value;
     }

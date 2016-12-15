@@ -115,7 +115,7 @@ public abstract class FieldVisitor {
      *         this visitor is not interested in visiting this annotation.
      */
     public AnnotationVisitor visitTypeAnnotation(int typeRef,
-            TypePath typePath, String desc, boolean visible) {
+                                                 TypePath typePath, String desc, boolean visible) {
         if (api < Opcodes.ASM5) {
             throw new RuntimeException();
         }

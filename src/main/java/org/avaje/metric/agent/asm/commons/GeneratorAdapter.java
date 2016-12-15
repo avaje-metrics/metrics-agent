@@ -259,7 +259,7 @@ public class GeneratorAdapter extends LocalVariablesSorter {
      *             If a subclass calls this constructor.
      */
     public GeneratorAdapter(final MethodVisitor mv, final int access,
-            final String name, final String desc) {
+                            final String name, final String desc) {
         this(Opcodes.ASM5, mv, access, name, desc);
         if (getClass() != GeneratorAdapter.class) {
             throw new IllegalStateException();
@@ -379,7 +379,7 @@ public class GeneratorAdapter extends LocalVariablesSorter {
         } else if (value >= Short.MIN_VALUE && value <= Short.MAX_VALUE) {
             mv.visitIntInsn(Opcodes.SIPUSH, value);
         } else {
-            mv.visitLdcInsn(new Integer(value));
+            mv.visitLdcInsn(value);
         }
     }
 
@@ -393,7 +393,7 @@ public class GeneratorAdapter extends LocalVariablesSorter {
         if (value == 0L || value == 1L) {
             mv.visitInsn(Opcodes.LCONST_0 + (int) value);
         } else {
-            mv.visitLdcInsn(new Long(value));
+            mv.visitLdcInsn(value);
         }
     }
 
@@ -408,7 +408,7 @@ public class GeneratorAdapter extends LocalVariablesSorter {
         if (bits == 0L || bits == 0x3f800000 || bits == 0x40000000) { // 0..2
             mv.visitInsn(Opcodes.FCONST_0 + (int) value);
         } else {
-            mv.visitLdcInsn(new Float(value));
+            mv.visitLdcInsn(value);
         }
     }
 
@@ -423,7 +423,7 @@ public class GeneratorAdapter extends LocalVariablesSorter {
         if (bits == 0L || bits == 0x3ff0000000000000L) { // +0.0d and 1.0d
             mv.visitInsn(Opcodes.DCONST_0 + (int) value);
         } else {
-            mv.visitLdcInsn(new Double(value));
+            mv.visitLdcInsn(value);
         }
     }
 
@@ -1228,7 +1228,7 @@ public class GeneratorAdapter extends LocalVariablesSorter {
      *            <tt>false</tt> to use a LOOKUPSWITCH instruction.
      */
     public void tableSwitch(final int[] keys,
-            final TableSwitchGenerator generator, final boolean useTable) {
+                            final TableSwitchGenerator generator, final boolean useTable) {
         for (int i = 1; i < keys.length; ++i) {
             if (keys[i] < keys[i - 1]) {
                 throw new IllegalArgumentException(
@@ -1376,7 +1376,7 @@ public class GeneratorAdapter extends LocalVariablesSorter {
      *            the method to be invoked.
      */
     private void invokeInsn(final int opcode, final Type type,
-            final Method method, final boolean itf) {
+                            final Method method, final boolean itf) {
         String owner = type.getSort() == Type.ARRAY ? type.getDescriptor()
                 : type.getInternalName();
         mv.visitMethodInsn(opcode, owner, method.getName(),
@@ -1617,12 +1617,14 @@ public class GeneratorAdapter extends LocalVariablesSorter {
      *            handler.
      */
     public void catchException(final Label start, final Label end,
-            final Type exception) {
+                               final Type exception) {
+        Label doCatch = new Label();
         if (exception == null) {
-            mv.visitTryCatchBlock(start, end, mark(), null);
+            mv.visitTryCatchBlock(start, end, doCatch, null);
         } else {
-            mv.visitTryCatchBlock(start, end, mark(),
+            mv.visitTryCatchBlock(start, end, doCatch,
                     exception.getInternalName());
         }
+        mark(doCatch);
     }
 }

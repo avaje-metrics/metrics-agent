@@ -13,7 +13,7 @@ public class StaticInitAdapter extends AdviceAdapter {
   private final String className;
 
   protected StaticInitAdapter(MethodVisitor mv, int access, String name, String desc, String className) {
-    super(ASM4, mv, access, name, desc);
+    super(ASM5, mv, access, name, desc);
     this.className = className;
   }
 
@@ -26,7 +26,7 @@ public class StaticInitAdapter extends AdviceAdapter {
     Label l0 = new Label();
     mv.visitLabel(l0);
     mv.visitLineNumber(1, l0);
-    mv.visitMethodInsn(INVOKESTATIC, className, "_$initMetrics", "()V");
+    mv.visitMethodInsn(INVOKESTATIC, className, "_$initMetrics", "()V", false);
   }
 
 }

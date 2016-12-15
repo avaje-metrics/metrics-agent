@@ -360,8 +360,8 @@ public abstract class AdviceAdapter extends GeneratorAdapter implements Opcodes 
                 break;
             case PUTFIELD:
                 popValue();
+                popValue();
                 if (longOrDouble) {
-                    popValue();
                     popValue();
                 }
                 break;
@@ -534,7 +534,7 @@ public abstract class AdviceAdapter extends GeneratorAdapter implements Opcodes 
 
     @Override
     public void visitLookupSwitchInsn(final Label dflt, final int[] keys,
-            final Label[] labels) {
+                                      final Label[] labels) {
         mv.visitLookupSwitchInsn(dflt, keys, labels);
         if (constructor) {
             popValue();
@@ -544,7 +544,7 @@ public abstract class AdviceAdapter extends GeneratorAdapter implements Opcodes 
 
     @Override
     public void visitTableSwitchInsn(final int min, final int max,
-            final Label dflt, final Label... labels) {
+                                     final Label dflt, final Label... labels) {
         mv.visitTableSwitchInsn(min, max, dflt, labels);
         if (constructor) {
             popValue();
@@ -554,7 +554,7 @@ public abstract class AdviceAdapter extends GeneratorAdapter implements Opcodes 
 
     @Override
     public void visitTryCatchBlock(Label start, Label end, Label handler,
-            String type) {
+                                   String type) {
         super.visitTryCatchBlock(start, end, handler, type);
         if (constructor && !branches.containsKey(handler)) {
             List<Object> stackFrame = new ArrayList<Object>();
@@ -590,7 +590,7 @@ public abstract class AdviceAdapter extends GeneratorAdapter implements Opcodes 
     }
 
     /**
-     * Called at the beginning of the method or after super class class call in
+     * Called at the beginning of the method or after super class call in
      * the constructor. <br>
      * <br>
      * 

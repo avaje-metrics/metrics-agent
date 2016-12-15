@@ -167,7 +167,7 @@ public class Method {
      *             if <code>method</code> could not get parsed.
      */
     public static Method getMethod(final String method,
-            final boolean defaultPackage) throws IllegalArgumentException {
+                                   final boolean defaultPackage) throws IllegalArgumentException {
         int space = method.indexOf(' ');
         int start = method.indexOf('(', space) + 1;
         int end = method.indexOf(')', start);

@@ -687,7 +687,8 @@ public class ClassWriter extends ClassVisitor {
             sourceFile = newUTF8(file);
         }
         if (debug != null) {
-            sourceDebug = new ByteVector().encodeUTF8(debug, 0, Integer.MAX_VALUE);
+            sourceDebug = new ByteVector().encodeUTF8(debug, 0,
+                    Integer.MAX_VALUE);
         }
     }
 
@@ -702,7 +703,7 @@ public class ClassWriter extends ClassVisitor {
 
     @Override
     public final AnnotationVisitor visitAnnotation(final String desc,
-            final boolean visible) {
+                                                   final boolean visible) {
         if (!ClassReader.ANNOTATIONS) {
             return null;
         }
@@ -722,7 +723,7 @@ public class ClassWriter extends ClassVisitor {
 
     @Override
     public final AnnotationVisitor visitTypeAnnotation(int typeRef,
-            TypePath typePath, final String desc, final boolean visible) {
+                                                       TypePath typePath, final String desc, final boolean visible) {
         if (!ClassReader.ANNOTATIONS) {
             return null;
         }
@@ -782,13 +783,13 @@ public class ClassWriter extends ClassVisitor {
 
     @Override
     public final FieldVisitor visitField(final int access, final String name,
-            final String desc, final String signature, final Object value) {
+                                         final String desc, final String signature, final Object value) {
         return new FieldWriter(this, access, name, desc, signature, value);
     }
 
     @Override
     public final MethodVisitor visitMethod(final int access, final String name,
-            final String desc, final String signature, final String[] exceptions) {
+                                           final String desc, final String signature, final String[] exceptions) {
         return new MethodWriter(this, access, name, desc, signature,
                 exceptions, computeMaxs, computeFrames);
     }
@@ -1051,7 +1052,7 @@ public class ClassWriter extends ClassVisitor {
             }
         } else if (cst instanceof Handle) {
             Handle h = (Handle) cst;
-            return newHandleItem(h.tag, h.owner, h.name, h.desc);
+            return newHandleItem(h.tag, h.owner, h.name, h.desc, h.itf);
         } else {
             throw new IllegalArgumentException("value " + cst);
         }
@@ -1186,10 +1187,12 @@ public class ClassWriter extends ClassVisitor {
      *            the name of the field or method.
      * @param desc
      *            the descriptor of the field or method.
+     * @param itf
+     *            true if the owner is an interface.
      * @return a new or an already existing method type reference item.
      */
     Item newHandleItem(final int tag, final String owner, final String name,
-            final String desc) {
+                       final String desc, final boolean itf) {
         key4.set(HANDLE_BASE + tag, owner, name, desc);
         Item result = get(key4);
         if (result == null) {
@@ -1198,8 +1201,7 @@ public class ClassWriter extends ClassVisitor {
             } else {
                 put112(HANDLE,
                         tag,
-                        newMethod(owner, name, desc,
-                                tag == Opcodes.H_INVOKEINTERFACE));
+                        newMethod(owner, name, desc, itf));
             }
             result = new Item(index++, key4);
             put(result);
@@ -1229,12 +1231,46 @@ public class ClassWriter extends ClassVisitor {
      *            the descriptor of the field or method.
      * @return the index of a new or already existing method type reference
      *         item.
+     *         
+     * @deprecated this method is superseded by
+     *             {@link #newHandle(int, String, String, String, boolean)}.
      */
+    @Deprecated
     public int newHandle(final int tag, final String owner, final String name,
             final String desc) {
-        return newHandleItem(tag, owner, name, desc).index;
+        return newHandle(tag, owner, name, desc, tag == Opcodes.H_INVOKEINTERFACE);
     }
 
+    /**
+     * Adds a handle to the constant pool of the class being build. Does nothing
+     * if the constant pool already contains a similar item. <i>This method is
+     * intended for {@link Attribute} sub classes, and is normally not needed by
+     * class generators or adapters.</i>
+     * 
+     * @param tag
+     *            the kind of this handle. Must be {@link Opcodes#H_GETFIELD},
+     *            {@link Opcodes#H_GETSTATIC}, {@link Opcodes#H_PUTFIELD},
+     *            {@link Opcodes#H_PUTSTATIC}, {@link Opcodes#H_INVOKEVIRTUAL},
+     *            {@link Opcodes#H_INVOKESTATIC},
+     *            {@link Opcodes#H_INVOKESPECIAL},
+     *            {@link Opcodes#H_NEWINVOKESPECIAL} or
+     *            {@link Opcodes#H_INVOKEINTERFACE}.
+     * @param owner
+     *            the internal name of the field or method owner class.
+     * @param name
+     *            the name of the field or method.
+     * @param desc
+     *            the descriptor of the field or method.
+     * @param itf
+     *            true if the owner is an interface.
+     * @return the index of a new or already existing method type reference
+     *         item.
+     */
+    public int newHandle(final int tag, final String owner, final String name,
+            final String desc, final boolean itf) {
+        return newHandleItem(tag, owner, name, desc, itf).index;
+    }
+    
     /**
      * Adds an invokedynamic reference to the constant pool of the class being
      * build. Does nothing if the constant pool already contains a similar item.
@@ -1253,7 +1289,7 @@ public class ClassWriter extends ClassVisitor {
      * @return a new or an already existing invokedynamic type reference item.
      */
     Item newInvokeDynamicItem(final String name, final String desc,
-            final Handle bsm, final Object... bsmArgs) {
+                              final Handle bsm, final Object... bsmArgs) {
         // cache for performance
         ByteVector bootstrapMethods = this.bootstrapMethods;
         if (bootstrapMethods == null) {
@@ -1264,7 +1300,7 @@ public class ClassWriter extends ClassVisitor {
 
         int hashCode = bsm.hashCode();
         bootstrapMethods.putShort(newHandle(bsm.tag, bsm.owner, bsm.name,
-                bsm.desc));
+                bsm.desc, bsm.isInterface()));
 
         int argsLength = bsmArgs.length;
         bootstrapMethods.putShort(argsLength);
@@ -1338,7 +1374,7 @@ public class ClassWriter extends ClassVisitor {
      *         item.
      */
     public int newInvokeDynamic(final String name, final String desc,
-            final Handle bsm, final Object... bsmArgs) {
+                                final Handle bsm, final Object... bsmArgs) {
         return newInvokeDynamicItem(name, desc, bsm, bsmArgs).index;
     }
 
@@ -1398,7 +1434,7 @@ public class ClassWriter extends ClassVisitor {
      * @return a new or already existing method reference item.
      */
     Item newMethodItem(final String owner, final String name,
-            final String desc, final boolean itf) {
+                       final String desc, final boolean itf) {
         int type = itf ? IMETH : METH;
         key3.set(type, owner, name, desc);
         Item result = get(key3);

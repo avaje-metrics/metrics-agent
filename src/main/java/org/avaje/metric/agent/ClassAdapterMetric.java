@@ -69,7 +69,7 @@ public class ClassAdapterMetric extends ClassVisitor implements Opcodes {
    * Construct with visitor, context and classLoader.
    */
   public ClassAdapterMetric(ClassVisitor cv, EnhanceContext context, ClassLoader classLoader) {
-    super(ASM4, cv);
+    super(ASM5, cv);
     this.enhanceContext = context;
     this.classLoader = classLoader;
   }
@@ -419,7 +419,7 @@ public class ClassAdapterMetric extends ClassVisitor implements Opcodes {
     Label l0 = new Label();
     mv.visitLabel(l0);
     mv.visitLineNumber(16, l0);
-    mv.visitMethodInsn(INVOKESTATIC, className, "_$initMetrics", "()V");
+    mv.visitMethodInsn(INVOKESTATIC, className, "_$initMetrics", "()V", false);
     Label l1 = new Label();
     mv.visitLabel(l1);
     mv.visitLineNumber(17, l1);

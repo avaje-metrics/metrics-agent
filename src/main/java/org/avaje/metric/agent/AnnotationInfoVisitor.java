@@ -11,7 +11,7 @@ public class AnnotationInfoVisitor extends AnnotationVisitor {
 	private final AnnotationInfo info;
 		
 	public AnnotationInfoVisitor(AnnotationInfo info) {
-	  super(Opcodes.ASM4);
+	  super(Opcodes.ASM5);
 		this.info = info;
 	}
 	

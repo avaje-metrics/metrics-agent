@@ -810,7 +810,7 @@ final class Frame {
      *            the maximum number of local variables of this method.
      */
     void initInputFrame(final ClassWriter cw, final int access,
-            final Type[] args, final int maxLocals) {
+                        final Type[] args, final int maxLocals) {
         inputLocals = new int[maxLocals];
         inputStack = new int[0];
         int i = 0;
@@ -1393,7 +1393,7 @@ final class Frame {
      *         operation.
      */
     private static boolean merge(final ClassWriter cw, int t,
-            final int[] types, final int index) {
+                                 final int[] types, final int index) {
         int u = types[index];
         if (u == t) {
             // if the types are equal, merge(u,t)=u, so there is no change

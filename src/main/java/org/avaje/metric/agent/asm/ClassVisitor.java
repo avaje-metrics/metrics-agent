@@ -192,7 +192,7 @@ public abstract class ClassVisitor {
      *         this visitor is not interested in visiting this annotation.
      */
     public AnnotationVisitor visitTypeAnnotation(int typeRef,
-            TypePath typePath, String desc, boolean visible) {
+                                                 TypePath typePath, String desc, boolean visible) {
         if (api < Opcodes.ASM5) {
             throw new RuntimeException();
         }
@@ -267,7 +267,7 @@ public abstract class ClassVisitor {
      *         these annotations and attributes.
      */
     public FieldVisitor visitField(int access, String name, String desc,
-            String signature, Object value) {
+                                   String signature, Object value) {
         if (cv != null) {
             return cv.visitField(access, name, desc, signature, value);
         }
@@ -300,7 +300,7 @@ public abstract class ClassVisitor {
      *         this method.
      */
     public MethodVisitor visitMethod(int access, String name, String desc,
-            String signature, String[] exceptions) {
+                                     String signature, String[] exceptions) {
         if (cv != null) {
             return cv.visitMethod(access, name, desc, signature, exceptions);
         }

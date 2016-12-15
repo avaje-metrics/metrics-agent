@@ -450,9 +450,9 @@ class MethodWriter extends MethodVisitor {
      *            scratch.
      */
     MethodWriter(final ClassWriter cw, final int access, final String name,
-            final String desc, final String signature,
-            final String[] exceptions, final boolean computeMaxs,
-            final boolean computeFrames) {
+                 final String desc, final String signature,
+                 final String[] exceptions, final boolean computeMaxs,
+                 final boolean computeFrames) {
         super(Opcodes.ASM5);
         if (cw.firstMethod == null) {
             cw.firstMethod = this;
@@ -519,7 +519,7 @@ class MethodWriter extends MethodVisitor {
 
     @Override
     public AnnotationVisitor visitAnnotation(final String desc,
-            final boolean visible) {
+                                             final boolean visible) {
         if (!ClassReader.ANNOTATIONS) {
             return null;
         }
@@ -539,7 +539,7 @@ class MethodWriter extends MethodVisitor {
 
     @Override
     public AnnotationVisitor visitTypeAnnotation(final int typeRef,
-            final TypePath typePath, final String desc, final boolean visible) {
+                                                 final TypePath typePath, final String desc, final boolean visible) {
         if (!ClassReader.ANNOTATIONS) {
             return null;
         }
@@ -562,7 +562,7 @@ class MethodWriter extends MethodVisitor {
 
     @Override
     public AnnotationVisitor visitParameterAnnotation(final int parameter,
-            final String desc, final boolean visible) {
+                                                      final String desc, final boolean visible) {
         if (!ClassReader.ANNOTATIONS) {
             return null;
         }
@@ -935,7 +935,7 @@ class MethodWriter extends MethodVisitor {
 
     @Override
     public void visitInvokeDynamicInsn(final String name, final String desc,
-            final Handle bsm, final Object... bsmArgs) {
+                                       final Handle bsm, final Object... bsmArgs) {
         lastCodeOffset = code.length;
         Item i = cw.newInvokeDynamicItem(name, desc, bsm, bsmArgs);
         int argSize = i.intVal;
@@ -1180,7 +1180,7 @@ class MethodWriter extends MethodVisitor {
 
     @Override
     public void visitTableSwitchInsn(final int min, final int max,
-            final Label dflt, final Label... labels) {
+                                     final Label dflt, final Label... labels) {
         lastCodeOffset = code.length;
         // adds the instruction to the bytecode of the method
         int source = code.length;
@@ -1197,7 +1197,7 @@ class MethodWriter extends MethodVisitor {
 
     @Override
     public void visitLookupSwitchInsn(final Label dflt, final int[] keys,
-            final Label[] labels) {
+                                      final Label[] labels) {
         lastCodeOffset = code.length;
         // adds the instruction to the bytecode of the method
         int source = code.length;
@@ -1259,7 +1259,7 @@ class MethodWriter extends MethodVisitor {
 
     @Override
     public AnnotationVisitor visitInsnAnnotation(int typeRef,
-            TypePath typePath, String desc, boolean visible) {
+                                                 TypePath typePath, String desc, boolean visible) {
         if (!ClassReader.ANNOTATIONS) {
             return null;
         }
@@ -1283,7 +1283,7 @@ class MethodWriter extends MethodVisitor {
 
     @Override
     public void visitTryCatchBlock(final Label start, final Label end,
-            final Label handler, final String type) {
+                                   final Label handler, final String type) {
         ++handlerCount;
         Handler h = new Handler();
         h.start = start;
@@ -1301,7 +1301,7 @@ class MethodWriter extends MethodVisitor {
 
     @Override
     public AnnotationVisitor visitTryCatchAnnotation(int typeRef,
-            TypePath typePath, String desc, boolean visible) {
+                                                     TypePath typePath, String desc, boolean visible) {
         if (!ClassReader.ANNOTATIONS) {
             return null;
         }
@@ -1324,8 +1324,8 @@ class MethodWriter extends MethodVisitor {
 
     @Override
     public void visitLocalVariable(final String name, final String desc,
-            final String signature, final Label start, final Label end,
-            final int index) {
+                                   final String signature, final Label start, final Label end,
+                                   final int index) {
         if (signature != null) {
             if (localVarType == null) {
                 localVarType = new ByteVector();
@@ -1356,8 +1356,8 @@ class MethodWriter extends MethodVisitor {
 
     @Override
     public AnnotationVisitor visitLocalVariableAnnotation(int typeRef,
-            TypePath typePath, Label[] start, Label[] end, int[] index,
-            String desc, boolean visible) {
+                                                          TypePath typePath, Label[] start, Label[] end, int[] index,
+                                                          String desc, boolean visible) {
         if (!ClassReader.ANNOTATIONS) {
             return null;
         }
@@ -2032,7 +2032,7 @@ class MethodWriter extends MethodVisitor {
         }
         int size = 8;
         if (code.length > 0) {
-            if (code.length > 65536) {
+            if (code.length > 65535) {
                 throw new RuntimeException("Method code too large!");
             }
             cw.newUTF8("Code");
@@ -2706,11 +2706,13 @@ class MethodWriter extends MethodVisitor {
                 l = l.successor;
             }
             // Update the offsets in the uninitialized types
-            for (i = 0; i < cw.typeTable.length; ++i) {
-                Item item = cw.typeTable[i];
-                if (item != null && item.type == ClassWriter.TYPE_UNINIT) {
-                    item.intVal = getNewOffset(allIndexes, allSizes, 0,
-                            item.intVal);
+            if (cw.typeTable != null) {
+                for (i = 0; i < cw.typeTable.length; ++i) {
+                    Item item = cw.typeTable[i];
+                    if (item != null && item.type == ClassWriter.TYPE_UNINIT) {
+                        item.intVal = getNewOffset(allIndexes, allSizes, 0,
+                                item.intVal);
+                    }
                 }
             }
             // The stack map frames are not serialized yet, so we don't need

@@ -33,15 +33,16 @@ package org.avaje.metric.agent.asm;
  * A visitor to visit a Java method. The methods of this class must be called in
  * the following order: ( <tt>visitParameter</tt> )* [
  * <tt>visitAnnotationDefault</tt> ] ( <tt>visitAnnotation</tt> |
- * <tt>visitTypeAnnotation</tt> | <tt>visitAttribute</tt> )* [
- * <tt>visitCode</tt> ( <tt>visitFrame</tt> | <tt>visit<i>X</i>Insn</tt> |
- * <tt>visitLabel</tt> | <tt>visitInsnAnnotation</tt> |
- * <tt>visitTryCatchBlock</tt> | <tt>visitTryCatchBlockAnnotation</tt> |
- * <tt>visitLocalVariable</tt> | <tt>visitLocalVariableAnnotation</tt> |
- * <tt>visitLineNumber</tt> )* <tt>visitMaxs</tt> ] <tt>visitEnd</tt>. In
- * addition, the <tt>visit<i>X</i>Insn</tt> and <tt>visitLabel</tt> methods must
- * be called in the sequential order of the bytecode instructions of the visited
- * code, <tt>visitInsnAnnotation</tt> must be called <i>after</i> the annotated
+ * <tt>visitParameterAnnotation</tt> <tt>visitTypeAnnotation</tt> |
+ * <tt>visitAttribute</tt> )* [ <tt>visitCode</tt> ( <tt>visitFrame</tt> |
+ * <tt>visit<i>X</i>Insn</tt> | <tt>visitLabel</tt> |
+ * <tt>visitInsnAnnotation</tt> | <tt>visitTryCatchBlock</tt> |
+ * <tt>visitTryCatchAnnotation</tt> | <tt>visitLocalVariable</tt> |
+ * <tt>visitLocalVariableAnnotation</tt> | <tt>visitLineNumber</tt> )*
+ * <tt>visitMaxs</tt> ] <tt>visitEnd</tt>. In addition, the
+ * <tt>visit<i>X</i>Insn</tt> and <tt>visitLabel</tt> methods must be called in
+ * the sequential order of the bytecode instructions of the visited code,
+ * <tt>visitInsnAnnotation</tt> must be called <i>after</i> the annotated
  * instruction, <tt>visitTryCatchBlock</tt> must be called <i>before</i> the
  * labels passed as arguments have been visited,
  * <tt>visitTryCatchBlockAnnotation</tt> must be called <i>after</i> the
@@ -178,7 +179,7 @@ public abstract class MethodVisitor {
      *         this visitor is not interested in visiting this annotation.
      */
     public AnnotationVisitor visitTypeAnnotation(int typeRef,
-            TypePath typePath, String desc, boolean visible) {
+                                                 TypePath typePath, String desc, boolean visible) {
         if (api < Opcodes.ASM5) {
             throw new RuntimeException();
         }
@@ -201,7 +202,7 @@ public abstract class MethodVisitor {
      *         this visitor is not interested in visiting this annotation.
      */
     public AnnotationVisitor visitParameterAnnotation(int parameter,
-            String desc, boolean visible) {
+                                                      String desc, boolean visible) {
         if (mv != null) {
             return mv.visitParameterAnnotation(parameter, desc, visible);
         }
@@ -497,7 +498,7 @@ public abstract class MethodVisitor {
      * @param bsmArgs
      *            the bootstrap method constant arguments. Each argument must be
      *            an {@link Integer}, {@link Float}, {@link Long},
-     *            {@link Double}, {@link String}, {@link Type} or {@link org.objectweb.asm.Handle}
+     *            {@link Double}, {@link String}, {@link Type} or {@link Handle}
      *            value. This method is allowed to modify the content of the
      *            array so a caller should expect that this array may change.
      */
@@ -692,7 +693,7 @@ public abstract class MethodVisitor {
      *         this visitor is not interested in visiting this annotation.
      */
     public AnnotationVisitor visitInsnAnnotation(int typeRef,
-            TypePath typePath, String desc, boolean visible) {
+                                                 TypePath typePath, String desc, boolean visible) {
         if (api < Opcodes.ASM5) {
             throw new RuntimeException();
         }
@@ -724,7 +725,7 @@ public abstract class MethodVisitor {
      *             (by the {@link #visitLabel visitLabel} method).
      */
     public void visitTryCatchBlock(Label start, Label end, Label handler,
-            String type) {
+                                   String type) {
         if (mv != null) {
             mv.visitTryCatchBlock(start, end, handler, type);
         }
@@ -752,7 +753,7 @@ public abstract class MethodVisitor {
      *         this visitor is not interested in visiting this annotation.
      */
     public AnnotationVisitor visitTryCatchAnnotation(int typeRef,
-            TypePath typePath, String desc, boolean visible) {
+                                                     TypePath typePath, String desc, boolean visible) {
         if (api < Opcodes.ASM5) {
             throw new RuntimeException();
         }
@@ -786,7 +787,7 @@ public abstract class MethodVisitor {
      *             visitor (by the {@link #visitLabel visitLabel} method).
      */
     public void visitLocalVariable(String name, String desc, String signature,
-            Label start, Label end, int index) {
+                                   Label start, Label end, int index) {
         if (mv != null) {
             mv.visitLocalVariable(name, desc, signature, start, end, index);
         }
@@ -822,8 +823,8 @@ public abstract class MethodVisitor {
      *         this visitor is not interested in visiting this annotation.
      */
     public AnnotationVisitor visitLocalVariableAnnotation(int typeRef,
-            TypePath typePath, Label[] start, Label[] end, int[] index,
-            String desc, boolean visible) {
+                                                          TypePath typePath, Label[] start, Label[] end, int[] index,
+                                                          String desc, boolean visible) {
         if (api < Opcodes.ASM5) {
             throw new RuntimeException();
         }
