@@ -25,27 +25,58 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 // THE POSSIBILITY OF SUCH DAMAGE.
-package org.avaje.metric.agent.asm.commons;
-
-import org.avaje.metric.agent.asm.Label;
+package org.avaje.metric.agent.asm;
 
 /**
- * A code generator for switch statements.
+ * Exception thrown when the Code attribute of a method produced by a {@link ClassWriter} is too
+ * large.
  *
- * @author Juozas Baliuka
- * @author Chris Nokleberg
- * @author Eric Bruneton
+ * @author Jason Zaugg
  */
-public interface TableSwitchGenerator {
+public final class MethodTooLargeException extends IndexOutOfBoundsException {
+
+  private final String className;
+  private final String methodName;
+  private final String descriptor;
+  private final int codeSize;
 
   /**
-   * Generates the code for a switch case.
+   * Constructs a new {@link MethodTooLargeException}.
    *
-   * @param key the switch case key.
-   * @param end a label that corresponds to the end of the switch statement.
+   * @param className the internal name of the owner class.
+   * @param methodName the name of the method.
+   * @param descriptor the descriptor of the method.
+   * @param codeSize the size of the method's Code attribute, in bytes.
    */
-  void generateCase(int key, Label end);
+  public MethodTooLargeException(
+      final String className,
+      final String methodName,
+      final String descriptor,
+      final int codeSize) {
+    super("Method too large: " + className + "." + methodName + " " + descriptor);
+    this.className = className;
+    this.methodName = methodName;
+    this.descriptor = descriptor;
+    this.codeSize = codeSize;
+  }
 
-  /** Generates the code for the default switch case. */
-  void generateDefault();
+  /** @return the internal name of the owner class. */
+  public String getClassName() {
+    return className;
+  }
+
+  /** @return the name of the method. */
+  public String getMethodName() {
+    return methodName;
+  }
+
+  /** @return the descriptor of the method. */
+  public String getDescriptor() {
+    return descriptor;
+  }
+
+  /** @return the size of the method's Code attribute, in bytes. */
+  public int getCodeSize() {
+    return codeSize;
+  }
 }
