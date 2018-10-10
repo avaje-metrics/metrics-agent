@@ -8,17 +8,18 @@ import org.avaje.metric.annotation.NotTimed;
 import org.avaje.metric.annotation.Timed;
 import org.springframework.stereotype.Component;
 
+@Timed(prefix = "web.api")
 @Component
 @Path("/general")
 public class CustomerResource extends BaseResource {
 
   public static void aStaticMethodNotAnnotated() {
-    
+
   }
 
   @Timed(name="staticGeneral")
   public static void aStaticMethodWithTimedAnnotation() {
-    
+
   }
 
   @POST

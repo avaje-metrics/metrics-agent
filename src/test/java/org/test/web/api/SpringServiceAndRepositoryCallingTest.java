@@ -20,15 +20,15 @@ public class SpringServiceAndRepositoryCallingTest extends BaseTest {
     ContactDataLayer contactDataLayer = new ContactRepository();
     ContactServiceImpl impl = new ContactServiceImpl(contactDataLayer);
 
-    MockTimedMetric alertMetric = MetricManager.testGetTimedMetric("app.service.ContactServiceImpl.sendAlert");
+    MockTimedMetric alertMetric = MetricManager.testGetTimedMetric("service.ContactServiceImpl.sendAlert");
     alertMetric.testReset();
 
-    MockTimedMetric repoMetric = MetricManager.testGetTimedMetric("app.service.ContactRepository.fetchData");
+    MockTimedMetric repoMetric = MetricManager.testGetTimedMetric("repo.ContactRepository.fetchData");
     repoMetric.testReset();
 
-    
+
     impl.sendAlert(new Contact());
-    Assert.assertEquals("app.service.ContactServiceImpl.sendAlert", MetricManager.testLastMetricName());
+    Assert.assertEquals("service.ContactServiceImpl.sendAlert", MetricManager.testLastMetricName());
     Assert.assertEquals(1, alertMetric.testGetCount());
     Assert.assertEquals(1, repoMetric.testGetCount());
 
@@ -39,7 +39,7 @@ public class SpringServiceAndRepositoryCallingTest extends BaseTest {
     impl.sendAlert(null);
     contactDataLayer.fetchData();
     contactDataLayer.fetchData();
-    
+
     Assert.assertEquals(3, alertMetric.testGetCount());
     Assert.assertEquals(5, repoMetric.testGetCount());
 

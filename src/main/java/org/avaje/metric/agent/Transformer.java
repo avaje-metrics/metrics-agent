@@ -1,15 +1,15 @@
 package org.avaje.metric.agent;
 
+import org.avaje.metric.agent.asm.ClassReader;
+import org.avaje.metric.agent.asm.ClassWriter;
+import org.avaje.metric.agent.asm.ClassWriterWithoutClassLoading;
+
 import java.io.PrintStream;
 import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.IllegalClassFormatException;
 import java.lang.instrument.Instrumentation;
 import java.security.ProtectionDomain;
-import java.util.Map;
 
-import org.avaje.metric.agent.asm.CLAwareClassWriter;
-import org.avaje.metric.agent.asm.ClassReader;
-import org.avaje.metric.agent.asm.ClassWriter;
 
 /**
  * A Class file Transformer that enhances entity beans.
@@ -43,15 +43,15 @@ public class Transformer implements ClassFileTransformer {
   /**
    * Construct using the default classBytesReader implementation.
    */
-  public Transformer(String agentArgs, ClassLoader classLoader) {
-    this.enhanceContext = new EnhanceContext(agentArgs, classLoader, null);
+  public Transformer(String agentArgs, ClassLoader classLoader, AgentManifest manifest) {
+    this.enhanceContext = new EnhanceContext(agentArgs, classLoader, manifest);
   }
 
   /**
    * Construct with metric name mapping pre-loaded (e.g. IDE enhancement).
    */
-  public Transformer(String agentArgs, ClassLoader classLoader, Map<String,String> mapping) {
-    this.enhanceContext = new EnhanceContext(agentArgs, classLoader, mapping);
+  public Transformer(String agentArgs, ClassLoader classLoader) {
+    this.enhanceContext = new EnhanceContext(agentArgs, classLoader, AgentManifest.read(classLoader));
   }
 
   /**
@@ -82,7 +82,7 @@ public class Transformer implements ClassFileTransformer {
 
       enhanceContext.log(8, "look at ", className);
       return enhancement(loader, classfileBuffer);
-     
+
     } catch (NoEnhancementRequiredException e) {
       // the class is an interface
       log(8, "No Enhancement required ",  e.getMessage());
@@ -102,7 +102,7 @@ public class Transformer implements ClassFileTransformer {
   private byte[] enhancement(ClassLoader loader, byte[] classfileBuffer) {
 
     ClassReader cr = new ClassReader(classfileBuffer);
-    ClassWriter cw = new CLAwareClassWriter(ClassWriter.COMPUTE_FRAMES + ClassWriter.COMPUTE_MAXS, loader);
+    ClassWriter cw = new ClassWriterWithoutClassLoading(ClassWriter.COMPUTE_FRAMES + ClassWriter.COMPUTE_MAXS, loader);
     ClassAdapterMetric ca = new ClassAdapterMetric(cw, enhanceContext, loader);
 
     try {

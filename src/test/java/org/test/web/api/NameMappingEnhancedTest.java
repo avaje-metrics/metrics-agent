@@ -11,14 +11,14 @@ import org.junit.Test;
 public class NameMappingEnhancedTest extends BaseTest {
 
   @Test
-  public void testSuccessExecution() throws InterruptedException {
+  public void testSuccessExecution() {
 
     NiceService niceService = new NiceService();
-    
-    MockBucketTimedMetric metric = MetricManager.testGetBucketTimedMetric("com.myapp.something.nice.NiceService.doNice");
+
+    MockBucketTimedMetric metric = MetricManager.testGetBucketTimedMetric("NiceService.doNice");
     metric.testReset();
     MetricManager.testReset();
-    
+
     Assert.assertEquals(0, metric.testGetCount());
 
     niceService.doNice();
@@ -32,7 +32,7 @@ public class NameMappingEnhancedTest extends BaseTest {
     niceService.doNice();
     Assert.assertEquals(3, metric.testGetCount());
     Assert.assertTrue(MetricManager.testLastMetricOpcodeSuccess());
-    
+
   }
 
 

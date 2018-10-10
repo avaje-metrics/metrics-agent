@@ -1,13 +1,13 @@
 package org.avaje.metric.agent;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.avaje.metric.agent.asm.AnnotationVisitor;
 import org.avaje.metric.agent.asm.ClassVisitor;
 import org.avaje.metric.agent.asm.Label;
 import org.avaje.metric.agent.asm.MethodVisitor;
 import org.avaje.metric.agent.asm.Opcodes;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * ClassAdapter used to add metrics collection.
@@ -31,7 +31,7 @@ public class ClassAdapterMetric extends ClassVisitor implements Opcodes {
   private boolean markerAnnotationAdded;
 
   private boolean detectSingleton;
-  
+
   private boolean detectJaxrs;
 
   private boolean detectSpringComponent;
@@ -43,6 +43,9 @@ public class ClassAdapterMetric extends ClassVisitor implements Opcodes {
   private boolean existingStaticInitialiser;
 
   protected String className;
+
+  private String longName;
+  private String shortName;
 
   /**
    * List of unique names to support parameter overloading.
@@ -58,18 +61,18 @@ public class ClassAdapterMetric extends ClassVisitor implements Opcodes {
    * The metric full name that is a common prefix for each method.
    */
   private String metricFullName;
-  private String originalMetricName;
+  private String prefix;
 
   /**
    * The buckets defined commonly for all enhanced methods for this class.
    */
   private int[] buckets;
-  
+
   /**
    * Construct with visitor, context and classLoader.
    */
   ClassAdapterMetric(ClassVisitor cv, EnhanceContext context, ClassLoader classLoader) {
-    super(ASM5, cv);
+    super(ASM6, cv);
     this.enhanceContext = context;
     this.classLoader = classLoader;
   }
@@ -77,7 +80,7 @@ public class ClassAdapterMetric extends ClassVisitor implements Opcodes {
   boolean isLog(int level) {
     return enhanceContext.isLog(level);
   }
-  
+
   private void log(int level, String msg) {
     if (isLog(level)) {
       enhanceContext.log(className, msg);
@@ -104,50 +107,67 @@ public class ClassAdapterMetric extends ClassVisitor implements Opcodes {
    * Set default buckets to use for methods enhanced for this class.
    */
   private void setBuckets(Object value) {
-    this.buckets = (int[])value;
+    this.buckets = (int[]) value;
   }
-  
+
   /**
    * Return true if there are default buckets defined at the class level.
    */
   boolean hasBuckets() {
     return buckets != null && buckets.length > 0;
   }
-  
+
   /**
    * Return the bucket ranges.
    */
   int[] getBuckets() {
     return buckets;
   }
-  
+
   /**
-   * Return the class level metric name which is used to prefix the metrics created for associated
-   * methods on this class.
+   * Return the class level metric prefix used to prefix timed metrics on methods.
    */
-  String getMetricFullName() {
-    return metricFullName;
+  String getMetricPrefix() {
+    if (prefix != null) {
+      return prefix+"."+ shortName;
+    }
+    return enhanceContext.isNameIncludesPackage() ? longName : shortName;
   }
 
   /**
    * Set the metric name via Timer annotation.
    */
-  private void setMetricName(String metricName) {
-    int pos = metricFullName.lastIndexOf('.');
-    if (pos == -1) {
-      this.metricFullName = metricName;
+  private void setShortName(String shortName) {
+    this.shortName = shortName;
+  }
+
+  private void setLongName(String fullName) {
+    this.prefix = null;
+    this.longName = fullName;
+    this.shortName = fullName;
+  }
+
+  private void setPrefix(String prefix) {
+    this.prefix = prefix;
+  }
+
+  private void setClassName(String className) {
+    this.className = className;
+    this.longName = className.replace('/', '.');
+    int lastDot = longName.lastIndexOf('.');
+    if (lastDot > -1) {
+      shortName = longName.substring(lastDot + 1);
     } else {
-      this.metricFullName = metricFullName.substring(0, pos) + "." + metricName;
+      shortName = longName;
     }
   }
-  
-  /**
-   * Set the full metric name for this class.
-   */
-  private void setMetricFullName(String className) {
-    this.metricFullName = className.replace('/', '.');
-    this.originalMetricName = metricFullName;
-  }
+
+//  /**
+//   * Set the full metric name for this class.
+//   */
+//  private void setMetricFullName(String className) {
+//    this.metricFullName = className.replace('/', '.');
+//  }
 
   @Override
   public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
@@ -157,19 +177,7 @@ public class ClassAdapterMetric extends ClassVisitor implements Opcodes {
       throw new NoEnhancementRequiredException("Not enhancing interface");
     }
 
-    this.className = name;
-    setMetricFullName(className);
-
-    NameMapping.Match match = enhanceContext.findMatch(metricFullName);
-    if (match != null) {
-      if (!match.include) {
-        throw new NoEnhancementRequiredException("Excluded by match "+match.pattern);
-      } else {
-        detectExplicit = true;
-        shouldBeEnhanced = true;
-        buckets = match.buckets;
-      }
-    }
+    setClassName(name);
   }
 
   /**
@@ -195,12 +203,12 @@ public class ClassAdapterMetric extends ClassVisitor implements Opcodes {
       detectExplicit = true;
       shouldBeEnhanced = true;
       // read the name and bucket ranges from the class level Timer annotation
-      return new TimedAnnotationVisitor(av);
+      return new ClassTimedAnnotationVisitor(av);
     }
-    
+
     if (enhanceContext.isEnhanceSingleton() && desc.endsWith(SINGLETON)) {
       detectSingleton = true;
-      shouldBeEnhanced = true;      
+      shouldBeEnhanced = true;
     }
 
     if (isJaxRsEndpoint(desc)) {
@@ -218,9 +226,9 @@ public class ClassAdapterMetric extends ClassVisitor implements Opcodes {
 
   private boolean isJaxRsEndpoint(String desc) {
 
-    return desc.equals("Ljavax/ws/rs/Path;") 
-        || desc.equals("Ljavax/ws/rs/Produces;")
-        || desc.equals("Ljavax/ws/rs/Consumes;");
+    return desc.equals("Ljavax/ws/rs/Path;")
+      || desc.equals("Ljavax/ws/rs/Produces;")
+      || desc.equals("Ljavax/ws/rs/Consumes;");
   }
 
   private void addMarkerAnnotation() {
@@ -231,7 +239,7 @@ public class ClassAdapterMetric extends ClassVisitor implements Opcodes {
         String flagJaxrs = (detectJaxrs ? "JAXRS " : "");
         String flagSpring = (detectSpringComponent ? "SPRING " : "");
         String flagSingleton = (detectSingleton ? "SINGLETON" : "");
-        log(4, "enhancing - detection ", flagExplicit + flagJaxrs + flagSpring + flagSingleton );
+        log(4, "enhancing - detection ", flagExplicit + flagJaxrs + flagSpring + flagSingleton);
       }
       AnnotationVisitor av = cv.visitAnnotation(ANNOTATION_ALREADY_ENHANCED_MARKER, true);
       if (av != null) {
@@ -244,26 +252,29 @@ public class ClassAdapterMetric extends ClassVisitor implements Opcodes {
   /**
    * Helper to read and set the name and fullName attributes of the Timed annotation.
    */
-  private class TimedAnnotationVisitor extends AnnotationVisitor {
+  private class ClassTimedAnnotationVisitor extends AnnotationVisitor {
 
-    TimedAnnotationVisitor(AnnotationVisitor av) {
-      super(ASM4, av);
+    ClassTimedAnnotationVisitor(AnnotationVisitor av) {
+      super(ASM6, av);
     }
 
     @Override
     public void visit(String name, Object value) {
       if ("name".equals(name) && !"".equals(value)) {
-        setMetricName(value.toString());
-        
+        setShortName(value.toString());
+
       } else if ("fullName".equals(name) && !"".equals(value)) {
-        setMetricFullName(value.toString());
-        
+        setLongName(value.toString());
+
       } else if ("buckets".equals(name)) {
         setBuckets(value);
+
+      } else if ("prefix".equals(name)) {
+        setPrefix(value.toString());
       }
     }
   }
-  
+
   /**
    * Visit the methods specifically looking for method level transactional annotations.
    */
@@ -283,13 +294,10 @@ public class ClassAdapterMetric extends ClassVisitor implements Opcodes {
       log(5, "... not enhancing constructor:", name, " desc:", desc);
       return mv;
     }
-    if (enhanceContext.isMatchExcludeMethod(originalMetricName, name)) {
-      log(5, "... exclude method:", name, " desc:", desc);
-      return mv;
-    }
+
     if (isCommonMethod(name)) {
       // not enhancing constructor
-      log(5, "... not enhancing:",  name, " desc:", desc);
+      log(5, "... not enhancing:", name, " desc:", desc);
       return mv;
     }
     if (name.equals("<clinit>")) {
@@ -298,7 +306,7 @@ public class ClassAdapterMetric extends ClassVisitor implements Opcodes {
       existingStaticInitialiser = true;
       return new StaticInitAdapter(mv, access, name, desc, className);
     }
-    
+
     boolean publicMethod = isPublicMethod(access);
     int metricIndex = methodAdapters.size();
     String uniqueMethodName = deriveUniqueMethodName(name);
@@ -355,7 +363,7 @@ public class ClassAdapterMetric extends ClassVisitor implements Opcodes {
    * Create and return a unique method name in case of parameter overloading.
    */
   private String deriveUniqueMethodName(String methodName) {
-    
+
     int i = 1;
     String uniqueMethodName = methodName;
     while (uniqueMethodNames.contains(uniqueMethodName)) {
@@ -386,7 +394,6 @@ public class ClassAdapterMetric extends ClassVisitor implements Opcodes {
       methodAdapter.addFieldDefinition(cv, i);
     }
   }
-  
 
   /**
    * Add the static _$initMetrics() method.
@@ -413,7 +420,7 @@ public class ClassAdapterMetric extends ClassVisitor implements Opcodes {
    * Add a static initialization block when there was not one on the class.
    */
   private void addStaticInitialiser() {
-    
+
     MethodVisitor mv = cv.visitMethod(ACC_STATIC, "<clinit>", "()V", null, null);
     mv.visitCode();
     Label l0 = new Label();

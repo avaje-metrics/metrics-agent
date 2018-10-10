@@ -4,7 +4,6 @@ import java.io.PrintStream;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -16,6 +15,8 @@ class EnhanceContext {
   private static final Logger logger = Logger.getLogger(EnhanceContext.class.getName());
 
 	private final IgnoreClassHelper ignoreClassHelper;
+
+	private final AgentManifest manifest;
 
 	private final HashMap<String, String> agentArgsMap;
 
@@ -29,16 +30,14 @@ class EnhanceContext {
 
 	private int logLevel;
 
-	private final NameMapping nameMapping;
-
 	/**
 	 * Construct a context for enhancement.
 	 */
-	EnhanceContext(String agentArgs, ClassLoader classLoader, Map<String, String> properties) {
+	EnhanceContext(String agentArgs, ClassLoader classLoader, AgentManifest manifest) {
 
+		this.manifest = manifest;
  		this.agentArgsMap = ArgParser.parse(agentArgs);
-		this.ignoreClassHelper = new IgnoreClassHelper(splitPackages(agentArgsMap.get("packages")));
-		this.nameMapping = new NameMapping(classLoader, properties);
+		this.ignoreClassHelper = new IgnoreClassHelper(manifest.getPackages());
  		this.logout = System.out;
 
 		String debugValue = agentArgsMap.get("debug");
@@ -58,9 +57,6 @@ class EnhanceContext {
 
 		if (logLevel > 0) {
       log(8, "settings: debug["+debugValue+"] readonly["+readOnly+"]", "");
-  		log(1, "name mappings: ", nameMapping.toString());
-      log(1, "match patterns: ", nameMapping.getPatternMatch().toString());
-      log(1, "match keys: ", nameMapping.getMatches());
 		}
 	}
 
@@ -68,16 +64,16 @@ class EnhanceContext {
 		return packages != null ? Arrays.asList(packages.split(",")) : null;
 	}
 
-	/**
-	 * Return a potentially cut down metric name.
-	 * <p>
-	 * For example, trim of extraneous package names or prefix controllers or
-	 * JAX-RS endpoints with "web" etc.
-	 * </p>
-	 */
-	String getMappedName(String rawName) {
-		return nameMapping.getMappedName(rawName);
-	}
+//	/**
+//	 * Return a potentially cut down metric name.
+//	 * <p>
+//	 * For example, trim of extraneous package names or prefix controllers or
+//	 * JAX-RS endpoints with "web" etc.
+//	 * </p>
+//	 */
+//	String getMappedName(String rawName) {
+//		return rawName;//nameMapping.getMappedName(rawName);
+//	}
 
 	/**
 	 * Return a value from the agent arguments using its key.
@@ -94,7 +90,7 @@ class EnhanceContext {
 			return s.trim().equalsIgnoreCase("true");
 		}
 	}
-  
+
 	/**
 	 * Return true if this class should be ignored. That is JDK classes and
 	 * known libraries JDBC drivers etc can be skipped.
@@ -103,9 +99,6 @@ class EnhanceContext {
 		if (className == null) {
 			return true;
 		}
-    if (nameMapping.hasMatchIncludes()) {
-			return !nameMapping.matchIncludeClass(className);
-    }
 		return ignoreClassHelper.isIgnoreClass(className);
 	}
 
@@ -124,14 +117,14 @@ class EnhanceContext {
 			logout.println(msg + extra);
 		}
 	}
-	
+
 	void log(String className, String msg) {
 		if (className != null) {
 			msg = "cls: " + className + "  msg: " + msg;
 		}
 		logout.println("transform> " + msg);
 	}
-	
+
 	boolean isLog(int level){
 		return logLevel >= level;
 	}
@@ -170,21 +163,18 @@ class EnhanceContext {
   }
 
   /**
-   * Return a Match object for the metric. Can be used to assign
-   * buckets or explicitly exclude.
-   */
-  NameMapping.Match findMatch(String metricFullName) {
-    return nameMapping.findMatch(metricFullName);
-  }
-
-  /**
    * Return true if static methods should be included by default.
    */
   boolean isIncludeStaticMethods() {
     return includeStaticMethods;
   }
 
-	boolean isMatchExcludeMethod(String className, String method) {
-		return nameMapping.matchExcludeMethod(className+"."+method);
+	public boolean isIncludeRequestTiming() {
+		return manifest.isIncludeRequestTiming();
+	}
+
+
+	public boolean isNameIncludesPackage() {
+  	return manifest.isNameIncludesPackage();
 	}
 }

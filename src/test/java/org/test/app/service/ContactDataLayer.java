@@ -6,5 +6,5 @@ import org.test.app.model.Contact;
 
 public interface ContactDataLayer {
 
-  public List<Contact> fetchData();
+  List<Contact> fetchData();
 }

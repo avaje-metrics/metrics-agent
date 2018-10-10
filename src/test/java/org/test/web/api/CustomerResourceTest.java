@@ -14,10 +14,10 @@ public class CustomerResourceTest extends BaseTest {
 
     MetricManager.testReset();
     Assert.assertNull(MetricManager.testLastMetricName());
-    
+
     customerResource.publicMethodWithJaxrs();
     Assert.assertEquals("web.api.CustomerResource.publicMethodWithJaxrs", MetricManager.testLastMetricName());
-    
+
     MockTimedMetric metric = MetricManager.testGetTimedMetric("web.api.CustomerResource.publicMethodWithJaxrs");
     metric.testReset();
     Assert.assertEquals(0, metric.testGetCount());
@@ -32,14 +32,14 @@ public class CustomerResourceTest extends BaseTest {
     customerResource.delete();
     customerResource.delete();
 
-    
+
     customerResource.publicMethodWithJaxrs();
     customerResource.publicMethodWithJaxrs();
     customerResource.publicMethodWithJaxrs();
     Assert.assertEquals(6, metric.testGetCount());
 
   }
-  
+
   @Test
   public void testCustomerResource() {
 
@@ -47,14 +47,14 @@ public class CustomerResourceTest extends BaseTest {
 
     MetricManager.testReset();
     Assert.assertNull(MetricManager.testLastMetricName());
-    
+
     customerResource.publicMethodNotTimed();
     Assert.assertNull(MetricManager.testLastMetricName());
-    
+
     customerResource.publicMethodWithJaxrs();
     Assert.assertEquals("web.api.CustomerResource.publicMethodWithJaxrs", MetricManager.testLastMetricName());
     Assert.assertTrue(MetricManager.testLastMetricOpcodeSuccess());
-    
+
     customerResource.protectedMethodWithJaxrs();
     Assert.assertEquals("web.api.CustomerResource.protectedMethodWithJaxrs", MetricManager.testLastMetricName());
 
@@ -72,41 +72,41 @@ public class CustomerResourceTest extends BaseTest {
 
     customerResource.publicMethodWithJaxrs("asd", 3);
     Assert.assertEquals("web.api.CustomerResource.publicMethodWithJaxrs2", MetricManager.testLastMetricName());
-    
+
     customerResource.findAll("ok");
-    Assert.assertEquals("web.api.BaseResource.findAll", MetricManager.testLastMetricName());
-    
+    Assert.assertEquals("BaseResource.findAll", MetricManager.testLastMetricName());
+
     customerResource.delete();
-    Assert.assertEquals("web.api.BaseResource.delete", MetricManager.testLastMetricName());
+    Assert.assertEquals("BaseResource.delete", MetricManager.testLastMetricName());
 
     customerResource.deleteX(23L, "as");// ();
-    Assert.assertEquals("web.api.BaseResource.deleteX", MetricManager.testLastMetricName());
+    Assert.assertEquals("BaseResource.deleteX", MetricManager.testLastMetricName());
 
     MetricManager.testReset();
     Assert.assertNull(MetricManager.testLastMetricName());
 
     customerResource.hashCode();
     Assert.assertNull(MetricManager.testLastMetricName());
-    
+
     customerResource.toString();
     Assert.assertNull(MetricManager.testLastMetricName());
 
     try {
      customerResource.findAll("throw");
      Assert.assertTrue("Never get here", false);
-     
+
     } catch (IllegalArgumentException expected) {
-      Assert.assertEquals("web.api.BaseResource.findAll", MetricManager.testLastMetricName());
+      Assert.assertEquals("BaseResource.findAll", MetricManager.testLastMetricName());
       Assert.assertTrue(MetricManager.testLastMetricOpcodeError());
     }
   }
-  
+
   @Test
   public void testCustomerResource_staticMethods() {
 
     MetricManager.testReset();
     Assert.assertNull(MetricManager.testLastMetricName());
-    
+
     CustomerResource.aStaticMethodNotAnnotated();
     Assert.assertNull(MetricManager.testLastMetricName());
 

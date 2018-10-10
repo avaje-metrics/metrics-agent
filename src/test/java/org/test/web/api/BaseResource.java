@@ -11,7 +11,7 @@ import javax.ws.rs.core.MediaType;
 public abstract class BaseResource {
 
   @Path("/findall")
-  protected String findAll(String orderBy) {
+  public String findAll(String orderBy) {
     if ("throw".equals(orderBy)) {
       throw new IllegalArgumentException("barf");
     }

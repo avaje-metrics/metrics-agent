@@ -9,15 +9,15 @@ import java.util.Map;
 public class MetricManager {
 
   private static Map<String, TimedMetric> cache = new HashMap<>();
-  
-  private static Map<String, BucketTimedMetric> bucketCache = new HashMap<>();
+
+  private static Map<String, TimedMetric> bucketCache = new HashMap<>();
 
   private static String lastMetricName;
-  
+
   private static int lastMetricOpcode;
 
   private static boolean lastActiveThreadContext;
-  
+
   /**
    * Method called by the enhancement code.
    */
@@ -35,9 +35,9 @@ public class MetricManager {
   }
 
 
-  public synchronized static BucketTimedMetric getTimedMetric(String name, int... bucketRanges) {
-    
-    BucketTimedMetric timedMetric = bucketCache.get(name);
+  public synchronized static TimedMetric getTimedMetric(String name, int... bucketRanges) {
+
+    TimedMetric timedMetric = bucketCache.get(name);
     if (timedMetric == null) {
       System.out.println("== MetricManager: create BucketTimedMetric " + name);
       timedMetric = new MockBucketTimedMetric(name);
@@ -47,7 +47,7 @@ public class MetricManager {
     System.out.println("== MetricManager: return BucketTimedMetric " + name);
     return timedMetric;
   }
-  
+
   /**
    * For testing purpose get the TimedMetric if one has been created.
    */
@@ -58,7 +58,7 @@ public class MetricManager {
   public synchronized static MockBucketTimedMetric testGetBucketTimedMetric(String name) {
     return (MockBucketTimedMetric)bucketCache.get(name);
   }
-  
+
   /**
    * Called when a timer ends so that we can assert the call occured.
    */
@@ -67,11 +67,11 @@ public class MetricManager {
     lastMetricOpcode = opCode;
     lastActiveThreadContext = activeThreadContext;
   }
-  
+
   public static String testLastMetricName() {
     return lastMetricName;
   }
-  
+
   public static boolean testLastMetricOpcodeError() {
     return 191 == lastMetricOpcode;
   }
@@ -79,7 +79,7 @@ public class MetricManager {
   public static boolean testLastActiveThreadContext() {
     return lastActiveThreadContext;
   }
-  
+
   public static int testLastMetricOpcode() {
     return lastMetricOpcode;
   }
@@ -94,5 +94,5 @@ public class MetricManager {
     return 191 != lastMetricOpcode && 0 != lastMetricOpcode;
   }
 
-  
+
 }

@@ -1,6 +1,5 @@
 package org.test.main;
 
-import org.avaje.metric.BucketTimedMetric;
 import org.avaje.metric.MetricManager;
 import org.avaje.metric.TimedMetric;
 import org.avaje.metric.annotation.NotTimed;
@@ -10,8 +9,8 @@ public class ExampleService extends BaseService {
 
   private static TimedMetric _$metric_1;
   private static TimedMetric _$metric_2;
-  private static BucketTimedMetric _$metric_3;
-  
+  private static TimedMetric _$metric_3;
+
   static {
     _$initMetrics();
   }
@@ -35,8 +34,8 @@ public class ExampleService extends BaseService {
       _$metric_1.operationEnd(191, _$metricStart, false);
     }
   }
-  
-  
+
+
   public void doBucketSomething() throws InterruptedException {
     long _$metricStart = System.nanoTime();
     try {

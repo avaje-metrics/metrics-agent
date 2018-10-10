@@ -3,16 +3,16 @@ package org.test.web.api;
 import org.avaje.metric.annotation.NotTimed;
 import org.avaje.metric.annotation.Timed;
 
-@Timed
+@Timed(prefix = "myapi")
 public class CustomTimedResource {
 
   public static void aStaticMethodNotAnnotated() {
-    
+
   }
 
   @Timed(name="staticGeneral")
   public static void aStaticMethodWithTimedAnnotation() {
-    
+
   }
 
   @Timed(fullName=" ")
@@ -24,7 +24,7 @@ public class CustomTimedResource {
   public String publicMethodWithFullName() {
     return null;
   }
-  
+
   @Timed(name="  ")
   public String publicMethodWithNameWhiteSpace() {
     return null;
@@ -34,7 +34,7 @@ public class CustomTimedResource {
   public String publicMethodWithName() {
     return null;
   }
-  
+
   @NotTimed
   public String publicMethodNotTimed() {
     return null;

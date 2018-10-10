@@ -1,0 +1,1 @@
+nameTrimPackages: com.foo;com.foo.bar;com.foo.bar.web.moo;com.foo.bar.web;

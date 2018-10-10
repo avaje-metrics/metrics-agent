@@ -10,5 +10,7 @@ public interface TimedMetric {
    */
   void operationEnd(int opCode, long startNanos, boolean activeThreadContext);
 
+  void operationEnd(int opCode, long startNanos);
+
   boolean isActiveThreadContext();
 }

@@ -8,9 +8,15 @@ public class MockTimedMetric implements TimedMetric {
   private final String name;
 
   private int count;
-  
+
   public MockTimedMetric(String name) {
     this.name = name;
+  }
+
+  @Override
+  public void operationEnd(int opCode, long startNanos) {
+    System.out.println("not using request timing ...");
+    operationEnd(opCode, startNanos, false);
   }
 
   @Override
