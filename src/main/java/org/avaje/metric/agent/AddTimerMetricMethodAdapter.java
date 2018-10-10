@@ -292,15 +292,9 @@ public class AddTimerMetricMethodAdapter extends AdviceAdapter {
     } else {
       // apply any metric name mappings to the uniqueMethodName to get
       // the final metric name that will be used
-      String uniqueMethodName = getUniqueMetricName();
-      String mappedMetricName = context.getMappedName(uniqueMethodName);
+      String mappedMetricName = getUniqueMetricName();
       if (isLog(1)) {
-        if (mappedMetricName.equals(uniqueMethodName)) {
-          log(1, "# Add Metric[" + mappedMetricName + "] index[" + i + "]", "");
-
-        } else {
-          log(1, "# Add Metric[" + mappedMetricName + "] Method[" + uniqueMethodName + "] index[" + i + "]", "");
-        }
+        log(1, "# Add Metric[" + mappedMetricName + "] index[" + i + "]", "");
       }
 
       Label l0 = new Label();

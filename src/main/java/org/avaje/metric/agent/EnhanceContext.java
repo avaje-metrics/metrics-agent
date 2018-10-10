@@ -1,10 +1,6 @@
 package org.avaje.metric.agent;
 
 import java.io.PrintStream;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -14,151 +10,107 @@ class EnhanceContext {
 
   private static final Logger logger = Logger.getLogger(EnhanceContext.class.getName());
 
-	private final IgnoreClassHelper ignoreClassHelper;
+  private final IgnoreClassHelper ignoreClassHelper;
 
-	private final AgentManifest manifest;
+  private final AgentManifest manifest;
 
-	private final HashMap<String, String> agentArgsMap;
+  private final boolean readOnly;
 
-	private final boolean readOnly;
-
-	private final boolean enhanceSingleton;
+  private final boolean enhanceSingleton;
 
   private final boolean includeStaticMethods;
 
-	private PrintStream logout;
+  private PrintStream logout;
 
-	private int logLevel;
+  private int logLevel;
 
-	/**
-	 * Construct a context for enhancement.
-	 */
-	EnhanceContext(String agentArgs, ClassLoader classLoader, AgentManifest manifest) {
+  /**
+   * Construct a context for enhancement.
+   */
+  EnhanceContext(AgentManifest manifest) {
 
-		this.manifest = manifest;
- 		this.agentArgsMap = ArgParser.parse(agentArgs);
-		this.ignoreClassHelper = new IgnoreClassHelper(manifest.getPackages());
- 		this.logout = System.out;
+    this.manifest = manifest;
+    this.ignoreClassHelper = new IgnoreClassHelper(manifest.getPackages());
+    this.logout = System.out;
+    this.logLevel = manifest.getDebugLevel();
 
-		String debugValue = agentArgsMap.get("debug");
- 		if (debugValue != null) {
-			try {
-				logLevel = Integer.parseInt(debugValue.trim());
-			} catch (NumberFormatException e) {
-				String msg = "Avaje metrics agent debug argument [" + debugValue+ "] is not an int? ignoring.";
-        System.err.println(msg);
-				logger.log(Level.WARNING, msg);
-			}
-		}
+    this.includeStaticMethods = manifest.isIncludeStaticMethods();
+    this.readOnly = manifest.isReadOnly();
+    this.enhanceSingleton = manifest.isEnhanceSingleton();
 
-    this.includeStaticMethods = getPropertyBoolean("includestaticmethods", false);
-    this.readOnly = getPropertyBoolean("readonly", false);
-		this.enhanceSingleton = getPropertyBoolean("enhancesingleton", true);
+    if (logLevel > 0) {
+      log(8, "settings: debug[" + logLevel + "] readonly[" + readOnly + "]", "");
+    }
+  }
 
-		if (logLevel > 0) {
-      log(8, "settings: debug["+debugValue+"] readonly["+readOnly+"]", "");
-		}
-	}
+  /**
+   * Return true if this class should be ignored. That is JDK classes and
+   * known libraries JDBC drivers etc can be skipped.
+   */
+  boolean isIgnoreClass(String className) {
+    if (className == null) {
+      return true;
+    }
+    return ignoreClassHelper.isIgnoreClass(className);
+  }
 
-	private Collection<String> splitPackages(String packages) {
-		return packages != null ? Arrays.asList(packages.split(",")) : null;
-	}
+  /**
+   * Change the logout to something other than system out.
+   */
+  void setLogout(PrintStream logout) {
+    this.logout = logout;
+  }
 
-//	/**
-//	 * Return a potentially cut down metric name.
-//	 * <p>
-//	 * For example, trim of extraneous package names or prefix controllers or
-//	 * JAX-RS endpoints with "web" etc.
-//	 * </p>
-//	 */
-//	String getMappedName(String rawName) {
-//		return rawName;//nameMapping.getMappedName(rawName);
-//	}
+  /**
+   * Log some debug output.
+   */
+  void log(int level, String msg, String extra) {
+    if (logLevel >= level) {
+      logout.println(msg + extra);
+    }
+  }
 
-	/**
-	 * Return a value from the agent arguments using its key.
-	 */
-	private String getProperty(String key){
-		return agentArgsMap.get(key.toLowerCase());
-	}
+  void log(String className, String msg) {
+    if (className != null) {
+      msg = "cls: " + className + "  msg: " + msg;
+    }
+    logout.println("transform> " + msg);
+  }
 
-	private boolean getPropertyBoolean(String key, boolean dflt){
-		String s = getProperty(key);
-		if (s == null){
-			return dflt;
-		} else {
-			return s.trim().equalsIgnoreCase("true");
-		}
-	}
+  boolean isLog(int level) {
+    return logLevel >= level;
+  }
 
-	/**
-	 * Return true if this class should be ignored. That is JDK classes and
-	 * known libraries JDBC drivers etc can be skipped.
-	 */
-	boolean isIgnoreClass(String className) {
-		if (className == null) {
-			return true;
-		}
-		return ignoreClassHelper.isIgnoreClass(className);
-	}
+  /**
+   * Log an error.
+   */
+  void log(Throwable e) {
+    e.printStackTrace(logout);
+  }
 
-	/**
-	 * Change the logout to something other than system out.
-	 */
-	void setLogout(PrintStream logout) {
-		this.logout = logout;
-	}
+  /**
+   * Return the log level.
+   */
+  int getLogLevel() {
+    return logLevel;
+  }
 
-	/**
-	 * Log some debug output.
-	 */
-	void log(int level, String msg, String extra) {
-		if (logLevel >= level) {
-			logout.println(msg + extra);
-		}
-	}
+  /**
+   * Return true if this should go through the enhancement process but not
+   * actually save the enhanced classes.
+   * <p>
+   * Set this to true to run through the enhancement process without actually
+   * doing the enhancement for debugging etc.
+   * </p>
+   */
+  boolean isReadOnly() {
+    return readOnly;
+  }
 
-	void log(String className, String msg) {
-		if (className != null) {
-			msg = "cls: " + className + "  msg: " + msg;
-		}
-		logout.println("transform> " + msg);
-	}
-
-	boolean isLog(int level){
-		return logLevel >= level;
-	}
-
-	/**
-	 * Log an error.
-	 */
-	void log(Throwable e) {
-		e.printStackTrace(logout);
-	}
-
-	/**
-	 * Return the log level.
-	 */
-	int getLogLevel() {
-		return logLevel;
-	}
-
-	/**
-	 * Return true if this should go through the enhancement process but not
-	 * actually save the enhanced classes.
-	 * <p>
-	 * Set this to true to run through the enhancement process without actually
-	 * doing the enhancement for debugging etc.
-	 * </p>
-	 */
-	boolean isReadOnly() {
-		return readOnly;
-	}
-
-	/**
-	 * Return true if classes annotated with Singleton should be enhanced.
-	 */
-	boolean isEnhanceSingleton() {
+  /**
+   * Return true if classes annotated with Singleton should be enhanced.
+   */
+  boolean isEnhanceSingleton() {
     return enhanceSingleton;
   }
 
@@ -169,12 +121,11 @@ class EnhanceContext {
     return includeStaticMethods;
   }
 
-	public boolean isIncludeRequestTiming() {
-		return manifest.isIncludeRequestTiming();
-	}
+  boolean isIncludeRequestTiming() {
+    return manifest.isIncludeRequestTiming();
+  }
 
-
-	public boolean isNameIncludesPackage() {
-  	return manifest.isNameIncludesPackage();
-	}
+  boolean isNameIncludesPackage() {
+    return manifest.isNameIncludesPackage();
+  }
 }

@@ -20,6 +20,10 @@ public class AgentManifest {
 
   public static AgentManifest read(ClassLoader classLoader) {
 
+    if (classLoader == null) {
+      classLoader = Thread.currentThread().getContextClassLoader();
+    }
+
     try {
       return new AgentManifest()
         .readManifests(classLoader, "metrics-common.mf")
@@ -43,6 +47,12 @@ public class AgentManifest {
   private boolean includeJaxRsComponents;
 
   private boolean nameIncludePackages;
+
+  private int debugLevel;
+
+  private boolean includeStaticMethods;
+  private boolean enhanceSingleton;
+  private boolean readOnly;
 
   private List<String> nameTrimPackages = new ArrayList<>();
 
@@ -117,25 +127,18 @@ public class AgentManifest {
 
   void readToggles(Attributes attributes) {
 
-    String incReqTiming = attributes.getValue("requestTiming");
-    if (incReqTiming != null) {
-      includeRequestTiming = Boolean.parseBoolean(incReqTiming.trim());
+    String debug = attributes.getValue("debugLevel");
+    if (debug != null) {
+      debugLevel = Integer.parseInt(debug);
     }
 
-    String incSpring = attributes.getValue("spring");
-    if (incSpring != null) {
-      includeSpringComponents = Boolean.parseBoolean(incSpring.trim());
-    }
-
-    String incJaxRs = attributes.getValue("jaxrs");
-    if (incJaxRs != null) {
-      includeJaxRsComponents = Boolean.parseBoolean(incJaxRs.trim());
-    }
-
-    String incPkg = attributes.getValue("nameIncludePackages");
-    if (incPkg != null) {
-      nameIncludePackages = Boolean.parseBoolean(incPkg.trim());
-    }
+    includeRequestTiming = bool(attributes, "requestTiming");
+    includeStaticMethods = bool(attributes, "includeStaticMethods");
+    enhanceSingleton = bool(attributes, "enhanceSingleton");
+    readOnly = bool(attributes, "readOnly");
+    includeSpringComponents = bool(attributes, "spring");
+    includeJaxRsComponents = bool(attributes, "jaxrs");
+    nameIncludePackages= bool(attributes, "nameIncludePackages");
 
     String trimPkgs = attributes.getValue("nameTrimPackages");
     if (trimPkgs != null) {
@@ -148,6 +151,11 @@ public class AgentManifest {
       }
       nameTrimPackages.sort(Comparator.comparingInt(s -> s.length() * -1));
     }
+  }
+
+  private boolean bool(Attributes attributes, String key) {
+    String val = attributes.getValue(key);
+    return val != null && Boolean.parseBoolean(val.trim());
   }
 
 
@@ -172,11 +180,27 @@ public class AgentManifest {
     }
   }
 
-  public boolean isNameIncludesPackage() {
+  int getDebugLevel() {
+    return debugLevel;
+  }
+
+  boolean isIncludeStaticMethods() {
+    return includeStaticMethods;
+  }
+
+  boolean isEnhanceSingleton() {
+    return enhanceSingleton;
+  }
+
+  boolean isReadOnly() {
+    return readOnly;
+  }
+
+  boolean isNameIncludesPackage() {
     return nameIncludePackages;
   }
 
-  public String trim(String fullName) {
+  String trim(String fullName) {
     for (String trimPackage : nameTrimPackages) {
       if (fullName.startsWith(trimPackage)) {
         return fullName.substring(trimPackage.length());

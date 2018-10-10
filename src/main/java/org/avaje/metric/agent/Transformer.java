@@ -21,7 +21,7 @@ public class Transformer implements ClassFileTransformer {
 
   public static void premain(String agentArgs, Instrumentation inst) {
 
-    Transformer t = new Transformer(agentArgs, null);
+    Transformer t = new Transformer();
     inst.addTransformer(t);
 
     if (t.getLogLevel() > 0) {
@@ -29,8 +29,8 @@ public class Transformer implements ClassFileTransformer {
     }
   }
 
-  public static void agentmain(String agentArgs, Instrumentation inst) throws Exception {
-    Transformer t = new Transformer( agentArgs, null);
+  public static void agentmain(String agentArgs, Instrumentation inst) {
+    Transformer t = new Transformer();
     inst.addTransformer(t);
 
     if (t.getLogLevel() > 0) {
@@ -43,15 +43,22 @@ public class Transformer implements ClassFileTransformer {
   /**
    * Construct using the default classBytesReader implementation.
    */
-  public Transformer(String agentArgs, ClassLoader classLoader, AgentManifest manifest) {
-    this.enhanceContext = new EnhanceContext(agentArgs, classLoader, manifest);
+  public Transformer(AgentManifest manifest) {
+    this.enhanceContext = new EnhanceContext(manifest);
   }
 
   /**
    * Construct with metric name mapping pre-loaded (e.g. IDE enhancement).
    */
-  public Transformer(String agentArgs, ClassLoader classLoader) {
-    this.enhanceContext = new EnhanceContext(agentArgs, classLoader, AgentManifest.read(classLoader));
+  public Transformer(ClassLoader classLoader) {
+    this.enhanceContext = new EnhanceContext(AgentManifest.read(classLoader));
+  }
+
+  /**
+   * Construct using the context class loader.
+   */
+  public Transformer() {
+    this.enhanceContext = new EnhanceContext(AgentManifest.read(null));
   }
 
   /**
