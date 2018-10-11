@@ -211,13 +211,13 @@ public class ClassAdapterMetric extends ClassVisitor implements Opcodes {
       shouldBeEnhanced = true;
     }
 
-    if (isJaxRsEndpoint(desc)) {
+    if (enhanceContext.isIncludeJaxRS() && isJaxRsEndpoint(desc)) {
       detectJaxrs = true;
       shouldBeEnhanced = true;
     }
 
     // We are interested in Service, Controller, Component etc
-    if (desc.startsWith(SPRINGFRAMEWORK_STEREOTYPE)) {
+    if (enhanceContext.isIncludeSpring() && desc.startsWith(SPRINGFRAMEWORK_STEREOTYPE)) {
       detectSpringComponent = true;
       shouldBeEnhanced = true;
     }
@@ -225,7 +225,6 @@ public class ClassAdapterMetric extends ClassVisitor implements Opcodes {
   }
 
   private boolean isJaxRsEndpoint(String desc) {
-
     return desc.equals("Ljavax/ws/rs/Path;")
       || desc.equals("Ljavax/ws/rs/Produces;")
       || desc.equals("Ljavax/ws/rs/Consumes;");

@@ -10,12 +10,12 @@ public class IndexResourceTest extends BaseTest {
 
   IndexResource orderService = new IndexResource(new SimpleService());
 
-  MockTimedMetric metric = MetricManager.testGetTimedMetric("IndexResource.index");
-
   @Test
   public void testSuccessExecution() {
 
     orderService.testForceError(false);
+
+    MockTimedMetric metric = MetricManager.testGetTimedMetric("IndexResource.index");
     metric.testReset();
 
     orderService.index();
@@ -32,6 +32,8 @@ public class IndexResourceTest extends BaseTest {
   public void testErrorExecution() {
 
     orderService.testForceError(true);
+
+    MockTimedMetric metric = MetricManager.testGetTimedMetric("IndexResource.index");
     metric.testReset();
 
     try {

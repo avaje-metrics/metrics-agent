@@ -8,8 +8,10 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
+import org.avaje.metric.annotation.Timed;
 import org.test.app.SimpleService;
 
+@Timed
 @Path("/")
 public class IndexResource {
 
@@ -18,14 +20,14 @@ public class IndexResource {
   private final SimpleService timeService;
 
   private boolean forceError;
-  
+
   /**
    * For testing - set to true to simulate error.
    */
   protected void testForceError(boolean forceError) {
     this.forceError = forceError;
   }
-  
+
   @Inject
   public IndexResource(SimpleService timeService) {
     this.timeService = timeService;
@@ -35,7 +37,7 @@ public class IndexResource {
   @GET
   @Produces(MediaType.TEXT_HTML)
   public String index() {
-    
+
     timeService.doSomething();
     if (forceError) {
       throw new ResourceException();
@@ -47,7 +49,7 @@ public class IndexResource {
   @Path("/hello")
   @Produces(MediaType.TEXT_HTML)
   public String hello() {
-    
+
     return "hello content";
   }
 }

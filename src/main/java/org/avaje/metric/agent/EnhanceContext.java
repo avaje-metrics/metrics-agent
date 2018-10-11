@@ -128,4 +128,12 @@ class EnhanceContext {
   boolean isNameIncludesPackage() {
     return manifest.isNameIncludesPackage();
   }
+
+  boolean isIncludeJaxRS() {
+    return manifest.isIncludeJaxRS();
+  }
+
+  boolean isIncludeSpring() {
+    return manifest.isIncludeSpring();
+  }
 }

@@ -77,14 +77,14 @@ public class AgentManifest {
   /**
    * Return true if we should use automatically enhance JAX-RS endpoints.
    */
-  public boolean includeJaxRS() {
+  public boolean isIncludeJaxRS() {
     return includeJaxRsComponents;
   }
 
   /**
    * Return true if we should use automatically enhance Spring components.
    */
-  public boolean includeSpring() {
+  public boolean isIncludeSpring() {
     return includeSpringComponents;
   }
 
@@ -180,23 +180,62 @@ public class AgentManifest {
     }
   }
 
-  int getDebugLevel() {
+  /**
+   * Set the debugLevel but only if it has not already been set (via metrics.mf file typically).
+   */
+  public AgentManifest setDefaultDebugLevel(int defaultDebugLevel) {
+
+    if (debugLevel == 0) {
+      debugLevel = defaultDebugLevel;
+    }
+    return this;
+  }
+
+  /**
+   * Set the debugLevel.
+   */
+  public AgentManifest setDebugLevel(int debugLevel) {
+    this.debugLevel = debugLevel;
+    return this;
+  }
+
+  public AgentManifest setIncludeRequestTiming(boolean includeRequestTiming) {
+    this.includeRequestTiming = includeRequestTiming;
+    return this;
+  }
+
+  public AgentManifest setIncludeSpringComponents(boolean includeSpringComponents) {
+    this.includeSpringComponents = includeSpringComponents;
+    return this;
+  }
+
+  public AgentManifest setIncludeJaxRsComponents(boolean includeJaxRsComponents) {
+    this.includeJaxRsComponents = includeJaxRsComponents;
+    return this;
+  }
+
+  public AgentManifest setIncludeStaticMethods(boolean includeStaticMethods) {
+    this.includeStaticMethods = includeStaticMethods;
+    return this;
+  }
+
+  public int getDebugLevel() {
     return debugLevel;
   }
 
-  boolean isIncludeStaticMethods() {
+  public boolean isIncludeStaticMethods() {
     return includeStaticMethods;
   }
 
-  boolean isEnhanceSingleton() {
+  public boolean isEnhanceSingleton() {
     return enhanceSingleton;
   }
 
-  boolean isReadOnly() {
+  public boolean isReadOnly() {
     return readOnly;
   }
 
-  boolean isNameIncludesPackage() {
+  public boolean isNameIncludesPackage() {
     return nameIncludePackages;
   }
 
