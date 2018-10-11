@@ -1,6 +1,7 @@
 package org.avaje.metric.agent;
 
 import java.io.PrintStream;
+import java.util.function.Consumer;
 import java.util.logging.Logger;
 
 /**
@@ -23,6 +24,8 @@ class EnhanceContext {
   private PrintStream logout;
 
   private int logLevel;
+
+  private Consumer<String> enhancementLogger;
 
   /**
    * Construct a context for enhancement.
@@ -135,5 +138,15 @@ class EnhanceContext {
 
   boolean isIncludeSpring() {
     return manifest.isIncludeSpring();
+  }
+
+  void logAddingMetric(String mappedMetricName) {
+    if (enhancementLogger != null) {
+      enhancementLogger.accept(mappedMetricName);
+    }
+  }
+
+  void setLogger(Consumer<String> logger) {
+    this.enhancementLogger = logger;
   }
 }

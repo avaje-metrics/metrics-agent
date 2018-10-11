@@ -9,6 +9,7 @@ import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.IllegalClassFormatException;
 import java.lang.instrument.Instrumentation;
 import java.security.ProtectionDomain;
+import java.util.function.Consumer;
 
 
 /**
@@ -59,6 +60,14 @@ public class Transformer implements ClassFileTransformer {
    */
   public Transformer() {
     this.enhanceContext = new EnhanceContext(AgentManifest.read(null));
+  }
+
+  /**
+   * Set a consumer that is notified with metric names during enhancement.
+   * Use this to log the enhanced metrics during maven build etc.
+   */
+  public void setLogger(Consumer<String> logger) {
+    enhanceContext.setLogger(logger);
   }
 
   /**
