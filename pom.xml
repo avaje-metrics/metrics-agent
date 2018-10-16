@@ -9,12 +9,12 @@
 
   <groupId>org.avaje.metric</groupId>
   <artifactId>metric-agent</artifactId>
-  <version>7.2.1</version>
+  <version>7.2.2-SNAPSHOT</version>
   <name>metric-agent</name>
 
   <scm>
     <developerConnection>scm:git:git@github.com:avaje-metric/metric-agent.git</developerConnection>
-    <tag>metric-agent-7.2.1</tag>
+    <tag>HEAD</tag>
   </scm>
 
   <dependencies>
