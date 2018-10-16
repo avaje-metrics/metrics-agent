@@ -13,7 +13,7 @@
   <name>metric-agent</name>
 
   <scm>
-    <developerConnection>scm:git:git@github.com:avaje-metric/avaje-metric-agent.git</developerConnection>
+    <developerConnection>scm:git:git@github.com:avaje-metric/metric-agent.git</developerConnection>
     <tag>HEAD</tag>
   </scm>
 
