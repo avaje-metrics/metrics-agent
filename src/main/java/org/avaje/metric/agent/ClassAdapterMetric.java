@@ -24,9 +24,7 @@ public class ClassAdapterMetric extends ClassVisitor implements Opcodes {
 
   private static final String ANNOTATION_ALREADY_ENHANCED_MARKER = "Lorg/avaje/metric/spi/AlreadyEnhancedMarker;";
 
-  final EnhanceContext enhanceContext;
-
-  protected final ClassLoader classLoader;
+  private final EnhanceContext enhanceContext;
 
   private boolean markerAnnotationAdded;
 
@@ -38,7 +36,7 @@ public class ClassAdapterMetric extends ClassVisitor implements Opcodes {
 
   private boolean detectExplicit;
 
-  private boolean shouldBeEnhanced;
+  private boolean enhanceClassLevel;
 
   private boolean existingStaticInitialiser;
 
@@ -71,10 +69,13 @@ public class ClassAdapterMetric extends ClassVisitor implements Opcodes {
   /**
    * Construct with visitor, context and classLoader.
    */
-  ClassAdapterMetric(ClassVisitor cv, EnhanceContext context, ClassLoader classLoader) {
+  ClassAdapterMetric(ClassVisitor cv, EnhanceContext context) {
     super(ASM6, cv);
     this.enhanceContext = context;
-    this.classLoader = classLoader;
+  }
+
+  EnhanceContext getEnhanceContext() {
+    return enhanceContext;
   }
 
   boolean isLog(int level) {
@@ -162,13 +163,6 @@ public class ClassAdapterMetric extends ClassVisitor implements Opcodes {
     }
   }
 
-//  /**
-//   * Set the full metric name for this class.
-//   */
-//  private void setMetricFullName(String className) {
-//    this.metricFullName = className.replace('/', '.');
-//  }
-
   @Override
   public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
 
@@ -201,25 +195,25 @@ public class ClassAdapterMetric extends ClassVisitor implements Opcodes {
     if (desc.equals(ANNOTATION_TIMED)) {
       log(5, "found Timed annotation ", desc);
       detectExplicit = true;
-      shouldBeEnhanced = true;
+      enhanceClassLevel = true;
       // read the name and bucket ranges from the class level Timer annotation
       return new ClassTimedAnnotationVisitor(av);
     }
 
     if (enhanceContext.isEnhanceSingleton() && desc.endsWith(SINGLETON)) {
       detectSingleton = true;
-      shouldBeEnhanced = true;
+      enhanceClassLevel = true;
     }
 
     if (enhanceContext.isIncludeJaxRS() && isJaxRsEndpoint(desc)) {
       detectJaxrs = true;
-      shouldBeEnhanced = true;
+      enhanceClassLevel = true;
     }
 
     // We are interested in Service, Controller, Component etc
     if (enhanceContext.isIncludeSpring() && desc.startsWith(SPRINGFRAMEWORK_STEREOTYPE)) {
       detectSpringComponent = true;
-      shouldBeEnhanced = true;
+      enhanceClassLevel = true;
     }
     return av;
   }
@@ -280,12 +274,7 @@ public class ClassAdapterMetric extends ClassVisitor implements Opcodes {
   @Override
   public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
 
-    if (!shouldBeEnhanced) {
-      log(8, "... no marker annotations found ");
-      throw new NoEnhancementRequiredException();
-    } else {
-      addMarkerAnnotation();
-    }
+    addMarkerAnnotation();
 
     MethodVisitor mv = super.visitMethod(access, name, desc, signature, exceptions);
     if (name.equals("<init>")) {
@@ -313,7 +302,7 @@ public class ClassAdapterMetric extends ClassVisitor implements Opcodes {
       log("... method:" + name + " public:" + publicMethod + " index:" + metricIndex + " uniqueMethodName:" + uniqueMethodName);
     }
 
-    boolean enhanceByDefault = publicMethod;
+    boolean enhanceByDefault = enhanceClassLevel && publicMethod;
     if ((access & Opcodes.ACC_STATIC) != 0) {
       // by default not enhancing static method unless it is explicitly
       // annotated with a Timed annotation
@@ -376,6 +365,11 @@ public class ClassAdapterMetric extends ClassVisitor implements Opcodes {
   @Override
   public void visitEnd() {
 
+    if (noTimedMethods()) {
+      log(8, "... no timed methods, not enhancing");
+      throw new NoEnhancementRequiredException();
+    }
+
     addStaticFieldDefinitions();
     addStaticFieldInitialisers();
 
@@ -385,6 +379,18 @@ public class ClassAdapterMetric extends ClassVisitor implements Opcodes {
     }
 
     super.visitEnd();
+  }
+
+  /**
+   * Return true if all the methods have no enhancement required.
+   */
+  private boolean noTimedMethods() {
+    for (AddTimerMetricMethodAdapter methodAdapter : methodAdapters) {
+      if (methodAdapter.isEnhanced()){
+        return false;
+      }
+    }
+    return true;
   }
 
   private void addStaticFieldDefinitions() {

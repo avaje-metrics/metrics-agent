@@ -55,11 +55,8 @@ public class CustomerResourceTest extends BaseTest {
     Assert.assertEquals("web.api.CustomerResource.publicMethodWithJaxrs", MetricManager.testLastMetricName());
     Assert.assertTrue(MetricManager.testLastMetricOpcodeSuccess());
 
-    customerResource.protectedMethodWithJaxrs();
-    Assert.assertEquals("web.api.CustomerResource.protectedMethodWithJaxrs", MetricManager.testLastMetricName());
-
     customerResource.nakedProtectedMethod();
-    Assert.assertEquals("web.api.CustomerResource.protectedMethodWithJaxrs", MetricManager.testLastMetricName());
+    Assert.assertEquals("web.api.CustomerResource.publicMethodWithJaxrs", MetricManager.testLastMetricName());
 
     customerResource.nakedPublicMethod();
     Assert.assertEquals("web.api.CustomerResource.nakedPublicMethod", MetricManager.testLastMetricName());

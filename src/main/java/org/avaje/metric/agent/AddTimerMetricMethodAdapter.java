@@ -58,7 +58,7 @@ public class AddTimerMetricMethodAdapter extends AdviceAdapter {
 
     super(ASM6, mv, acc, name, desc);
     this.classAdapter = classAdapter;
-    this.context = classAdapter.enhanceContext;
+    this.context = classAdapter.getEnhanceContext();
     this.className = classAdapter.className;
     this.methodName = name;
     this.metricIndex = metricIndex;
@@ -69,7 +69,7 @@ public class AddTimerMetricMethodAdapter extends AdviceAdapter {
   /**
    * Return true if this method was enhanced.
    */
-  private boolean isEnhanced() {
+  public boolean isEnhanced() {
     return enhanced;
   }
 
@@ -186,7 +186,7 @@ public class AddTimerMetricMethodAdapter extends AdviceAdapter {
       return av;
     }
 
-    if (AnnotationInfo.isJaxrsEndpoint(desc)) {
+    if (context.isIncludeJaxRS() && AnnotationInfo.isJaxrsEndpoint(desc)) {
       log(4,"... found jaxrs annotation ", desc);
       enhanced = true;
       return av;

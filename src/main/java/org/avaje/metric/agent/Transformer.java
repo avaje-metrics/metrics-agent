@@ -119,8 +119,7 @@ public class Transformer implements ClassFileTransformer {
 
     ClassReader cr = new ClassReader(classfileBuffer);
     ClassWriter cw = new ClassWriterWithoutClassLoading(ClassWriter.COMPUTE_FRAMES + ClassWriter.COMPUTE_MAXS, loader);
-    ClassAdapterMetric ca = new ClassAdapterMetric(cw, enhanceContext, loader);
-
+    ClassAdapterMetric ca = new ClassAdapterMetric(cw, enhanceContext);
     try {
 
       cr.accept(ca, ClassReader.EXPAND_FRAMES);

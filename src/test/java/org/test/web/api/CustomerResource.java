@@ -51,12 +51,6 @@ public class CustomerResource extends BaseResource {
     return "Foo";
   }
 
-  @GET
-  protected String protectedMethodWithJaxrs() {
-    System.out.println("IN protectedMethodWithJaxrs");
-    return "Hello";
-  }
-
   public String nakedPublicMethod() {
     System.out.println("IN nakedPublicMethod");
     myTimedPrivateMethod();
