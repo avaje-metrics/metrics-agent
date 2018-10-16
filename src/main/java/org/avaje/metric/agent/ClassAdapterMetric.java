@@ -135,6 +135,10 @@ public class ClassAdapterMetric extends ClassVisitor implements Opcodes {
     return enhanceContext.isNameIncludesPackage() ? longName : shortName;
   }
 
+  String getShortName() {
+    return shortName;
+  }
+
   /**
    * Set the metric name via Timer annotation.
    */

@@ -1,7 +1,5 @@
 package org.avaje.metric.agent;
 
-import java.util.Arrays;
-
 import org.avaje.metric.agent.asm.AnnotationVisitor;
 import org.avaje.metric.agent.asm.ClassVisitor;
 import org.avaje.metric.agent.asm.FieldVisitor;
@@ -10,6 +8,8 @@ import org.avaje.metric.agent.asm.MethodVisitor;
 import org.avaje.metric.agent.asm.Opcodes;
 import org.avaje.metric.agent.asm.Type;
 import org.avaje.metric.agent.asm.commons.AdviceAdapter;
+
+import java.util.Arrays;
 
 /**
  * Enhances a method adding support for using TimerMetric or BucketTimerMetric to collect method
@@ -39,9 +39,11 @@ public class AddTimerMetricMethodAdapter extends AdviceAdapter {
 
   private final int metricIndex;
 
-  private String metricName;
+  private String name;
 
-  private String metricFullName;
+  private String fullName;
+
+  private String prefix;
 
   private int[] buckets;
 
@@ -54,7 +56,7 @@ public class AddTimerMetricMethodAdapter extends AdviceAdapter {
   private boolean enhanced;
 
   AddTimerMetricMethodAdapter(ClassAdapterMetric classAdapter, boolean enhanceDefault,
-      int metricIndex, String uniqueMethodName, MethodVisitor mv, int acc, String name, String desc) {
+                              int metricIndex, String uniqueMethodName, MethodVisitor mv, int acc, String name, String desc) {
 
     super(ASM6, mv, acc, name, desc);
     this.classAdapter = classAdapter;
@@ -62,7 +64,7 @@ public class AddTimerMetricMethodAdapter extends AdviceAdapter {
     this.className = classAdapter.className;
     this.methodName = name;
     this.metricIndex = metricIndex;
-    this.metricName = uniqueMethodName;
+    this.name = uniqueMethodName;
     this.enhanced = enhanceDefault;
   }
 
@@ -76,25 +78,29 @@ public class AddTimerMetricMethodAdapter extends AdviceAdapter {
   /**
    * Set by Timed annotation name attribute.
    */
-  private void setMetricName(String metricName) {
+  private void setName(String metricName) {
     metricName = metricName.trim();
     if (metricName.length() > 0) {
-      this.metricName = metricName;
+      this.name = metricName;
     }
   }
 
   /**
    * Set by Timed annotation fullName attribute.
    */
-  private void setMetricFullName(String metricFullName) {
-    this.metricFullName = metricFullName;
+  private void setFullName(String fullName) {
+    this.fullName = fullName;
+  }
+
+  private void setPrefix(String prefix) {
+    this.prefix = prefix;
   }
 
   /**
    * Set the bucket ranges to use for this metric/method.
    */
   private void setBuckets(Object bucket) {
-    this.buckets = (int[])bucket;
+    this.buckets = (int[]) bucket;
   }
 
   /**
@@ -132,10 +138,19 @@ public class AddTimerMetricMethodAdapter extends AdviceAdapter {
    * Get the unique metric name.
    */
   private String getUniqueMetricName() {
-    if (metricFullName != null && metricFullName.trim().length() > 0) {
-      return metricFullName.trim();
+    if (hasValue(fullName)) {
+      return fullName.trim();
     }
-    return classAdapter.getMetricPrefix() + "." + metricName.trim();
+    if (hasValue(prefix)) {
+      return prefix + "." + classAdapter.getShortName() + "." + name.trim();
+
+    } else {
+      return classAdapter.getMetricPrefix() + "." + name.trim();
+    }
+  }
+
+  private boolean hasValue(String value) {
+    return value != null && !value.trim().isEmpty();
   }
 
   public void visitCode() {
@@ -156,38 +171,38 @@ public class AddTimerMetricMethodAdapter extends AdviceAdapter {
   @Override
   public AnnotationVisitor visitAnnotation(String desc, boolean visible) {
 
-    AnnotationVisitor av =  super.visitAnnotation(desc, visible);
+    AnnotationVisitor av = super.visitAnnotation(desc, visible);
     if (detectNotTimed) {
       // just ignore
       return av;
     }
 
     if (isLog(7)) {
-      log(7,"... check method annotation ", desc);
+      log(7, "... check method annotation ", desc);
     }
     if (AnnotationInfo.isNotTimed(desc)) {
       // definitely do not enhance this method
-      log(4,"... found NotTimed", desc);
+      log(4, "... found NotTimed", desc);
       detectNotTimed = true;
       enhanced = false;
       return av;
     }
 
     if (AnnotationInfo.isTimed(desc)) {
-      log(4,"... found Timed annotation ", desc);
+      log(4, "... found Timed annotation ", desc);
       enhanced = true;
       return new TimedAnnotationVisitor(av);
     }
 
     if (AnnotationInfo.isPostConfigured(desc)) {
-      log(4,"... found postConfigured annotation ", desc);
+      log(4, "... found postConfigured annotation ", desc);
       detectNotTimed = true;
       enhanced = false;
       return av;
     }
 
     if (context.isIncludeJaxRS() && AnnotationInfo.isJaxrsEndpoint(desc)) {
-      log(4,"... found jaxrs annotation ", desc);
+      log(4, "... found jaxrs annotation ", desc);
       enhanced = true;
       return av;
     }
@@ -206,15 +221,22 @@ public class AddTimerMetricMethodAdapter extends AdviceAdapter {
 
     @Override
     public void visit(String name, Object value) {
-      if ("name".equals(name) && !"".equals(value)) {
-        setMetricName(value.toString());
+      if ("name".equals(name) && isNotEmpty(value)) {
+        setName(value.toString());
 
-      } else if ("fullName".equals(name) && !"".equals(value)) {
-        setMetricFullName(value.toString());
+      } else if ("fullName".equals(name) && isNotEmpty(value)) {
+        setFullName(value.toString());
+
+      } else if ("prefix".equals(name) && isNotEmpty(value)) {
+        setPrefix(value.toString());
 
       } else if ("buckets".equals(name)) {
         setBuckets(value);
       }
+    }
+
+    private boolean isNotEmpty(Object value) {
+      return !"".equals(value);
     }
   }
 
@@ -239,7 +261,7 @@ public class AddTimerMetricMethodAdapter extends AdviceAdapter {
     if (enhanced) {
       if (opcode == ATHROW) {
         if (isLog(8)) {
-          log(8,"... add visitFrame in ", metricName);
+          log(8, "... add visitFrame in ", name);
         }
         mv.visitFrame(Opcodes.F_SAME, 1, new Object[]{Opcodes.LONG}, 0, null);
       }
@@ -250,7 +272,7 @@ public class AddTimerMetricMethodAdapter extends AdviceAdapter {
       Label l5 = new Label();
       mv.visitLabel(l5);
       mv.visitLineNumber(1, l5);
-      mv.visitFieldInsn(GETSTATIC, className, "_$metric_"+metricIndex, getLMetricType());
+      mv.visitFieldInsn(GETSTATIC, className, "_$metric_" + metricIndex, getLMetricType());
       visitIntInsn(SIPUSH, opcode);
       loadLocal(posTimeStart);
       if (context.isIncludeRequestTiming()) {
@@ -263,7 +285,7 @@ public class AddTimerMetricMethodAdapter extends AdviceAdapter {
   }
 
   protected void onMethodExit(int opcode) {
-    if(opcode!=ATHROW) {
+    if (opcode != ATHROW) {
       onFinally(opcode);
     }
   }
@@ -273,7 +295,7 @@ public class AddTimerMetricMethodAdapter extends AdviceAdapter {
     if (enhanced) {
       if (context.isIncludeRequestTiming()) {
         posUseContext = newLocal(Type.BOOLEAN_TYPE);
-        mv.visitFieldInsn(GETSTATIC, className, "_$metric_"+metricIndex, getLMetricType());
+        mv.visitFieldInsn(GETSTATIC, className, "_$metric_" + metricIndex, getLMetricType());
         mv.visitMethodInsn(INVOKEINTERFACE, getMetricType(), METHOD_IS_ACTIVE_THREAD_CONTEXT, "()Z", true);
         mv.visitVarInsn(ISTORE, posUseContext);
       }
@@ -324,7 +346,7 @@ public class AddTimerMetricMethodAdapter extends AdviceAdapter {
           mv.visitInsn(IASTORE);
         }
         mv.visitMethodInsn(INVOKESTATIC, METRIC_MANAGER, "getTimedMetric", "(Ljava/lang/String;[I)Lorg/avaje/metric/TimedMetric;", false);
-        mv.visitFieldInsn(PUTSTATIC, className, "_$metric_"+i, LTIMED_METRIC);
+        mv.visitFieldInsn(PUTSTATIC, className, "_$metric_" + i, LTIMED_METRIC);
       }
     }
   }
@@ -332,7 +354,7 @@ public class AddTimerMetricMethodAdapter extends AdviceAdapter {
   void addFieldDefinition(ClassVisitor cv, int i) {
     if (isEnhanced()) {
       if (isLog(4)) {
-        log(4, "... init field index[" + i + "] METHOD[" + getUniqueMetricName() + "]","");
+        log(4, "... init field index[" + i + "] METHOD[" + getUniqueMetricName() + "]", "");
       }
       FieldVisitor fv = cv.visitField(ACC_PRIVATE + ACC_STATIC, "_$metric_" + i, getLMetricType(), null, null);
       fv.visitEnd();
