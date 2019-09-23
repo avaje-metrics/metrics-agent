@@ -2,7 +2,7 @@
 
 Bytecode transformation agent that can be used to add metric collection
 
-Refer to documentation at http://avaje-metric.github.io/
+Refer to documentation at http://avaje-metrics.github.io/
 
 Usually the agent is used via maven plugin or tile.
 
