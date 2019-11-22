@@ -30,6 +30,8 @@ public class ClassAdapterMetric extends ClassVisitor implements Opcodes {
 
   private boolean detectSingleton;
 
+  private boolean detectWebController;
+
   private boolean detectJaxrs;
 
   private boolean detectSpringComponent;
@@ -59,6 +61,7 @@ public class ClassAdapterMetric extends ClassVisitor implements Opcodes {
    * The metric full name that is a common prefix for each method.
    */
   private String metricFullName;
+
   private String prefix;
 
   /**
@@ -204,6 +207,12 @@ public class ClassAdapterMetric extends ClassVisitor implements Opcodes {
       return new ClassTimedAnnotationVisitor(av);
     }
 
+    if (isWebEndpoint(desc)) {
+      log(5, "found web endpoint annotation ", desc);
+      detectWebController = true;
+      enhanceClassLevel = true;
+    }
+
     if (enhanceContext.isEnhanceSingleton() && desc.endsWith(SINGLETON)) {
       detectSingleton = true;
       enhanceClassLevel = true;
@@ -222,6 +231,14 @@ public class ClassAdapterMetric extends ClassVisitor implements Opcodes {
     return av;
   }
 
+  /**
+   * Return true if this annotation marks a Rest Controller.
+   */
+  private boolean isWebEndpoint(String desc) {
+    return desc.equals("Lio/dinject/controller/Path;")
+      || desc.equals("Lio/dinject/controller/Controller;");
+  }
+
   private boolean isJaxRsEndpoint(String desc) {
     return desc.equals("Ljavax/ws/rs/Path;")
       || desc.equals("Ljavax/ws/rs/Produces;")
@@ -233,10 +250,11 @@ public class ClassAdapterMetric extends ClassVisitor implements Opcodes {
     if (!markerAnnotationAdded) {
       if (isLog(4)) {
         String flagExplicit = (detectExplicit ? "EXPLICIT " : "");
+        String flagWeb = (detectWebController ? "WebApi " : "");
         String flagJaxrs = (detectJaxrs ? "JAXRS " : "");
         String flagSpring = (detectSpringComponent ? "SPRING " : "");
         String flagSingleton = (detectSingleton ? "SINGLETON" : "");
-        log(4, "enhancing - detection ", flagExplicit + flagJaxrs + flagSpring + flagSingleton);
+        log(4, "enhancing - detection ", flagExplicit + flagWeb + flagJaxrs + flagSpring + flagSingleton);
       }
       AnnotationVisitor av = cv.visitAnnotation(ANNOTATION_ALREADY_ENHANCED_MARKER, true);
       if (av != null) {
