@@ -58,7 +58,7 @@ public class AddTimerMetricMethodAdapter extends AdviceAdapter {
   AddTimerMetricMethodAdapter(ClassAdapterMetric classAdapter, boolean enhanceDefault,
                               int metricIndex, String uniqueMethodName, MethodVisitor mv, int acc, String name, String desc) {
 
-    super(ASM6, mv, acc, name, desc);
+    super(ASM7, mv, acc, name, desc);
     this.classAdapter = classAdapter;
     this.context = classAdapter.getEnhanceContext();
     this.className = classAdapter.className;
@@ -200,7 +200,11 @@ public class AddTimerMetricMethodAdapter extends AdviceAdapter {
       enhanced = false;
       return av;
     }
-
+    if (AnnotationInfo.isDInjectControllerMethod(desc)) {
+      log(4, "... found dinject controller annotation ", desc);
+      enhanced = true;
+      return av;
+    }
     if (context.isIncludeJaxRS() && AnnotationInfo.isJaxrsEndpoint(desc)) {
       log(4, "... found jaxrs annotation ", desc);
       enhanced = true;
@@ -216,7 +220,7 @@ public class AddTimerMetricMethodAdapter extends AdviceAdapter {
   private class TimedAnnotationVisitor extends AnnotationVisitor {
 
     TimedAnnotationVisitor(AnnotationVisitor av) {
-      super(ASM6, av);
+      super(ASM7, av);
     }
 
     @Override

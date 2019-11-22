@@ -70,7 +70,7 @@ public class ClassAdapterMetric extends ClassVisitor implements Opcodes {
    * Construct with visitor, context and classLoader.
    */
   ClassAdapterMetric(ClassVisitor cv, EnhanceContext context) {
-    super(ASM6, cv);
+    super(ASM7, cv);
     this.enhanceContext = context;
   }
 
@@ -252,7 +252,7 @@ public class ClassAdapterMetric extends ClassVisitor implements Opcodes {
   private class ClassTimedAnnotationVisitor extends AnnotationVisitor {
 
     ClassTimedAnnotationVisitor(AnnotationVisitor av) {
-      super(ASM6, av);
+      super(ASM7, av);
     }
 
     @Override

@@ -36,7 +36,6 @@ class IgnoreClassHelper {
     ignoreTwoLevel.add("org/junit");
     ignoreTwoLevel.add("org/apache");
     ignoreTwoLevel.add("org/eclipse");
-    ignoreTwoLevel.add("org/jetbrains");
     ignoreTwoLevel.add("org/joda");
     ignoreTwoLevel.add("com/mysql");
     ignoreTwoLevel.add("org/postgresql");

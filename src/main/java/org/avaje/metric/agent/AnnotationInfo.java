@@ -23,6 +23,7 @@ public class AnnotationInfo {
    * Set of JAXRS annotations we look for to detect web endpoints.
    */
   private static final Set<String> JAXRS_ANNOTATIONS = new HashSet<>();
+  private static final Set<String> DINJECT_ANNOTATIONS = new HashSet<>();
 
   static {
     JAXRS_ANNOTATIONS.add("Ljavax/ws/rs/Path;");
@@ -32,6 +33,14 @@ public class AnnotationInfo {
     JAXRS_ANNOTATIONS.add("Ljavax/ws/rs/POST;");
     JAXRS_ANNOTATIONS.add("Ljavax/ws/rs/DELETE;");
     JAXRS_ANNOTATIONS.add("Ljavax/ws/rs/OPTIONS;");
+
+    DINJECT_ANNOTATIONS.add("Lio/dinject/controller/Path;");
+    DINJECT_ANNOTATIONS.add("Lio/dinject/controller/Head;");
+    DINJECT_ANNOTATIONS.add("Lio/dinject/controller/Get;");
+    DINJECT_ANNOTATIONS.add("Lio/dinject/controller/Put;");
+    DINJECT_ANNOTATIONS.add("Lio/dinject/controller/Post;");
+    DINJECT_ANNOTATIONS.add("Lio/dinject/controller/Delete;");
+    DINJECT_ANNOTATIONS.add("Lio/dinject/controller/Options;");
   }
 
   /**
@@ -60,6 +69,10 @@ public class AnnotationInfo {
    */
   static boolean isJaxrsEndpoint(String desc) {
     return desc.startsWith("Ljavax/ws/rs") && JAXRS_ANNOTATIONS.contains(desc);
+  }
+
+  static boolean isDInjectControllerMethod(String desc) {
+    return desc.startsWith("Lio/dinject/") && DINJECT_ANNOTATIONS.contains(desc);
   }
 
   /**

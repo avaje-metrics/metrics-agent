@@ -34,6 +34,7 @@ package org.avaje.metric.agent.asm;
  * @author Jason Zaugg
  */
 public final class ClassTooLargeException extends IndexOutOfBoundsException {
+  private static final long serialVersionUID = 160715609518896765L;
 
   private final String className;
   private final int constantPoolCount;
@@ -50,12 +51,20 @@ public final class ClassTooLargeException extends IndexOutOfBoundsException {
     this.constantPoolCount = constantPoolCount;
   }
 
-  /** @return the internal name of the class. */
+  /**
+   * Returns the internal name of the class.
+   *
+   * @return the internal name of the class.
+   */
   public String getClassName() {
     return className;
   }
 
-  /** @return the number of constant pool items of the class. */
+  /**
+   * Returns the number of constant pool items of the class.
+   *
+   * @return the number of constant pool items of the class.
+   */
   public int getConstantPoolCount() {
     return constantPoolCount;
   }

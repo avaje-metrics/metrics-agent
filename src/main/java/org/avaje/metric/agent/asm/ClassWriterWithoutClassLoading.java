@@ -1,13 +1,9 @@
 package org.avaje.metric.agent.asm;
 
-//import io.ebean.enhance.common.CommonSuperUnresolved;
-
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -31,7 +27,7 @@ public class ClassWriterWithoutClassLoading extends ClassWriter {
 
   private final ClassLoader classLoader;
 
-  //private List<CommonSuperUnresolved> unresolved = new ArrayList<>();
+//  private List<CommonSuperUnresolved> unresolved = new ArrayList<>();
 
   public ClassWriterWithoutClassLoading(ClassReader classReader, int flags, ClassLoader classLoader) {
     super(classReader, flags);
@@ -48,12 +44,12 @@ public class ClassWriterWithoutClassLoading extends ClassWriter {
 //  }
 
   /**
-   * Returns the common super type of the two given types.
-   *
-   * @param type1 the internal name of a class.
-   * @param type2 the internal name of another class.
-   * @return the internal name of the common super class of the two given classes.
-   */
+  * Returns the common super type of the two given types.
+  *
+  * @param type1 the internal name of a class.
+  * @param type2 the internal name of another class.
+  * @return the internal name of the common super class of the two given classes.
+  */
   @Override
   protected String getCommonSuperClass(final String type1, final String type2) {
     try {
@@ -73,7 +69,7 @@ public class ClassWriterWithoutClassLoading extends ClassWriter {
         return type;
       }
     } catch (Exception e) {
-//      unresolved.add(new CommonSuperUnresolved(type1, type2, e.toString()));
+      //unresolved.add(new CommonSuperUnresolved(type1, type2, e.toString()));
       return "java/lang/Object";
     }
   }
@@ -100,12 +96,16 @@ public class ClassWriterWithoutClassLoading extends ClassWriter {
   }
 
   /**
-   * Here we read the class at bytecode-level.
-   */
+  * Here we read the class at bytecode-level.
+  */
   private void initializeTypeHierarchyFor(final String internalTypeName) {
+    if (classLoader == null) {
+      // Bug in Zulu JDK for jdk classes (which we should skip anyway)
+      throw new IllegalStateException("ClassLoader is null?");
+    }
     try (InputStream classBytes = classLoader.getResourceAsStream(internalTypeName + ".class")){
       ClassReader classReader = new ClassReader(classBytes);
-      classReader.accept(new ClassVisitor(Opcodes.ASM6) {
+      classReader.accept(new ClassVisitor(Opcodes.ASM7) {
 
         @Override
         public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
