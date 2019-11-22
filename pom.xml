@@ -7,13 +7,13 @@
     <version>2.1</version>
   </parent>
 
-  <groupId>org.avaje.metric</groupId>
-  <artifactId>metric-agent</artifactId>
-  <version>7.3.2-SNAPSHOT</version>
-  <name>metric-agent</name>
+  <groupId>io.avaje.metrics</groupId>
+  <artifactId>metrics-agent</artifactId>
+  <version>8.1.1-SNAPSHOT</version>
+  <name>metrics-agent</name>
 
   <scm>
-    <developerConnection>scm:git:git@github.com:avaje-metric/metric-agent.git</developerConnection>
+    <developerConnection>scm:git:git@github.com:avaje-metrics/metrics-agent.git</developerConnection>
     <tag>HEAD</tag>
   </scm>
 

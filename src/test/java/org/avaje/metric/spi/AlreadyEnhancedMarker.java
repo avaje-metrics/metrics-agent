@@ -1,4 +1,4 @@
-package org.avaje.metric.spi;
+package io.avaje.metrics.spi;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

@@ -1,5 +1,5 @@
 Manifest-Version: 1.0
-Premain-Class: org.avaje.metric.agent.Transformer
-Agent-Class: org.avaje.metric.agent.Transformer
+Premain-Class: io.avaje.metrics.agent.Transformer
+Agent-Class: io.avaje.metrics.agent.Transformer
 Can-Redefine-Classes: true
 Can-Retransform-Classes: true
