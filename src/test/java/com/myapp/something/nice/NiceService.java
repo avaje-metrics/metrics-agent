@@ -1,7 +1,7 @@
 package com.myapp.something.nice;
 
 
-import org.avaje.metric.annotation.Timed;
+import io.avaje.metrics.annotation.Timed;
 
 @Timed(buckets = 500)
 public class NiceService {

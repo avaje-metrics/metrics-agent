@@ -1,6 +1,6 @@
 package org.test.web.api;
 
-import org.avaje.metric.annotation.Timed;
+import io.avaje.metrics.annotation.Timed;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;

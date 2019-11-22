@@ -1,4 +1,4 @@
-package org.avaje.metric;
+package io.avaje.metrics;
 
 /**
  * Test Double - copy of the real API TimedMetric.

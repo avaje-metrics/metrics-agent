@@ -1,11 +1,10 @@
 package org.test.web.api;
 
-import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 
-import org.avaje.metric.annotation.NotTimed;
-import org.avaje.metric.annotation.Timed;
+import io.avaje.metrics.annotation.NotTimed;
+import io.avaje.metrics.annotation.Timed;
 import org.springframework.stereotype.Component;
 
 @Timed(prefix = "web.api")

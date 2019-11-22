@@ -1,4 +1,4 @@
-package org.avaje.metric;
+package io.avaje.metrics;
 
 import java.util.HashMap;
 import java.util.Map;

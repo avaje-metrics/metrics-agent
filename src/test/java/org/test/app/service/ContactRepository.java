@@ -3,7 +3,7 @@ package org.test.app.service;
 import java.util.Collections;
 import java.util.List;
 
-import org.avaje.metric.annotation.Timed;
+import io.avaje.metrics.annotation.Timed;
 import org.springframework.stereotype.Repository;
 import org.test.app.model.Contact;
 

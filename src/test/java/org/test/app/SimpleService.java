@@ -1,6 +1,6 @@
 package org.test.app;
 
-import org.avaje.metric.annotation.Timed;
+import io.avaje.metrics.annotation.Timed;
 
 @Timed
 public class SimpleService {

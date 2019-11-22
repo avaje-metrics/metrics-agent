@@ -1,4 +1,4 @@
-package org.avaje.metric.annotation;
+package io.avaje.metrics.annotation;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

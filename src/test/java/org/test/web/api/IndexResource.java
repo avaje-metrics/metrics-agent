@@ -8,7 +8,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
-import org.avaje.metric.annotation.Timed;
+import io.avaje.metrics.annotation.Timed;
 import org.test.app.SimpleService;
 
 @Timed

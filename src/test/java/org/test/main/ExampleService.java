@@ -1,8 +1,8 @@
 package org.test.main;
 
-import org.avaje.metric.MetricManager;
-import org.avaje.metric.TimedMetric;
-import org.avaje.metric.annotation.NotTimed;
+import io.avaje.metrics.MetricManager;
+import io.avaje.metrics.TimedMetric;
+import io.avaje.metrics.annotation.NotTimed;
 
 @NotTimed
 public class ExampleService extends BaseService {

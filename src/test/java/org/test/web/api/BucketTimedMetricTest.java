@@ -1,7 +1,7 @@
 package org.test.web.api;
 
-import org.avaje.metric.MetricManager;
-import org.avaje.metric.MockBucketTimedMetric;
+import io.avaje.metrics.MetricManager;
+import io.avaje.metrics.MockBucketTimedMetric;
 import org.junit.Assert;
 import org.junit.Test;
 import org.test.app.OtherSimpleService;

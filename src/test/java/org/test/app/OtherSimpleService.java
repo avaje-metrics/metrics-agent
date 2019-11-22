@@ -1,6 +1,6 @@
 package org.test.app;
 
-import org.avaje.metric.annotation.Timed;
+import io.avaje.metrics.annotation.Timed;
 
 @Timed
 public class OtherSimpleService {
@@ -14,7 +14,7 @@ public class OtherSimpleService {
     try {
       Thread.sleep(workMillis);
       internal();
-      
+
     } catch (RuntimeException e) {
       throw new RuntimeException(e);
     }

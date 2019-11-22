@@ -1,7 +1,7 @@
 package org.test.web.api;
 
-import org.avaje.metric.annotation.NotTimed;
-import org.avaje.metric.annotation.Timed;
+import io.avaje.metrics.annotation.NotTimed;
+import io.avaje.metrics.annotation.Timed;
 
 @Timed(prefix = "myapi")
 public class CustomTimedResource {

@@ -1,28 +1,30 @@
-package org.avaje.metric;
+package io.avaje.metrics;
 
 /**
  * Test Double
  */
-public class MockTimedMetric implements TimedMetric {
+public class MockBucketTimedMetric implements TimedMetric {
 
   private final String name;
 
   private int count;
 
-  public MockTimedMetric(String name) {
+  public MockBucketTimedMetric(String name) {
     this.name = name;
   }
 
   @Override
   public void operationEnd(int opCode, long startNanos) {
-    System.out.println("not using request timing ...");
-    operationEnd(opCode, startNanos, false);
+    long exeNanos = System.nanoTime() - startNanos;
+    System.out.println("... " + name + " operationEnd exe:" + exeNanos + " opCode:" + opCode);
+    count++;
+    MetricManager.operationEnd(name, opCode, false);
   }
 
   @Override
   public void operationEnd(int opCode, long startNanos, boolean activeThreadContext) {
     long exeNanos = System.nanoTime() - startNanos;
-    System.out.println("... " + name + " operationEnd exe:" + exeNanos + " opCode:" + opCode + " activeThreadContext:" + activeThreadContext);
+    System.out.println("... " + name + " operationEnd withActiveThread exe:" + exeNanos + " opCode:" + opCode);
     count++;
     MetricManager.operationEnd(name, opCode, activeThreadContext);
   }

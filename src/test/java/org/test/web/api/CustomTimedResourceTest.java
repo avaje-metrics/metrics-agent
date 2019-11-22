@@ -2,8 +2,7 @@ package org.test.web.api;
 
 
 
-import org.avaje.metric.MetricManager;
-import org.junit.Assert;
+import io.avaje.metrics.MetricManager;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
