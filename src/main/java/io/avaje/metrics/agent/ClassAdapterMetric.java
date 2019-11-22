@@ -18,11 +18,11 @@ public class ClassAdapterMetric extends ClassVisitor implements Opcodes {
 
   private static final String SPRINGFRAMEWORK_STEREOTYPE = "Lorg/springframework/stereotype";
 
-  private static final String ANNOTATION_TIMED = "Lorg/avaje/metric/annotation/Timed;";
+  private static final String ANNOTATION_TIMED = "Lio/avaje/metrics/annotation/Timed;";
 
-  private static final String ANNOTATION_NOT_TIMED = "Lorg/avaje/metric/annotation/NotTimed;";
+  private static final String ANNOTATION_NOT_TIMED = "Lio/avaje/metrics/annotation/NotTimed;";
 
-  private static final String ANNOTATION_ALREADY_ENHANCED_MARKER = "Lorg/avaje/metric/spi/AlreadyEnhancedMarker;";
+  private static final String ANNOTATION_ALREADY_ENHANCED_MARKER = "Lio/avaje/metrics/spi/AlreadyEnhancedMarker;";
 
   private final EnhanceContext enhanceContext;
 

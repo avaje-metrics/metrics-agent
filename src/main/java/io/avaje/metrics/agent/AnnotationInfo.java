@@ -12,12 +12,12 @@ public class AnnotationInfo {
   /**
    * The Timed annotation.
    */
-  private static final String ANNOTATION_TIMED = "Lorg/avaje/metric/annotation/Timed;";
+  private static final String ANNOTATION_TIMED = "Lio/avaje/metrics/annotation/Timed;";
 
   /**
    * The NotTimed annotation.
    */
-  private static final String ANNOTATION_NOT_TIMED = "Lorg/avaje/metric/annotation/NotTimed;";
+  private static final String ANNOTATION_NOT_TIMED = "Lio/avaje/metrics/annotation/NotTimed;";
 
   /**
    * Set of JAXRS annotations we look for to detect web endpoints.

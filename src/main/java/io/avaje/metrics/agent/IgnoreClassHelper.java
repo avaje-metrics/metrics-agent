@@ -59,7 +59,7 @@ class IgnoreClassHelper {
     ignoreTwoLevel.add("com/google");
     ignoreTwoLevel.add("com/squareup");
     ignoreTwoLevel.add("com/microsoft");
-    ignoreTwoLevel.add("org/avaje");
+    ignoreTwoLevel.add("io/avaje");
   }
 
   private final String[] processPackages;

@@ -17,11 +17,11 @@ import java.util.Arrays;
  */
 public class AddTimerMetricMethodAdapter extends AdviceAdapter {
 
-  private static final String TIMED_METRIC = "org/avaje/metric/TimedMetric";
+  private static final String TIMED_METRIC = "io/avaje/metrics/TimedMetric";
 
-  private static final String LTIMED_METRIC = "Lorg/avaje/metric/TimedMetric;";
+  private static final String LTIMED_METRIC = "Lio/avaje/metrics/TimedMetric;";
 
-  private static final String METRIC_MANAGER = "org/avaje/metric/MetricManager";
+  private static final String METRIC_MANAGER = "io/avaje/metrics/MetricManager";
 
   private static final String METHOD_OPERATION_END = "operationEnd";
 
@@ -332,7 +332,7 @@ public class AddTimerMetricMethodAdapter extends AdviceAdapter {
       int[] buckets = getBuckets();
       if (buckets == null || buckets.length == 0) {
         // A TimedMetric
-        mv.visitMethodInsn(Opcodes.INVOKESTATIC, METRIC_MANAGER, "getTimedMetric", "(Ljava/lang/String;)Lorg/avaje/metric/TimedMetric;", false);
+        mv.visitMethodInsn(Opcodes.INVOKESTATIC, METRIC_MANAGER, "getTimedMetric", "(Ljava/lang/String;)Lio/avaje/metrics/TimedMetric;", false);
         mv.visitFieldInsn(Opcodes.PUTSTATIC, className, "_$metric_" + i, LTIMED_METRIC);
 
       } else {
@@ -349,7 +349,7 @@ public class AddTimerMetricMethodAdapter extends AdviceAdapter {
           push(mv, buckets[j]);
           mv.visitInsn(Opcodes.IASTORE);
         }
-        mv.visitMethodInsn(Opcodes.INVOKESTATIC, METRIC_MANAGER, "getTimedMetric", "(Ljava/lang/String;[I)Lorg/avaje/metric/TimedMetric;", false);
+        mv.visitMethodInsn(Opcodes.INVOKESTATIC, METRIC_MANAGER, "getTimedMetric", "(Ljava/lang/String;[I)Lio/avaje/metrics/TimedMetric;", false);
         mv.visitFieldInsn(Opcodes.PUTSTATIC, className, "_$metric_" + i, LTIMED_METRIC);
       }
     }
