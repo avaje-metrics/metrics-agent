@@ -4,3 +4,6 @@ jdk:
 
 git:
   depth: 3
+
+script:
+  - mvn clean test
