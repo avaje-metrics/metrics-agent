@@ -46,6 +46,7 @@ public class ClassAdapterMetric extends ClassVisitor implements Opcodes {
 
   private String longName;
   private String shortName;
+  private boolean explicitFullName;
 
   /**
    * List of unique names to support parameter overloading.
@@ -133,9 +134,20 @@ public class ClassAdapterMetric extends ClassVisitor implements Opcodes {
    */
   String getMetricPrefix() {
     if (prefix != null) {
-      return prefix+"."+ shortName;
+      return prefix + "." + shortName;
+    }
+    if ((detectWebController) && !explicitFullName) {
+      return deriveControllerName();
     }
     return enhanceContext.isNameIncludesPackage() ? longName : shortName;
+//    if (enhanceContext.isNameIncludesPackage()) {
+//      return longName;
+//    }
+//    return explicitFullName ? shortName : "app." + shortName;
+  }
+
+  private String deriveControllerName() {
+    return "web.api." + shortName;//TrimController.trim(shortName);
   }
 
   String getShortName() {
@@ -150,6 +162,7 @@ public class ClassAdapterMetric extends ClassVisitor implements Opcodes {
   }
 
   private void setLongName(String fullName) {
+    this.explicitFullName  = true;
     this.prefix = null;
     this.longName = fullName;
     this.shortName = fullName;
@@ -408,7 +421,7 @@ public class ClassAdapterMetric extends ClassVisitor implements Opcodes {
    */
   private boolean noTimedMethods() {
     for (AddTimerMetricMethodAdapter methodAdapter : methodAdapters) {
-      if (methodAdapter.isEnhanced()){
+      if (methodAdapter.isEnhanced()) {
         return false;
       }
     }

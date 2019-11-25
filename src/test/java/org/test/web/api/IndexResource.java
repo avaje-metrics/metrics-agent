@@ -36,7 +36,7 @@ public class IndexResource {
 
   @GET
   @Produces(MediaType.TEXT_HTML)
-  public String index() {
+  public String get() {
 
     timeService.doSomething();
     if (forceError) {

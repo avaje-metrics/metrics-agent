@@ -8,22 +8,22 @@ import org.test.app.SimpleService;
 
 public class IndexResourceTest extends BaseTest {
 
-  IndexResource orderService = new IndexResource(new SimpleService());
+  private final IndexResource orderService = new IndexResource(new SimpleService());
 
   @Test
   public void testSuccessExecution() {
 
     orderService.testForceError(false);
 
-    MockTimedMetric metric = MetricManager.testGetTimedMetric("IndexResource.index");
+    MockTimedMetric metric = MetricManager.testGetTimedMetric("IndexResource.get");
     metric.testReset();
 
-    orderService.index();
-    Assert.assertEquals("IndexResource.index", MetricManager.testLastMetricName());
+    orderService.get();
+    Assert.assertEquals("IndexResource.get", MetricManager.testLastMetricName());
     Assert.assertEquals(1, metric.testGetCount());
     Assert.assertTrue(MetricManager.testLastMetricOpcodeSuccess());
 
-    orderService.index();
+    orderService.get();
     Assert.assertEquals(2, metric.testGetCount());
     Assert.assertTrue(MetricManager.testLastMetricOpcodeSuccess());
   }
@@ -33,11 +33,11 @@ public class IndexResourceTest extends BaseTest {
 
     orderService.testForceError(true);
 
-    MockTimedMetric metric = MetricManager.testGetTimedMetric("IndexResource.index");
+    MockTimedMetric metric = MetricManager.testGetTimedMetric("IndexResource.get");
     metric.testReset();
 
     try {
-      orderService.index();
+      orderService.get();
       Assert.assertTrue("Never get here", false);
 
     } catch (ResourceException expected) {
