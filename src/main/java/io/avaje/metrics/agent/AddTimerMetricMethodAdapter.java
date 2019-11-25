@@ -104,20 +104,6 @@ public class AddTimerMetricMethodAdapter extends AdviceAdapter {
   }
 
   /**
-   * Get the TimeMetric or BucketTimedMetric type.
-   */
-  private String getMetricType() {
-    return TIMED_METRIC;
-  }
-
-  /**
-   * Get the TimeMetric or BucketTimedMetric type.
-   */
-  private String getLMetricType() {
-    return LTIMED_METRIC;
-  }
-
-  /**
    * Get the unique metric name.
    */
   private String getUniqueMetricName() {
@@ -238,20 +224,17 @@ public class AddTimerMetricMethodAdapter extends AdviceAdapter {
         mv.visitFrame(Opcodes.F_SAME, 1, new Object[]{Opcodes.LONG}, 0, null);
       }
 
-      // load opcode
-      // load startNanos
-      // call interface method operationEnd(opCode, startNanos)
       Label l5 = new Label();
       mv.visitLabel(l5);
       mv.visitLineNumber(1, l5);
-      mv.visitFieldInsn(GETSTATIC, className, "_$metric_" + metricIndex, getLMetricType());
+      mv.visitFieldInsn(GETSTATIC, className, "_$metric_" + metricIndex, LTIMED_METRIC);
       loadLocal(posTimeStart);
-      String meth = isError ? OPERATION_ERR : OPERATION_END;
+      String methodDesc = isError ? OPERATION_ERR : OPERATION_END;
       if (context.isIncludeRequestTiming()) {
         loadLocal(posUseContext);
-        mv.visitMethodInsn(INVOKEINTERFACE, getMetricType(), meth, "(JZ)V", true);
+        mv.visitMethodInsn(INVOKEINTERFACE, TIMED_METRIC, methodDesc, "(JZ)V", true);
       } else {
-        mv.visitMethodInsn(INVOKEINTERFACE, getMetricType(), meth, "(J)V", true);
+        mv.visitMethodInsn(INVOKEINTERFACE, TIMED_METRIC, methodDesc, "(J)V", true);
       }
     }
   }
@@ -267,8 +250,8 @@ public class AddTimerMetricMethodAdapter extends AdviceAdapter {
     if (enhanced) {
       if (context.isIncludeRequestTiming()) {
         posUseContext = newLocal(BOOLEAN_TYPE);
-        mv.visitFieldInsn(GETSTATIC, className, "_$metric_" + metricIndex, getLMetricType());
-        mv.visitMethodInsn(INVOKEINTERFACE, getMetricType(), METHOD_IS_ACTIVE_THREAD_CONTEXT, "()Z", true);
+        mv.visitFieldInsn(GETSTATIC, className, "_$metric_" + metricIndex, LTIMED_METRIC);
+        mv.visitMethodInsn(INVOKEINTERFACE, TIMED_METRIC, METHOD_IS_ACTIVE_THREAD_CONTEXT, "()Z", true);
         mv.visitVarInsn(ISTORE, posUseContext);
       }
       posTimeStart = newLocal(LONG_TYPE);
@@ -328,7 +311,7 @@ public class AddTimerMetricMethodAdapter extends AdviceAdapter {
       if (isLog(4)) {
         log(4, "... init field index[" + i + "] METHOD[" + getUniqueMetricName() + "]", "");
       }
-      FieldVisitor fv = cv.visitField(ACC_PRIVATE + ACC_STATIC, "_$metric_" + i, getLMetricType(), null, null);
+      FieldVisitor fv = cv.visitField(ACC_PRIVATE + ACC_STATIC, "_$metric_" + i, LTIMED_METRIC, null, null);
       fv.visitEnd();
     }
   }
