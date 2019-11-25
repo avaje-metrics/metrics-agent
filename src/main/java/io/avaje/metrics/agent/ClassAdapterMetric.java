@@ -58,11 +58,6 @@ public class ClassAdapterMetric extends ClassVisitor implements Opcodes {
    */
   private final List<AddTimerMetricMethodAdapter> methodAdapters = new ArrayList<>();
 
-  /**
-   * The metric full name that is a common prefix for each method.
-   */
-  private String metricFullName;
-
   private String prefix;
 
   /**
@@ -140,14 +135,10 @@ public class ClassAdapterMetric extends ClassVisitor implements Opcodes {
       return deriveControllerName();
     }
     return enhanceContext.isNameIncludesPackage() ? longName : shortName;
-//    if (enhanceContext.isNameIncludesPackage()) {
-//      return longName;
-//    }
-//    return explicitFullName ? shortName : "app." + shortName;
   }
 
   private String deriveControllerName() {
-    return "web.api." + shortName;//TrimController.trim(shortName);
+    return "web.api." + shortName;
   }
 
   String getShortName() {
