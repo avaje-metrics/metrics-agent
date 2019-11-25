@@ -15,11 +15,11 @@ public class IndexResourceTest extends BaseTest {
 
     orderService.testForceError(false);
 
-    MockTimedMetric metric = MetricManager.testGetTimedMetric("IndexResource.get");
+    MockTimedMetric metric = MetricManager.testGetTimedMetric("app.IndexResource.get");
     metric.testReset();
 
     orderService.get();
-    Assert.assertEquals("IndexResource.get", MetricManager.testLastMetricName());
+    Assert.assertEquals("app.IndexResource.get", MetricManager.testLastMetricName());
     Assert.assertEquals(1, metric.testGetCount());
     Assert.assertTrue(MetricManager.testLastMetricOpcodeSuccess());
 
@@ -33,7 +33,7 @@ public class IndexResourceTest extends BaseTest {
 
     orderService.testForceError(true);
 
-    MockTimedMetric metric = MetricManager.testGetTimedMetric("IndexResource.get");
+    MockTimedMetric metric = MetricManager.testGetTimedMetric("app.IndexResource.get");
     metric.testReset();
 
     try {

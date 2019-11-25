@@ -17,9 +17,9 @@ public class BucketTimedMetricTest extends BaseTest {
     Assert.assertNull(MetricManager.testLastMetricName());
 
     service.sayHi();
-    Assert.assertEquals("OtherSimpleService.sayHi", MetricManager.testLastMetricName());
+    Assert.assertEquals("app.OtherSimpleService.sayHi", MetricManager.testLastMetricName());
 
-    MockBucketTimedMetric metric = MetricManager.testGetBucketTimedMetric("OtherSimpleService.saySomethingElse");
+    MockBucketTimedMetric metric = MetricManager.testGetBucketTimedMetric("app.OtherSimpleService.saySomethingElse");
     metric.testReset();
     Assert.assertEquals(0, metric.testGetCount());
 

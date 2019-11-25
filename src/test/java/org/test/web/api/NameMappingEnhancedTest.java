@@ -15,7 +15,7 @@ public class NameMappingEnhancedTest extends BaseTest {
 
     NiceService niceService = new NiceService();
 
-    MockBucketTimedMetric metric = MetricManager.testGetBucketTimedMetric("NiceService.doNice");
+    MockBucketTimedMetric metric = MetricManager.testGetBucketTimedMetric("app.NiceService.doNice");
     metric.testReset();
     MetricManager.testReset();
 

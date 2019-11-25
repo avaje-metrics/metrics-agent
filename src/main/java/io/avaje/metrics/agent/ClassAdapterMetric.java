@@ -131,7 +131,7 @@ public class ClassAdapterMetric extends ClassVisitor implements Opcodes {
     if (detectWebController) {
       return deriveControllerName();
     }
-    return enhanceContext.isNameIncludesPackage() ? longName : shortName;
+    return enhanceContext.isNameIncludesPackage() ? longName : "app." + shortName;
   }
 
   private String deriveControllerName() {

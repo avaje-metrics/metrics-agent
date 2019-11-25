@@ -71,13 +71,13 @@ public class CustomerResourceTest extends BaseTest {
     Assert.assertEquals("web.api.CustomerResource.publicMethodWithJaxrs2", MetricManager.testLastMetricName());
 
     customerResource.findAll("ok");
-    Assert.assertEquals("BaseResource.findAll", MetricManager.testLastMetricName());
+    Assert.assertEquals("app.BaseResource.findAll", MetricManager.testLastMetricName());
 
     customerResource.delete();
-    Assert.assertEquals("BaseResource.delete", MetricManager.testLastMetricName());
+    Assert.assertEquals("app.BaseResource.delete", MetricManager.testLastMetricName());
 
     customerResource.deleteX(23L, "as");// ();
-    Assert.assertEquals("BaseResource.deleteX", MetricManager.testLastMetricName());
+    Assert.assertEquals("app.BaseResource.deleteX", MetricManager.testLastMetricName());
 
     MetricManager.testReset();
     Assert.assertNull(MetricManager.testLastMetricName());
@@ -93,7 +93,7 @@ public class CustomerResourceTest extends BaseTest {
      Assert.assertTrue("Never get here", false);
 
     } catch (IllegalArgumentException expected) {
-      Assert.assertEquals("BaseResource.findAll", MetricManager.testLastMetricName());
+      Assert.assertEquals("app.BaseResource.findAll", MetricManager.testLastMetricName());
       Assert.assertTrue(MetricManager.testLastMetricOpcodeError());
     }
   }
