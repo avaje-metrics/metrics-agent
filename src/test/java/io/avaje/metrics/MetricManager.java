@@ -62,9 +62,9 @@ public class MetricManager {
   /**
    * Called when a timer ends so that we can assert the call occured.
    */
-  protected static void operationEnd(String name, int opCode, boolean activeThreadContext) {
+  protected static void testOperationEnd(String name, boolean success, boolean activeThreadContext) {
     lastMetricName  = name;
-    lastMetricOpcode = opCode;
+    lastMetricOpcode = success ? 1 : 191;
     lastActiveThreadContext = activeThreadContext;
   }
 

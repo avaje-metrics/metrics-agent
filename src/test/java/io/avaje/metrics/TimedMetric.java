@@ -5,12 +5,10 @@ package io.avaje.metrics;
  */
 public interface TimedMetric {
 
-  /**
-   * Method called by the enhanced code.
-   */
-  void operationEnd(int opCode, long startNanos, boolean activeThreadContext);
-
-  void operationEnd(int opCode, long startNanos);
+  void operationEnd(long startNanos);
+  void operationEnd(long startNanos, boolean activeThreadContext);
+  void operationErr(long startNanos);
+  void operationErr(long startNanos, boolean activeThreadContext);
 
   boolean isActiveThreadContext();
 }

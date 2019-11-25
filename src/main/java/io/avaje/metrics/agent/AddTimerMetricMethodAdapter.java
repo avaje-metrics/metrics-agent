@@ -25,7 +25,8 @@ public class AddTimerMetricMethodAdapter extends AdviceAdapter {
 
   private static final String METRIC_MANAGER = "io/avaje/metrics/MetricManager";
 
-  private static final String METHOD_OPERATION_END = "operationEnd";
+  private static final String OPERATION_END = "operationEnd";
+  private static final String OPERATION_ERR = "operationErr";
 
   private static final String METHOD_IS_ACTIVE_THREAD_CONTEXT = "isActiveThreadContext";
 
@@ -258,7 +259,8 @@ public class AddTimerMetricMethodAdapter extends AdviceAdapter {
   private void onFinally(int opcode) {
 
     if (enhanced) {
-      if (opcode == ATHROW) {
+      boolean isError = opcode == ATHROW;
+      if (isError) {
         if (isLog(8)) {
           log(8, "... add visitFrame in ", name);
         }
@@ -272,13 +274,13 @@ public class AddTimerMetricMethodAdapter extends AdviceAdapter {
       mv.visitLabel(l5);
       mv.visitLineNumber(1, l5);
       mv.visitFieldInsn(GETSTATIC, className, "_$metric_" + metricIndex, getLMetricType());
-      visitIntInsn(Opcodes.SIPUSH, opcode);
       loadLocal(posTimeStart);
+      String meth = isError ? OPERATION_ERR : OPERATION_END;
       if (context.isIncludeRequestTiming()) {
         loadLocal(posUseContext);
-        mv.visitMethodInsn(INVOKEINTERFACE, getMetricType(), METHOD_OPERATION_END, "(IJZ)V", true);
+        mv.visitMethodInsn(INVOKEINTERFACE, getMetricType(), meth, "(JZ)V", true);
       } else {
-        mv.visitMethodInsn(INVOKEINTERFACE, getMetricType(), METHOD_OPERATION_END, "(IJ)V", true);
+        mv.visitMethodInsn(INVOKEINTERFACE, getMetricType(), meth, "(J)V", true);
       }
     }
   }

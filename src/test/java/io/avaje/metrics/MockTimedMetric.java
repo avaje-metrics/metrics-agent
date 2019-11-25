@@ -9,22 +9,35 @@ public class MockTimedMetric implements TimedMetric {
 
   private int count;
 
-  public MockTimedMetric(String name) {
+  MockTimedMetric(String name) {
     this.name = name;
   }
 
   @Override
-  public void operationEnd(int opCode, long startNanos) {
-    System.out.println("not using request timing ...");
-    operationEnd(opCode, startNanos, false);
+  public void operationEnd(long startNanos) {
+    testOperationEnd(true, startNanos, false);
   }
 
   @Override
-  public void operationEnd(int opCode, long startNanos, boolean activeThreadContext) {
+  public void operationEnd(long startNanos, boolean activeThreadContext) {
+    testOperationEnd(true, startNanos, activeThreadContext);
+  }
+
+  @Override
+  public void operationErr(long startNanos) {
+    testOperationEnd(false, startNanos, false);
+  }
+
+  @Override
+  public void operationErr(long startNanos, boolean activeThreadContext) {
+    testOperationEnd(false, startNanos, activeThreadContext);
+  }
+
+  private void testOperationEnd(boolean success, long startNanos, boolean activeThreadContext) {
     long exeNanos = System.nanoTime() - startNanos;
-    System.out.println("... " + name + " operationEnd exe:" + exeNanos + " opCode:" + opCode + " activeThreadContext:" + activeThreadContext);
+    System.out.println("... " + name + " testOperationEnd exe:" + exeNanos + " success:" + success + " activeThreadContext:" + activeThreadContext);
     count++;
-    MetricManager.operationEnd(name, opCode, activeThreadContext);
+    MetricManager.testOperationEnd(name, success, activeThreadContext);
   }
 
   public boolean isActiveThreadContext() {
