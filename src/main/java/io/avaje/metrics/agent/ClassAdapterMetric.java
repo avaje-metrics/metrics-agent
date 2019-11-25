@@ -22,7 +22,7 @@ public class ClassAdapterMetric extends ClassVisitor implements Opcodes {
 
   private static final String ANNOTATION_NOT_TIMED = "Lio/avaje/metrics/annotation/NotTimed;";
 
-  private static final String ANNOTATION_ALREADY_ENHANCED_MARKER = "Lio/avaje/metrics/spi/AlreadyEnhancedMarker;";
+  private static final String ANNOTATION_ENHANCED_MARKER = "Lio/avaje/metrics/spi/MetricsEnhanced;";
 
   private final EnhanceContext enhanceContext;
 
@@ -178,7 +178,7 @@ public class ClassAdapterMetric extends ClassVisitor implements Opcodes {
 
     log(8, "... check annotation ", desc);
 
-    if (desc.equals(ANNOTATION_ALREADY_ENHANCED_MARKER)) {
+    if (desc.equals(ANNOTATION_ENHANCED_MARKER)) {
       throw new AlreadyEnhancedException("Already enhanced");
     }
 
@@ -243,7 +243,7 @@ public class ClassAdapterMetric extends ClassVisitor implements Opcodes {
         String flagSingleton = (detectSingleton ? "SINGLETON" : "");
         log(4, "enhancing - detection ", flagExplicit + flagWeb + flagJaxrs + flagSpring + flagSingleton);
       }
-      AnnotationVisitor av = cv.visitAnnotation(ANNOTATION_ALREADY_ENHANCED_MARKER, true);
+      AnnotationVisitor av = cv.visitAnnotation(ANNOTATION_ENHANCED_MARKER, true);
       if (av != null) {
         av.visitEnd();
       }
