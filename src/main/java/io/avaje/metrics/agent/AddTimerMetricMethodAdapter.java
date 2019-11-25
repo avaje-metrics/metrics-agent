@@ -1,15 +1,17 @@
 package io.avaje.metrics.agent;
 
 import io.avaje.metrics.agent.asm.AnnotationVisitor;
-import io.avaje.metrics.agent.asm.Opcodes;
-import io.avaje.metrics.agent.asm.Type;
-import io.avaje.metrics.agent.asm.commons.AdviceAdapter;
 import io.avaje.metrics.agent.asm.ClassVisitor;
 import io.avaje.metrics.agent.asm.FieldVisitor;
 import io.avaje.metrics.agent.asm.Label;
 import io.avaje.metrics.agent.asm.MethodVisitor;
+import io.avaje.metrics.agent.asm.Opcodes;
+import io.avaje.metrics.agent.asm.commons.AdviceAdapter;
 
 import java.util.Arrays;
+
+import static io.avaje.metrics.agent.asm.Type.BOOLEAN_TYPE;
+import static io.avaje.metrics.agent.asm.Type.LONG_TYPE;
 
 /**
  * Enhances a method adding support for using TimerMetric or BucketTimerMetric to collect method
@@ -58,7 +60,7 @@ public class AddTimerMetricMethodAdapter extends AdviceAdapter {
   AddTimerMetricMethodAdapter(ClassAdapterMetric classAdapter, boolean enhanceDefault,
                               int metricIndex, String uniqueMethodName, MethodVisitor mv, int acc, String name, String desc) {
 
-    super(Opcodes.ASM7, mv, acc, name, desc);
+    super(ASM7, mv, acc, name, desc);
     this.classAdapter = classAdapter;
     this.context = classAdapter.getEnhanceContext();
     this.className = classAdapter.className;
@@ -71,7 +73,7 @@ public class AddTimerMetricMethodAdapter extends AdviceAdapter {
   /**
    * Return true if this method was enhanced.
    */
-  public boolean isEnhanced() {
+  boolean isEnhanced() {
     return enhanced;
   }
 
@@ -111,13 +113,6 @@ public class AddTimerMetricMethodAdapter extends AdviceAdapter {
       return buckets;
     }
     return classAdapter.getBuckets();
-  }
-
-  /**
-   * Return true if there are bucket defined.
-   */
-  private boolean hasBuckets() {
-    return buckets != null && buckets.length > 0 || classAdapter.hasBuckets();
   }
 
   /**
@@ -220,7 +215,7 @@ public class AddTimerMetricMethodAdapter extends AdviceAdapter {
   private class TimedAnnotationVisitor extends AnnotationVisitor {
 
     TimedAnnotationVisitor(AnnotationVisitor av) {
-      super(Opcodes.ASM7, av);
+      super(ASM7, av);
     }
 
     @Override
@@ -254,8 +249,8 @@ public class AddTimerMetricMethodAdapter extends AdviceAdapter {
       mv.visitTryCatchBlock(startFinally, endFinally, endFinally, null);
       mv.visitLabel(endFinally);
 
-      onFinally(Opcodes.ATHROW);
-      mv.visitInsn(Opcodes.ATHROW);
+      onFinally(ATHROW);
+      mv.visitInsn(ATHROW);
       mv.visitMaxs(maxStack, maxLocals);
     }
   }
@@ -263,7 +258,7 @@ public class AddTimerMetricMethodAdapter extends AdviceAdapter {
   private void onFinally(int opcode) {
 
     if (enhanced) {
-      if (opcode == Opcodes.ATHROW) {
+      if (opcode == ATHROW) {
         if (isLog(8)) {
           log(8, "... add visitFrame in ", name);
         }
@@ -276,20 +271,20 @@ public class AddTimerMetricMethodAdapter extends AdviceAdapter {
       Label l5 = new Label();
       mv.visitLabel(l5);
       mv.visitLineNumber(1, l5);
-      mv.visitFieldInsn(Opcodes.GETSTATIC, className, "_$metric_" + metricIndex, getLMetricType());
+      mv.visitFieldInsn(GETSTATIC, className, "_$metric_" + metricIndex, getLMetricType());
       visitIntInsn(Opcodes.SIPUSH, opcode);
       loadLocal(posTimeStart);
       if (context.isIncludeRequestTiming()) {
         loadLocal(posUseContext);
-        mv.visitMethodInsn(Opcodes.INVOKEINTERFACE, getMetricType(), METHOD_OPERATION_END, "(IJZ)V", true);
+        mv.visitMethodInsn(INVOKEINTERFACE, getMetricType(), METHOD_OPERATION_END, "(IJZ)V", true);
       } else {
-        mv.visitMethodInsn(Opcodes.INVOKEINTERFACE, getMetricType(), METHOD_OPERATION_END, "(IJ)V", true);
+        mv.visitMethodInsn(INVOKEINTERFACE, getMetricType(), METHOD_OPERATION_END, "(IJ)V", true);
       }
     }
   }
 
   protected void onMethodExit(int opcode) {
-    if (opcode != Opcodes.ATHROW) {
+    if (opcode != ATHROW) {
       onFinally(opcode);
     }
   }
@@ -298,14 +293,14 @@ public class AddTimerMetricMethodAdapter extends AdviceAdapter {
   protected void onMethodEnter() {
     if (enhanced) {
       if (context.isIncludeRequestTiming()) {
-        posUseContext = newLocal(Type.BOOLEAN_TYPE);
-        mv.visitFieldInsn(Opcodes.GETSTATIC, className, "_$metric_" + metricIndex, getLMetricType());
-        mv.visitMethodInsn(Opcodes.INVOKEINTERFACE, getMetricType(), METHOD_IS_ACTIVE_THREAD_CONTEXT, "()Z", true);
-        mv.visitVarInsn(Opcodes.ISTORE, posUseContext);
+        posUseContext = newLocal(BOOLEAN_TYPE);
+        mv.visitFieldInsn(GETSTATIC, className, "_$metric_" + metricIndex, getLMetricType());
+        mv.visitMethodInsn(INVOKEINTERFACE, getMetricType(), METHOD_IS_ACTIVE_THREAD_CONTEXT, "()Z", true);
+        mv.visitVarInsn(ISTORE, posUseContext);
       }
-      posTimeStart = newLocal(Type.LONG_TYPE);
-      mv.visitMethodInsn(Opcodes.INVOKESTATIC, "java/lang/System", "nanoTime", "()J", false);
-      mv.visitVarInsn(Opcodes.LSTORE, posTimeStart);
+      posTimeStart = newLocal(LONG_TYPE);
+      mv.visitMethodInsn(INVOKESTATIC, "java/lang/System", "nanoTime", "()J", false);
+      mv.visitVarInsn(LSTORE, posTimeStart);
     }
   }
 
@@ -332,8 +327,8 @@ public class AddTimerMetricMethodAdapter extends AdviceAdapter {
       int[] buckets = getBuckets();
       if (buckets == null || buckets.length == 0) {
         // A TimedMetric
-        mv.visitMethodInsn(Opcodes.INVOKESTATIC, METRIC_MANAGER, "getTimedMetric", "(Ljava/lang/String;)Lio/avaje/metrics/TimedMetric;", false);
-        mv.visitFieldInsn(Opcodes.PUTSTATIC, className, "_$metric_" + i, LTIMED_METRIC);
+        mv.visitMethodInsn(INVOKESTATIC, METRIC_MANAGER, "getTimedMetric", "(Ljava/lang/String;)Lio/avaje/metrics/TimedMetric;", false);
+        mv.visitFieldInsn(PUTSTATIC, className, "_$metric_" + i, LTIMED_METRIC);
 
       } else {
         // A BucketTimedMetric so need to create with the bucket array
@@ -342,15 +337,15 @@ public class AddTimerMetricMethodAdapter extends AdviceAdapter {
         }
 
         push(mv, buckets.length);
-        mv.visitIntInsn(Opcodes.NEWARRAY, Opcodes.T_INT);
+        mv.visitIntInsn(NEWARRAY, Opcodes.T_INT);
         for (int j = 0; j < buckets.length; j++) {
-          mv.visitInsn(Opcodes.DUP);
+          mv.visitInsn(DUP);
           push(mv, j);
           push(mv, buckets[j]);
-          mv.visitInsn(Opcodes.IASTORE);
+          mv.visitInsn(IASTORE);
         }
-        mv.visitMethodInsn(Opcodes.INVOKESTATIC, METRIC_MANAGER, "getTimedMetric", "(Ljava/lang/String;[I)Lio/avaje/metrics/TimedMetric;", false);
-        mv.visitFieldInsn(Opcodes.PUTSTATIC, className, "_$metric_" + i, LTIMED_METRIC);
+        mv.visitMethodInsn(INVOKESTATIC, METRIC_MANAGER, "getTimedMetric", "(Ljava/lang/String;[I)Lio/avaje/metrics/TimedMetric;", false);
+        mv.visitFieldInsn(PUTSTATIC, className, "_$metric_" + i, LTIMED_METRIC);
       }
     }
   }
@@ -360,7 +355,7 @@ public class AddTimerMetricMethodAdapter extends AdviceAdapter {
       if (isLog(4)) {
         log(4, "... init field index[" + i + "] METHOD[" + getUniqueMetricName() + "]", "");
       }
-      FieldVisitor fv = cv.visitField(Opcodes.ACC_PRIVATE + Opcodes.ACC_STATIC, "_$metric_" + i, getLMetricType(), null, null);
+      FieldVisitor fv = cv.visitField(ACC_PRIVATE + ACC_STATIC, "_$metric_" + i, getLMetricType(), null, null);
       fv.visitEnd();
     }
   }
