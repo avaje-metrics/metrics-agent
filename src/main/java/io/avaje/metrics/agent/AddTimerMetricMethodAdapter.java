@@ -43,10 +43,7 @@ public class AddTimerMetricMethodAdapter extends AdviceAdapter {
   private final int metricIndex;
 
   private String name;
-
-  private String fullName;
-
-  private String prefix;
+  private boolean explicitFullName;
 
   private int[] buckets;
 
@@ -85,18 +82,8 @@ public class AddTimerMetricMethodAdapter extends AdviceAdapter {
     metricName = metricName.trim();
     if (metricName.length() > 0) {
       this.name = metricName;
+      this.explicitFullName = name.contains(".");
     }
-  }
-
-  /**
-   * Set by Timed annotation fullName attribute.
-   */
-  private void setFullName(String fullName) {
-    this.fullName = fullName;
-  }
-
-  private void setPrefix(String prefix) {
-    this.prefix = prefix;
   }
 
   /**
@@ -134,19 +121,10 @@ public class AddTimerMetricMethodAdapter extends AdviceAdapter {
    * Get the unique metric name.
    */
   private String getUniqueMetricName() {
-    if (hasValue(fullName)) {
-      return fullName.trim();
+    if (explicitFullName) {
+      return name;
     }
-    if (hasValue(prefix)) {
-      return prefix + "." + classAdapter.getShortName() + "." + name.trim();
-
-    } else {
-      return classAdapter.getMetricPrefix() + "." + name.trim();
-    }
-  }
-
-  private boolean hasValue(String value) {
-    return value != null && !value.trim().isEmpty();
+    return classAdapter.getMetricPrefix() + "." + name;
   }
 
   public void visitCode() {
@@ -223,13 +201,6 @@ public class AddTimerMetricMethodAdapter extends AdviceAdapter {
     public void visit(String name, Object value) {
       if ("name".equals(name) && isNotEmpty(value)) {
         setName(value.toString());
-
-      } else if ("fullName".equals(name) && isNotEmpty(value)) {
-        setFullName(value.toString());
-
-      } else if ("prefix".equals(name) && isNotEmpty(value)) {
-        setPrefix(value.toString());
-
       } else if ("buckets".equals(name)) {
         setBuckets(value);
       }

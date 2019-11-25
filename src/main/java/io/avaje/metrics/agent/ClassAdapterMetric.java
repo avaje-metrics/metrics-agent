@@ -46,7 +46,8 @@ public class ClassAdapterMetric extends ClassVisitor implements Opcodes {
 
   private String longName;
   private String shortName;
-  private boolean explicitFullName;
+  private String name;
+  private String prefix;
 
   /**
    * List of unique names to support parameter overloading.
@@ -57,8 +58,6 @@ public class ClassAdapterMetric extends ClassVisitor implements Opcodes {
    * The method adapters that detect if a method is enhanced and perform the enhancement.
    */
   private final List<AddTimerMetricMethodAdapter> methodAdapters = new ArrayList<>();
-
-  private String prefix;
 
   /**
    * The buckets defined commonly for all enhanced methods for this class.
@@ -111,13 +110,6 @@ public class ClassAdapterMetric extends ClassVisitor implements Opcodes {
   }
 
   /**
-   * Return true if there are default buckets defined at the class level.
-   */
-  boolean hasBuckets() {
-    return buckets != null && buckets.length > 0;
-  }
-
-  /**
    * Return the bucket ranges.
    */
   int[] getBuckets() {
@@ -128,10 +120,15 @@ public class ClassAdapterMetric extends ClassVisitor implements Opcodes {
    * Return the class level metric prefix used to prefix timed metrics on methods.
    */
   String getMetricPrefix() {
+    if (name != null) {
+      // explicit name via @Timed
+      return name;
+    }
     if (prefix != null) {
+      // explicit prefix via @Timed
       return prefix + "." + shortName;
     }
-    if ((detectWebController) && !explicitFullName) {
+    if (detectWebController) {
       return deriveControllerName();
     }
     return enhanceContext.isNameIncludesPackage() ? longName : shortName;
@@ -141,22 +138,8 @@ public class ClassAdapterMetric extends ClassVisitor implements Opcodes {
     return "web.api." + shortName;
   }
 
-  String getShortName() {
-    return shortName;
-  }
-
-  /**
-   * Set the metric name via Timer annotation.
-   */
-  private void setShortName(String shortName) {
-    this.shortName = shortName;
-  }
-
-  private void setLongName(String fullName) {
-    this.explicitFullName  = true;
-    this.prefix = null;
-    this.longName = fullName;
-    this.shortName = fullName;
+  private void setName(String name) {
+    this.name = name;
   }
 
   private void setPrefix(String prefix) {
@@ -280,10 +263,7 @@ public class ClassAdapterMetric extends ClassVisitor implements Opcodes {
     @Override
     public void visit(String name, Object value) {
       if ("name".equals(name) && !"".equals(value)) {
-        setShortName(value.toString());
-
-      } else if ("fullName".equals(name) && !"".equals(value)) {
-        setLongName(value.toString());
+        setName(value.toString());
 
       } else if ("buckets".equals(name)) {
         setBuckets(value);

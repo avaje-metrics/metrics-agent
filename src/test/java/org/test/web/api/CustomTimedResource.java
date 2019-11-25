@@ -15,12 +15,12 @@ public class CustomTimedResource {
 
   }
 
-  @Timed(fullName=" ")
+  @Timed(name=" ")
   public String publicMethodWithFullNameWhiteSpace() {
     return null;
   }
 
-  @Timed(fullName="myname.fully.defined")
+  @Timed(name="myname.fully.defined")
   public String publicMethodWithFullName() {
     return null;
   }
