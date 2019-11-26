@@ -6,6 +6,9 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.test.app.service.OrderService;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 public class OrderServiceTest extends BaseTest {
 
   @Test
@@ -17,19 +20,19 @@ public class OrderServiceTest extends BaseTest {
     metric.testReset();
     MetricManager.testReset();
 
-    Assert.assertEquals(0, metric.testGetCount());
+    assertEquals(0, metric.testGetCount());
 
     orderService.processOrders();
-    Assert.assertEquals(1, metric.testGetCount());
-    Assert.assertTrue(MetricManager.testLastMetricOpcodeSuccess());
+    assertEquals(1, metric.testGetCount());
+    assertTrue(MetricManager.testLastMetricOpcodeSuccess());
 
     orderService.processOrders();
-    Assert.assertEquals(2, metric.testGetCount());
-    Assert.assertTrue(MetricManager.testLastMetricOpcodeSuccess());
+    assertEquals(2, metric.testGetCount());
+    assertTrue(MetricManager.testLastMetricOpcodeSuccess());
 
     orderService.processOrders();
-    Assert.assertEquals(3, metric.testGetCount());
-    Assert.assertTrue(MetricManager.testLastMetricOpcodeSuccess());
+    assertEquals(3, metric.testGetCount());
+    assertTrue(MetricManager.testLastMetricOpcodeSuccess());
 
   }
 }

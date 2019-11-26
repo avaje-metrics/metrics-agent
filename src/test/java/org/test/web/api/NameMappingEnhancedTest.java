@@ -8,6 +8,9 @@ import io.avaje.metrics.MockBucketTimedMetric;
 import org.junit.Assert;
 import org.junit.Test;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 public class NameMappingEnhancedTest extends BaseTest {
 
   @Test
@@ -19,19 +22,19 @@ public class NameMappingEnhancedTest extends BaseTest {
     metric.testReset();
     MetricManager.testReset();
 
-    Assert.assertEquals(0, metric.testGetCount());
+    assertEquals(0, metric.testGetCount());
 
     niceService.doNice();
-    Assert.assertEquals(1, metric.testGetCount());
-    Assert.assertTrue(MetricManager.testLastMetricOpcodeSuccess());
+    assertEquals(1, metric.testGetCount());
+    assertTrue(MetricManager.testLastMetricOpcodeSuccess());
 
     niceService.doNice();
-    Assert.assertEquals(2, metric.testGetCount());
-    Assert.assertTrue(MetricManager.testLastMetricOpcodeSuccess());
+    assertEquals(2, metric.testGetCount());
+    assertTrue(MetricManager.testLastMetricOpcodeSuccess());
 
     niceService.doNice();
-    Assert.assertEquals(3, metric.testGetCount());
-    Assert.assertTrue(MetricManager.testLastMetricOpcodeSuccess());
+    assertEquals(3, metric.testGetCount());
+    assertTrue(MetricManager.testLastMetricOpcodeSuccess());
 
   }
 

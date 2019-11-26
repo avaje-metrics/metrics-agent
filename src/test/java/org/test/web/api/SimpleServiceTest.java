@@ -9,7 +9,6 @@ public class SimpleServiceTest extends BaseTest {
   public void testSimpleServiceThatThrowsException() throws InterruptedException {
 
     SimpleService service = new SimpleService();
-    service.toString();
     service.doSomething();
     service.doSomething();
     service.doSomething();
