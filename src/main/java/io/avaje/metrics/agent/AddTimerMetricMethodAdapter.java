@@ -283,7 +283,7 @@ public class AddTimerMetricMethodAdapter extends AdviceAdapter {
       int[] buckets = getBuckets();
       if (buckets == null || buckets.length == 0) {
         // A TimedMetric
-        mv.visitMethodInsn(INVOKESTATIC, METRIC_MANAGER, "getTimedMetric", "(Ljava/lang/String;)Lio/avaje/metrics/TimedMetric;", false);
+        mv.visitMethodInsn(INVOKESTATIC, METRIC_MANAGER, "timed", "(Ljava/lang/String;)Lio/avaje/metrics/TimedMetric;", false);
         mv.visitFieldInsn(PUTSTATIC, className, "_$metric_" + i, LTIMED_METRIC);
 
       } else {
@@ -300,7 +300,7 @@ public class AddTimerMetricMethodAdapter extends AdviceAdapter {
           push(mv, buckets[j]);
           mv.visitInsn(IASTORE);
         }
-        mv.visitMethodInsn(INVOKESTATIC, METRIC_MANAGER, "getTimedMetric", "(Ljava/lang/String;[I)Lio/avaje/metrics/TimedMetric;", false);
+        mv.visitMethodInsn(INVOKESTATIC, METRIC_MANAGER, "timed", "(Ljava/lang/String;[I)Lio/avaje/metrics/TimedMetric;", false);
         mv.visitFieldInsn(PUTSTATIC, className, "_$metric_" + i, LTIMED_METRIC);
       }
     }

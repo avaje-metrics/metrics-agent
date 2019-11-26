@@ -16,9 +16,9 @@ public class ExampleService extends BaseService {
   }
 
   private static void _$initMetrics() {
-    _$metric_1 = MetricManager.getTimedMetric("simpleSerivce.doSomething");
-    _$metric_2 = MetricManager.getTimedMetric("simpleSerivce.doSomethingElse");
-    _$metric_3 = MetricManager.getTimedMetric("simpleSerivce.doBucketSomething", 100, 200);
+    _$metric_1 = MetricManager.timed("simpleSerivce.doSomething");
+    _$metric_2 = MetricManager.timed("simpleSerivce.doSomethingElse");
+    _$metric_3 = MetricManager.timed("simpleSerivce.doBucketSomething", 100, 200);
   }
 
   public void doSomething() throws InterruptedException {

@@ -21,7 +21,7 @@ public class MetricManager {
   /**
    * Method called by the enhancement code.
    */
-  public synchronized static TimedMetric getTimedMetric(String name) {
+  public synchronized static TimedMetric timed(String name) {
 
     TimedMetric timedMetric = cache.get(name);
     if (timedMetric == null) {
@@ -35,7 +35,7 @@ public class MetricManager {
   }
 
 
-  public synchronized static TimedMetric getTimedMetric(String name, int... bucketRanges) {
+  public synchronized static TimedMetric timed(String name, int... bucketRanges) {
 
     TimedMetric timedMetric = bucketCache.get(name);
     if (timedMetric == null) {
