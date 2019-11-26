@@ -29,8 +29,6 @@ public class MetricManager {
       timedMetric = new MockTimedMetric(name);
       cache.put(name, timedMetric);
     }
-
-    System.out.println("== MetricManager: return timedMetric " + name);
     return timedMetric;
   }
 
@@ -43,8 +41,6 @@ public class MetricManager {
       timedMetric = new MockBucketTimedMetric(name);
       bucketCache.put(name, timedMetric);
     }
-
-    System.out.println("== MetricManager: return BucketTimedMetric " + name);
     return timedMetric;
   }
 
