@@ -26,9 +26,9 @@ public class ExampleService extends BaseService {
     try {
       System.out.println("123");
       // Thread.sleep(100);
-      _$metric_1.operationEnd(_$metricStart);
+      _$metric_1.add(_$metricStart);
     } catch (RuntimeException e) {
-      _$metric_1.operationErr(_$metricStart);
+      _$metric_1.addErr(_$metricStart);
     }
   }
 
@@ -38,9 +38,9 @@ public class ExampleService extends BaseService {
     try {
       System.out.println("123");
       // Thread.sleep(100);
-      _$metric_3.operationEnd(_$metricStart);
+      _$metric_3.add(_$metricStart);
     } catch (RuntimeException e) {
-      _$metric_3.operationErr(_$metricStart);
+      _$metric_3.addErr(_$metricStart);
     }
   }
 
@@ -49,7 +49,7 @@ public class ExampleService extends BaseService {
     System.out.println("not very interesting");
     // int opCode = 123;
     //_$metric_2.operationEnd(System.nanoTime() - start, opCode);
-    _$metric_2.operationEnd(start);
+    _$metric_2.add(start);
   }
 
   // public String findAll(String orderBy) {

@@ -25,10 +25,10 @@ public class AddTimerMetricMethodAdapter extends AdviceAdapter {
 
   private static final String METRIC_MANAGER = "io/avaje/metrics/MetricManager";
 
-  private static final String OPERATION_END = "operationEnd";
-  private static final String OPERATION_ERR = "operationErr";
+  private static final String OPERATION_END = "add";
+  private static final String OPERATION_ERR = "addErr";
 
-  private static final String METHOD_IS_ACTIVE_THREAD_CONTEXT = "isActiveThreadContext";
+  private static final String METHOD_IS_ACTIVE_THREAD_CONTEXT = "isRequestTiming";
 
   private final ClassAdapterMetric classAdapter;
 

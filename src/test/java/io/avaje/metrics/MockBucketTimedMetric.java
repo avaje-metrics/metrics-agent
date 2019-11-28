@@ -14,22 +14,22 @@ public class MockBucketTimedMetric implements TimedMetric {
   }
 
   @Override
-  public void operationEnd(long startNanos) {
+  public void add(long startNanos) {
     testOperationEnd(true, startNanos, false);
   }
 
   @Override
-  public void operationEnd(long startNanos, boolean activeThreadContext) {
+  public void add(long startNanos, boolean activeThreadContext) {
     testOperationEnd(true, startNanos, activeThreadContext);
   }
 
   @Override
-  public void operationErr(long startNanos) {
+  public void addErr(long startNanos) {
     testOperationEnd(false, startNanos, false);
   }
 
   @Override
-  public void operationErr(long startNanos, boolean activeThreadContext) {
+  public void addErr(long startNanos, boolean activeThreadContext) {
     testOperationEnd(false, startNanos, activeThreadContext);
   }
 
@@ -40,7 +40,8 @@ public class MockBucketTimedMetric implements TimedMetric {
     MetricManager.testOperationEnd(name, success, activeThreadContext);
   }
 
-  public boolean isActiveThreadContext() {
+  @Override
+  public boolean isRequestTiming() {
     return true;
   }
 
