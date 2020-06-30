@@ -89,10 +89,9 @@ public class Transformer implements ClassFileTransformer {
   }
 
   public byte[] transform(ClassLoader loader, String className, Class<?> classBeingRedefined,
-      ProtectionDomain protectionDomain, byte[] classfileBuffer) throws IllegalClassFormatException {
+                          ProtectionDomain protectionDomain, byte[] classfileBuffer) throws IllegalClassFormatException {
 
     try {
-
       // ignore JDK and JDBC classes etc
       if (enhanceContext.isIgnoreClass(className)) {
         enhanceContext.log(9, "ignore class ", className);
@@ -104,7 +103,7 @@ public class Transformer implements ClassFileTransformer {
 
     } catch (NoEnhancementRequiredException e) {
       // the class is an interface
-      log(8, "No Enhancement required ",  e.getMessage());
+      log(8, "No Enhancement required ", e.getMessage());
       return null;
 
     } catch (Exception e) {
@@ -119,23 +118,19 @@ public class Transformer implements ClassFileTransformer {
    * Perform enhancement.
    */
   private byte[] enhancement(ClassLoader loader, byte[] classfileBuffer) {
-
     ClassReader cr = new ClassReader(classfileBuffer);
     ClassWriter cw = new ClassWriterWithoutClassLoading(ClassWriter.COMPUTE_FRAMES + ClassWriter.COMPUTE_MAXS, loader);
     ClassAdapterMetric ca = new ClassAdapterMetric(cw, enhanceContext);
     try {
-
       cr.accept(ca, ClassReader.EXPAND_FRAMES);
       if (ca.isLog(3)) {
         ca.log("enhanced");
       }
-
       if (enhanceContext.isReadOnly()) {
         if (ca.isLog(3)) {
           ca.log("readonly mode - not enhanced");
         }
         return null;
-
       } else {
         return cw.toByteArray();
       }
@@ -145,13 +140,16 @@ public class Transformer implements ClassFileTransformer {
         ca.log("already enhanced");
       }
       return null;
-
     } catch (NoEnhancementRequiredException e) {
       if (ca.isLog(9)) {
         ca.log("... skipping, no enhancement required");
       }
       return null;
+    } catch (IllegalArgumentException | IllegalStateException e) {
+      if (ca.isLog(2)) {
+        ca.log("No enhancement on class due to " + e);
+      }
+      return null;
     }
   }
-
 }
