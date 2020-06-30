@@ -9,7 +9,7 @@
 
   <groupId>io.avaje.metrics</groupId>
   <artifactId>metrics-agent</artifactId>
-  <version>8.4</version>
+  <version>8.4-SNAPSHOT</version>
   <name>metrics-agent</name>
 
   <scm>
