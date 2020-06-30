@@ -10,6 +10,7 @@ import io.avaje.metrics.agent.asm.commons.AdviceAdapter;
 
 import java.util.Arrays;
 
+import static io.avaje.metrics.agent.Transformer.ASM_VERSION;
 import static io.avaje.metrics.agent.asm.Type.BOOLEAN_TYPE;
 import static io.avaje.metrics.agent.asm.Type.LONG_TYPE;
 
@@ -58,7 +59,7 @@ public class AddTimerMetricMethodAdapter extends AdviceAdapter {
   AddTimerMetricMethodAdapter(ClassAdapterMetric classAdapter, boolean enhanceDefault,
                               int metricIndex, String uniqueMethodName, MethodVisitor mv, int acc, String name, String desc) {
 
-    super(ASM7, mv, acc, name, desc);
+    super(ASM_VERSION, mv, acc, name, desc);
     this.classAdapter = classAdapter;
     this.context = classAdapter.getEnhanceContext();
     this.className = classAdapter.className;

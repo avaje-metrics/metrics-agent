@@ -5,6 +5,8 @@ import io.avaje.metrics.agent.asm.MethodVisitor;
 import io.avaje.metrics.agent.asm.Opcodes;
 import io.avaje.metrics.agent.asm.commons.AdviceAdapter;
 
+import static io.avaje.metrics.agent.Transformer.ASM_VERSION;
+
 /**
  * Enhance an existing static initialisation block with a call to our static
  * _$initMetrics() method.
@@ -14,7 +16,7 @@ public class StaticInitAdapter extends AdviceAdapter {
   private final String className;
 
   StaticInitAdapter(MethodVisitor mv, int access, String name, String desc, String className) {
-    super(Opcodes.ASM7, mv, access, name, desc);
+    super(ASM_VERSION, mv, access, name, desc);
     this.className = className;
   }
 

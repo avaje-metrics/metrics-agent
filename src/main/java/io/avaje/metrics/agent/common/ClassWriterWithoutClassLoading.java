@@ -1,11 +1,20 @@
-package io.avaje.metrics.agent.asm;
+package io.avaje.metrics.agent.common;
+
+import io.avaje.metrics.agent.asm.ClassReader;
+import io.avaje.metrics.agent.asm.ClassVisitor;
+import io.avaje.metrics.agent.asm.ClassWriter;
+import io.avaje.metrics.agent.asm.Opcodes;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import static io.avaje.metrics.agent.Transformer.ASM_VERSION;
 
 /**
  * ClassWriter without class loading. Fixes problems on dynamic enhancement mentioned here:
@@ -27,7 +36,7 @@ public class ClassWriterWithoutClassLoading extends ClassWriter {
 
   private final ClassLoader classLoader;
 
-//  private List<CommonSuperUnresolved> unresolved = new ArrayList<>();
+  //private List<CommonSuperUnresolved> unresolved = new ArrayList<>();
 
   public ClassWriterWithoutClassLoading(ClassReader classReader, int flags, ClassLoader classLoader) {
     super(classReader, flags);
@@ -105,7 +114,7 @@ public class ClassWriterWithoutClassLoading extends ClassWriter {
     }
     try (InputStream classBytes = classLoader.getResourceAsStream(internalTypeName + ".class")){
       ClassReader classReader = new ClassReader(classBytes);
-      classReader.accept(new ClassVisitor(Opcodes.ASM7) {
+      classReader.accept(new ClassVisitor(ASM_VERSION) {
 
         @Override
         public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {

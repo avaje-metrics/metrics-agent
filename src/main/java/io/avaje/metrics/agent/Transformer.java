@@ -2,7 +2,8 @@ package io.avaje.metrics.agent;
 
 import io.avaje.metrics.agent.asm.ClassReader;
 import io.avaje.metrics.agent.asm.ClassWriter;
-import io.avaje.metrics.agent.asm.ClassWriterWithoutClassLoading;
+import io.avaje.metrics.agent.asm.Opcodes;
+import io.avaje.metrics.agent.common.ClassWriterWithoutClassLoading;
 
 import java.io.PrintStream;
 import java.lang.instrument.ClassFileTransformer;
@@ -19,6 +20,8 @@ import java.util.function.Consumer;
  * </p>
  */
 public class Transformer implements ClassFileTransformer {
+
+  public static final int ASM_VERSION = Opcodes.ASM8;
 
   public static void premain(String agentArgs, Instrumentation inst) {
 

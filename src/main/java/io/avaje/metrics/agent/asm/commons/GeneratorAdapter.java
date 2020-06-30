@@ -27,6 +27,10 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 package io.avaje.metrics.agent.asm.commons;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 import io.avaje.metrics.agent.asm.ClassVisitor;
 import io.avaje.metrics.agent.asm.ConstantDynamic;
 import io.avaje.metrics.agent.asm.Handle;
@@ -34,10 +38,6 @@ import io.avaje.metrics.agent.asm.Label;
 import io.avaje.metrics.agent.asm.MethodVisitor;
 import io.avaje.metrics.agent.asm.Opcodes;
 import io.avaje.metrics.agent.asm.Type;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 /**
  * A {@link MethodVisitor} with convenient methods to generate code. For example, using this
@@ -202,7 +202,7 @@ public class GeneratorAdapter extends LocalVariablesSorter {
       final int access,
       final String name,
       final String descriptor) {
-    this(Opcodes.ASM7, methodVisitor, access, name, descriptor);
+    this(/* latest api = */ Opcodes.ASM8, methodVisitor, access, name, descriptor);
     if (getClass() != GeneratorAdapter.class) {
       throw new IllegalStateException();
     }
@@ -212,7 +212,8 @@ public class GeneratorAdapter extends LocalVariablesSorter {
    * Constructs a new {@link GeneratorAdapter}.
    *
    * @param api the ASM API version implemented by this visitor. Must be one of {@link
-   *     Opcodes#ASM4}, {@link Opcodes#ASM5}, {@link Opcodes#ASM6} or {@link Opcodes#ASM7}.
+   *     Opcodes#ASM4}, {@link Opcodes#ASM5}, {@link Opcodes#ASM6}, {@link Opcodes#ASM7} or {@link
+   *     Opcodes#ASM8}.
    * @param methodVisitor the method visitor to which this adapter delegates calls.
    * @param access the method's access flags (see {@link Opcodes}).
    * @param name the method's name.
@@ -241,7 +242,7 @@ public class GeneratorAdapter extends LocalVariablesSorter {
    * @param methodVisitor the method visitor to which this adapter delegates calls.
    */
   public GeneratorAdapter(
-    final int access, final Method method, final MethodVisitor methodVisitor) {
+      final int access, final Method method, final MethodVisitor methodVisitor) {
     this(methodVisitor, access, method.getName(), method.getDescriptor());
   }
 
@@ -759,48 +760,7 @@ public class GeneratorAdapter extends LocalVariablesSorter {
           || to.getSort() > Type.DOUBLE) {
         throw new IllegalArgumentException("Cannot cast from " + from + " to " + to);
       }
-      if (from == Type.DOUBLE_TYPE) {
-        if (to == Type.FLOAT_TYPE) {
-          mv.visitInsn(Opcodes.D2F);
-        } else if (to == Type.LONG_TYPE) {
-          mv.visitInsn(Opcodes.D2L);
-        } else {
-          mv.visitInsn(Opcodes.D2I);
-          cast(Type.INT_TYPE, to);
-        }
-      } else if (from == Type.FLOAT_TYPE) {
-        if (to == Type.DOUBLE_TYPE) {
-          mv.visitInsn(Opcodes.F2D);
-        } else if (to == Type.LONG_TYPE) {
-          mv.visitInsn(Opcodes.F2L);
-        } else {
-          mv.visitInsn(Opcodes.F2I);
-          cast(Type.INT_TYPE, to);
-        }
-      } else if (from == Type.LONG_TYPE) {
-        if (to == Type.DOUBLE_TYPE) {
-          mv.visitInsn(Opcodes.L2D);
-        } else if (to == Type.FLOAT_TYPE) {
-          mv.visitInsn(Opcodes.L2F);
-        } else {
-          mv.visitInsn(Opcodes.L2I);
-          cast(Type.INT_TYPE, to);
-        }
-      } else {
-        if (to == Type.BYTE_TYPE) {
-          mv.visitInsn(Opcodes.I2B);
-        } else if (to == Type.CHAR_TYPE) {
-          mv.visitInsn(Opcodes.I2C);
-        } else if (to == Type.DOUBLE_TYPE) {
-          mv.visitInsn(Opcodes.I2D);
-        } else if (to == Type.FLOAT_TYPE) {
-          mv.visitInsn(Opcodes.I2F);
-        } else if (to == Type.LONG_TYPE) {
-          mv.visitInsn(Opcodes.I2L);
-        } else if (to == Type.SHORT_TYPE) {
-          mv.visitInsn(Opcodes.I2S);
-        }
-      }
+      InstructionAdapter.cast(mv, from, to);
     }
   }
 
@@ -1101,7 +1061,7 @@ public class GeneratorAdapter extends LocalVariablesSorter {
    *     LOOKUPSWITCH instruction.
    */
   public void tableSwitch(
-    final int[] keys, final TableSwitchGenerator generator, final boolean useTable) {
+      final int[] keys, final TableSwitchGenerator generator, final boolean useTable) {
     for (int i = 1; i < keys.length; ++i) {
       if (keys[i] < keys[i - 1]) {
         throw new IllegalArgumentException("keys must be sorted in ascending order");
@@ -1163,7 +1123,7 @@ public class GeneratorAdapter extends LocalVariablesSorter {
    * @param fieldType the type of the field.
    */
   private void fieldInsn(
-    final int opcode, final Type ownerType, final String name, final Type fieldType) {
+      final int opcode, final Type ownerType, final String name, final Type fieldType) {
     mv.visitFieldInsn(opcode, ownerType.getInternalName(), name, fieldType.getDescriptor());
   }
 
@@ -1224,7 +1184,7 @@ public class GeneratorAdapter extends LocalVariablesSorter {
    * @param isInterface whether the 'type' class is an interface or not.
    */
   private void invokeInsn(
-    final int opcode, final Type type, final Method method, final boolean isInterface) {
+      final int opcode, final Type type, final Method method, final boolean isInterface) {
     String owner = type.getSort() == Type.ARRAY ? type.getDescriptor() : type.getInternalName();
     mv.visitMethodInsn(opcode, owner, method.getName(), method.getDescriptor(), isInterface);
   }
@@ -1317,37 +1277,7 @@ public class GeneratorAdapter extends LocalVariablesSorter {
    * @param type the type of the array elements.
    */
   public void newArray(final Type type) {
-    int arrayType;
-    switch (type.getSort()) {
-      case Type.BOOLEAN:
-        arrayType = Opcodes.T_BOOLEAN;
-        break;
-      case Type.CHAR:
-        arrayType = Opcodes.T_CHAR;
-        break;
-      case Type.BYTE:
-        arrayType = Opcodes.T_BYTE;
-        break;
-      case Type.SHORT:
-        arrayType = Opcodes.T_SHORT;
-        break;
-      case Type.INT:
-        arrayType = Opcodes.T_INT;
-        break;
-      case Type.FLOAT:
-        arrayType = Opcodes.T_FLOAT;
-        break;
-      case Type.LONG:
-        arrayType = Opcodes.T_LONG;
-        break;
-      case Type.DOUBLE:
-        arrayType = Opcodes.T_DOUBLE;
-        break;
-      default:
-        typeInsn(Opcodes.ANEWARRAY, type);
-        return;
-    }
-    mv.visitIntInsn(Opcodes.NEWARRAY, arrayType);
+    InstructionAdapter.newarray(mv, type);
   }
 
   // -----------------------------------------------------------------------------------------------

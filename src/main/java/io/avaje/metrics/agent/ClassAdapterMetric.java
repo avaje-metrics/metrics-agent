@@ -9,6 +9,8 @@ import io.avaje.metrics.agent.asm.Opcodes;
 import java.util.ArrayList;
 import java.util.List;
 
+import static io.avaje.metrics.agent.Transformer.ASM_VERSION;
+
 /**
  * ClassAdapter used to add metrics collection.
  */
@@ -68,7 +70,7 @@ public class ClassAdapterMetric extends ClassVisitor implements Opcodes {
    * Construct with visitor, context and classLoader.
    */
   ClassAdapterMetric(ClassVisitor cv, EnhanceContext context) {
-    super(ASM7, cv);
+    super(ASM_VERSION, cv);
     this.enhanceContext = context;
   }
 

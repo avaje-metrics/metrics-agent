@@ -305,7 +305,8 @@ public final class Type {
       }
       if (methodDescriptor.charAt(currentOffset++) == 'L') {
         // Skip the argument descriptor content.
-        currentOffset = methodDescriptor.indexOf(';', currentOffset) + 1;
+        int semiColumnOffset = methodDescriptor.indexOf(';', currentOffset);
+        currentOffset = Math.max(currentOffset, semiColumnOffset + 1);
       }
       ++numArgumentTypes;
     }
@@ -323,7 +324,8 @@ public final class Type {
       }
       if (methodDescriptor.charAt(currentOffset++) == 'L') {
         // Skip the argument descriptor content.
-        currentOffset = methodDescriptor.indexOf(';', currentOffset) + 1;
+        int semiColumnOffset = methodDescriptor.indexOf(';', currentOffset);
+        currentOffset = Math.max(currentOffset, semiColumnOffset + 1);
       }
       argumentTypes[currentArgumentTypeIndex++] =
           getTypeInternal(methodDescriptor, currentArgumentTypeOffset, currentOffset);
@@ -393,7 +395,8 @@ public final class Type {
       }
       if (methodDescriptor.charAt(currentOffset++) == 'L') {
         // Skip the argument descriptor content.
-        currentOffset = methodDescriptor.indexOf(';', currentOffset) + 1;
+        int semiColumnOffset = methodDescriptor.indexOf(';', currentOffset);
+        currentOffset = Math.max(currentOffset, semiColumnOffset + 1);
       }
     }
     return currentOffset + 1;
@@ -410,7 +413,7 @@ public final class Type {
    * @return the {@link Type} corresponding to the given type descriptor.
    */
   private static Type getTypeInternal(
-    final String descriptorBuffer, final int descriptorBegin, final int descriptorEnd) {
+      final String descriptorBuffer, final int descriptorBegin, final int descriptorEnd) {
     switch (descriptorBuffer.charAt(descriptorBegin)) {
       case 'V':
         return VOID_TYPE;
@@ -737,7 +740,8 @@ public final class Type {
         }
         if (methodDescriptor.charAt(currentOffset++) == 'L') {
           // Skip the argument descriptor content.
-          currentOffset = methodDescriptor.indexOf(';', currentOffset) + 1;
+          int semiColumnOffset = methodDescriptor.indexOf(';', currentOffset);
+          currentOffset = Math.max(currentOffset, semiColumnOffset + 1);
         }
         argumentsSize += 1;
       }

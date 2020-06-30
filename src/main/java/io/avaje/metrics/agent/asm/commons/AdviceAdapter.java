@@ -27,17 +27,17 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 package io.avaje.metrics.agent.asm.commons;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import io.avaje.metrics.agent.asm.ConstantDynamic;
 import io.avaje.metrics.agent.asm.Handle;
 import io.avaje.metrics.agent.asm.Label;
 import io.avaje.metrics.agent.asm.MethodVisitor;
 import io.avaje.metrics.agent.asm.Opcodes;
 import io.avaje.metrics.agent.asm.Type;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 /**
  * A {@link MethodVisitor} to insert before, after and around advices in methods and constructors.
@@ -352,6 +352,8 @@ public abstract class AdviceAdapter extends GeneratorAdapter implements Opcodes 
           popValue();
           popValue();
           break;
+        case RET:
+          break;
         default:
           throw new IllegalArgumentException(INVALID_OPCODE + opcode);
       }
@@ -360,7 +362,7 @@ public abstract class AdviceAdapter extends GeneratorAdapter implements Opcodes 
 
   @Override
   public void visitFieldInsn(
-    final int opcode, final String owner, final String name, final String descriptor) {
+      final int opcode, final String owner, final String name, final String descriptor) {
     super.visitFieldInsn(opcode, owner, name, descriptor);
     if (isConstructor && !superClassConstructorCalled) {
       char firstDescriptorChar = descriptor.charAt(0);
@@ -546,7 +548,7 @@ public abstract class AdviceAdapter extends GeneratorAdapter implements Opcodes 
 
   @Override
   public void visitTableSwitchInsn(
-    final int min, final int max, final Label dflt, final Label... labels) {
+      final int min, final int max, final Label dflt, final Label... labels) {
     super.visitTableSwitchInsn(min, max, dflt, labels);
     if (isConstructor && !superClassConstructorCalled) {
       popValue();
@@ -556,7 +558,7 @@ public abstract class AdviceAdapter extends GeneratorAdapter implements Opcodes 
 
   @Override
   public void visitTryCatchBlock(
-    final Label start, final Label end, final Label handler, final String type) {
+      final Label start, final Label end, final Label handler, final String type) {
     super.visitTryCatchBlock(start, end, handler, type);
     // By definition of 'forwardJumpStackFrames', 'handler' should be pushed only if there is an
     // instruction between 'start' and 'end' at which the super class constructor is not yet
