@@ -1,4 +1,5 @@
 Manifest-Version: 1.0
+Automatic-Module-Name: io.avaje.metrics.agent
 Premain-Class: io.avaje.metrics.agent.Transformer
 Agent-Class: io.avaje.metrics.agent.Transformer
 Can-Redefine-Classes: true
