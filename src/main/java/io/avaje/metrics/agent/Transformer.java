@@ -21,7 +21,7 @@ import java.util.function.Consumer;
  */
 public class Transformer implements ClassFileTransformer {
 
-  public static final int ASM_VERSION = Opcodes.ASM8;
+  public static final int ASM_VERSION = Opcodes.ASM9;
 
   public static void premain(String agentArgs, Instrumentation inst) {
 
