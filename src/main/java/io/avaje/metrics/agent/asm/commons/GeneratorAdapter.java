@@ -31,10 +31,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import io.avaje.metrics.agent.asm.ClassVisitor;
-import io.avaje.metrics.agent.asm.ConstantDynamic;
 import io.avaje.metrics.agent.asm.Handle;
 import io.avaje.metrics.agent.asm.Label;
+import io.avaje.metrics.agent.asm.ClassVisitor;
+import io.avaje.metrics.agent.asm.ConstantDynamic;
 import io.avaje.metrics.agent.asm.MethodVisitor;
 import io.avaje.metrics.agent.asm.Opcodes;
 import io.avaje.metrics.agent.asm.Type;
@@ -202,7 +202,7 @@ public class GeneratorAdapter extends LocalVariablesSorter {
       final int access,
       final String name,
       final String descriptor) {
-    this(/* latest api = */ Opcodes.ASM8, methodVisitor, access, name, descriptor);
+    this(/* latest api = */ Opcodes.ASM9, methodVisitor, access, name, descriptor);
     if (getClass() != GeneratorAdapter.class) {
       throw new IllegalStateException();
     }
@@ -211,9 +211,8 @@ public class GeneratorAdapter extends LocalVariablesSorter {
   /**
    * Constructs a new {@link GeneratorAdapter}.
    *
-   * @param api the ASM API version implemented by this visitor. Must be one of {@link
-   *     Opcodes#ASM4}, {@link Opcodes#ASM5}, {@link Opcodes#ASM6}, {@link Opcodes#ASM7} or {@link
-   *     Opcodes#ASM8}.
+   * @param api the ASM API version implemented by this visitor. Must be one of the {@code
+   *     ASM}<i>x</i> values in {@link Opcodes}.
    * @param methodVisitor the method visitor to which this adapter delegates calls.
    * @param access the method's access flags (see {@link Opcodes}).
    * @param name the method's name.

@@ -37,9 +37,8 @@ package io.avaje.metrics.agent.asm;
 public abstract class FieldVisitor {
 
   /**
-   * The ASM API version implemented by this visitor. The value of this field must be one of {@link
-   * Opcodes#ASM4}, {@link Opcodes#ASM5}, {@link Opcodes#ASM6}, {@link Opcodes#ASM7} or {@link
-   * Opcodes#ASM8}.
+   * The ASM API version implemented by this visitor. The value of this field must be one of the
+   * {@code ASM}<i>x</i> values in {@link Opcodes}.
    */
   protected final int api;
 
@@ -49,33 +48,32 @@ public abstract class FieldVisitor {
   /**
    * Constructs a new {@link FieldVisitor}.
    *
-   * @param api the ASM API version implemented by this visitor. Must be one of {@link
-   *     Opcodes#ASM4}, {@link Opcodes#ASM5}, {@link Opcodes#ASM6}, {@link Opcodes#ASM7} or {@link
-   *     Opcodes#ASM8}.
+   * @param api the ASM API version implemented by this visitor. Must be one of the {@code
+   *     ASM}<i>x</i> values in {@link Opcodes}.
    */
-  public FieldVisitor(final int api) {
+  protected FieldVisitor(final int api) {
     this(api, null);
   }
 
   /**
    * Constructs a new {@link FieldVisitor}.
    *
-   * @param api the ASM API version implemented by this visitor. Must be one of {@link
-   *     Opcodes#ASM4}, {@link Opcodes#ASM5}, {@link Opcodes#ASM6}, {@link Opcodes#ASM7} or {@link
-   *     Opcodes#ASM8}.
+   * @param api the ASM API version implemented by this visitor. Must be one of the {@code
+   *     ASM}<i>x</i> values in {@link Opcodes}.
    * @param fieldVisitor the field visitor to which this visitor must delegate method calls. May be
    *     null.
    */
-  public FieldVisitor(final int api, final FieldVisitor fieldVisitor) {
-    if (api != Opcodes.ASM8
+  protected FieldVisitor(final int api, final FieldVisitor fieldVisitor) {
+    if (api != Opcodes.ASM9
+        && api != Opcodes.ASM8
         && api != Opcodes.ASM7
         && api != Opcodes.ASM6
         && api != Opcodes.ASM5
         && api != Opcodes.ASM4
-        && api != Opcodes.ASM9_EXPERIMENTAL) {
+        && api != Opcodes.ASM10_EXPERIMENTAL) {
       throw new IllegalArgumentException("Unsupported api " + api);
     }
-    if (api == Opcodes.ASM9_EXPERIMENTAL) {
+    if (api == Opcodes.ASM10_EXPERIMENTAL) {
       Constants.checkAsmExperimental(this);
     }
     this.api = api;

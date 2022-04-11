@@ -31,11 +31,8 @@ package io.avaje.metrics.agent.asm.commons;
 import java.util.ArrayList;
 import java.util.List;
 
+import io.avaje.metrics.agent.asm.*;
 import io.avaje.metrics.agent.asm.Attribute;
-import io.avaje.metrics.agent.asm.ByteVector;
-import io.avaje.metrics.agent.asm.ClassReader;
-import io.avaje.metrics.agent.asm.ClassVisitor;
-import io.avaje.metrics.agent.asm.ClassWriter;
 import io.avaje.metrics.agent.asm.Label;
 
 /**
@@ -105,7 +102,7 @@ public final class ModuleHashesAttribute extends Attribute {
       currentOffset += 2;
       byte[] hash = new byte[hashLength];
       for (int j = 0; j < hashLength; ++j) {
-        hash[j] = (byte) (classReader.readByte(currentOffset) & 0xFF);
+        hash[j] = (byte) classReader.readByte(currentOffset);
         currentOffset += 1;
       }
       hashList.add(hash);
