@@ -224,8 +224,8 @@ public class ClassAdapterMetric extends ClassVisitor implements Opcodes {
    * Return true if this annotation marks a Rest Controller.
    */
   private boolean isWebEndpoint(String desc) {
-    return desc.equals("Lio/dinject/controller/Path;")
-      || desc.equals("Lio/dinject/controller/Controller;");
+    return desc.equals("Lio/avaje/http/api/Path;")
+      || desc.equals("Lio/avaje/http/api/Controller;");
   }
 
   private boolean isJaxRsEndpoint(String desc) {

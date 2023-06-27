@@ -28,8 +28,8 @@
 package io.avaje.metrics.agent.asm.commons;
 
 import io.avaje.metrics.agent.asm.ClassVisitor;
-import io.avaje.metrics.agent.asm.MethodVisitor;
 import io.avaje.metrics.agent.asm.Opcodes;
+import io.avaje.metrics.agent.asm.MethodVisitor;
 
 /**
  * A {@link ClassVisitor} that merges &lt;clinit&gt; methods into a single one. All the existing
