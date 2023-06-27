@@ -1,7 +1,7 @@
 package org.test.web.api;
 
-import io.avaje.metrics.MetricManager;
-import io.avaje.metrics.MockTimedMetric;
+import io.avaje.metrics.Metrics;
+import io.avaje.metrics.MockTimer;
 import org.junit.Test;
 import org.test.app.model.Contact;
 import org.test.app.service.ContactDataLayer;
@@ -21,15 +21,15 @@ public class SpringServiceAndRepositoryCallingTest extends BaseTest {
     ContactDataLayer contactDataLayer = new ContactRepository();
     ContactServiceImpl impl = new ContactServiceImpl(contactDataLayer);
 
-    MockTimedMetric alertMetric = MetricManager.testGetTimedMetric("service.ContactServiceImpl.sendAlert");
+    MockTimer alertMetric = Metrics.testGetTimedMetric("service.ContactServiceImpl.sendAlert");
     alertMetric.testReset();
 
-    MockTimedMetric repoMetric = MetricManager.testGetTimedMetric("repo.ContactRepository.fetchData");
+    MockTimer repoMetric = Metrics.testGetTimedMetric("repo.ContactRepository.fetchData");
     repoMetric.testReset();
 
 
     impl.sendAlert(new Contact());
-    assertEquals("service.ContactServiceImpl.sendAlert", MetricManager.testLastMetricName());
+    assertEquals("service.ContactServiceImpl.sendAlert", Metrics.testLastMetricName());
     assertEquals(1, alertMetric.testGetCount());
     assertEquals(1, repoMetric.testGetCount());
 

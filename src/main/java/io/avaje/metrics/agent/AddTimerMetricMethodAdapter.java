@@ -20,11 +20,11 @@ import static io.avaje.metrics.agent.asm.Type.LONG_TYPE;
  */
 public class AddTimerMetricMethodAdapter extends AdviceAdapter {
 
-  private static final String TIMED_METRIC = "io/avaje/metrics/TimedMetric";
+  private static final String TIMED_METRIC = "io/avaje/metrics/Timer";
 
-  private static final String LTIMED_METRIC = "Lio/avaje/metrics/TimedMetric;";
+  private static final String LTIMED_METRIC = "Lio/avaje/metrics/Timer;";
 
-  private static final String METRIC_MANAGER = "io/avaje/metrics/MetricManager";
+  private static final String METRIC_MANAGER = "io/avaje/metrics/Metrics";
 
   private static final String OPERATION_END = "add";
   private static final String OPERATION_ERR = "addErr";
@@ -161,7 +161,7 @@ public class AddTimerMetricMethodAdapter extends AdviceAdapter {
       enhanced = false;
       return av;
     }
-    if (AnnotationInfo.isDInjectControllerMethod(desc)) {
+    if (AnnotationInfo.isAvajeControllerMethod(desc)) {
       log(4, "... found dinject controller annotation ", desc);
       enhanced = true;
       return av;
@@ -283,8 +283,7 @@ public class AddTimerMetricMethodAdapter extends AdviceAdapter {
 
       int[] buckets = getBuckets();
       if (buckets == null || buckets.length == 0) {
-        // A TimedMetric
-        mv.visitMethodInsn(INVOKESTATIC, METRIC_MANAGER, "timed", "(Ljava/lang/String;)Lio/avaje/metrics/TimedMetric;", false);
+        mv.visitMethodInsn(INVOKESTATIC, METRIC_MANAGER, "timer", "(Ljava/lang/String;)Lio/avaje/metrics/Timer;", false);
         mv.visitFieldInsn(PUTSTATIC, className, "_$metric_" + i, LTIMED_METRIC);
 
       } else {
@@ -301,7 +300,7 @@ public class AddTimerMetricMethodAdapter extends AdviceAdapter {
           push(mv, buckets[j]);
           mv.visitInsn(IASTORE);
         }
-        mv.visitMethodInsn(INVOKESTATIC, METRIC_MANAGER, "timed", "(Ljava/lang/String;[I)Lio/avaje/metrics/TimedMetric;", false);
+        mv.visitMethodInsn(INVOKESTATIC, METRIC_MANAGER, "timer", "(Ljava/lang/String;[I)Lio/avaje/metrics/Timer;", false);
         mv.visitFieldInsn(PUTSTATIC, className, "_$metric_" + i, LTIMED_METRIC);
       }
     }

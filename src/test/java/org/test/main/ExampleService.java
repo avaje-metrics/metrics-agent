@@ -1,24 +1,24 @@
 package org.test.main;
 
-import io.avaje.metrics.MetricManager;
-import io.avaje.metrics.TimedMetric;
+import io.avaje.metrics.Metrics;
+import io.avaje.metrics.Timer;
 import io.avaje.metrics.annotation.NotTimed;
 
 @NotTimed
 public class ExampleService extends BaseService {
 
-  private static TimedMetric _$metric_1;
-  private static TimedMetric _$metric_2;
-  private static TimedMetric _$metric_3;
+  private static Timer _$metric_1;
+  private static Timer _$metric_2;
+  private static Timer _$metric_3;
 
   static {
     _$initMetrics();
   }
 
   private static void _$initMetrics() {
-    _$metric_1 = MetricManager.timed("simpleSerivce.doSomething");
-    _$metric_2 = MetricManager.timed("simpleSerivce.doSomethingElse");
-    _$metric_3 = MetricManager.timed("simpleSerivce.doBucketSomething", 100, 200);
+    _$metric_1 = Metrics.timer("simpleSerivce.doSomething");
+    _$metric_2 = Metrics.timer("simpleSerivce.doSomethingElse");
+    _$metric_3 = Metrics.timer("simpleSerivce.doBucketSomething", 100, 200);
   }
 
   public void doSomething() throws InterruptedException {

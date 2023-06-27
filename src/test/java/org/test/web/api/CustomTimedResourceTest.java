@@ -2,7 +2,7 @@ package org.test.web.api;
 
 
 
-import io.avaje.metrics.MetricManager;
+import io.avaje.metrics.Metrics;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -17,54 +17,54 @@ public class CustomTimedResourceTest extends BaseTest {
 
     CustomTimedResource resource = new CustomTimedResource();
 
-    MetricManager.testReset();
-    assertNull(MetricManager.testLastMetricName());
+    Metrics.testReset();
+    assertNull(Metrics.testLastMetricName());
 
     resource.publicMethodNotTimed();
-    assertNull(MetricManager.testLastMetricName());
+    assertNull(Metrics.testLastMetricName());
 
     resource.publicMethodNormal();
-    assertEquals("myapi.CustomTimedResource.publicMethodNormal", MetricManager.testLastMetricName());
-    assertTrue(MetricManager.testLastMetricOpcodeSuccess());
+    assertEquals("myapi.CustomTimedResource.publicMethodNormal", Metrics.testLastMetricName());
+    assertTrue(Metrics.testLastMetricOpcodeSuccess());
 
     resource.publicMethodWithFullName();
-    assertEquals("myname.fully.defined", MetricManager.testLastMetricName());
-    assertTrue(MetricManager.testLastMetricOpcodeSuccess());
+    assertEquals("myname.fully.defined", Metrics.testLastMetricName());
+    assertTrue(Metrics.testLastMetricOpcodeSuccess());
 
     resource.publicMethodWithFullNameWhiteSpace();
-    assertEquals("myapi.CustomTimedResource.publicMethodWithFullNameWhiteSpace", MetricManager.testLastMetricName());
-    assertTrue(MetricManager.testLastMetricOpcodeSuccess());
+    assertEquals("myapi.CustomTimedResource.publicMethodWithFullNameWhiteSpace", Metrics.testLastMetricName());
+    assertTrue(Metrics.testLastMetricOpcodeSuccess());
 
     resource.publicMethodWithName();
-    assertEquals("myapi.CustomTimedResource.someRandomName", MetricManager.testLastMetricName());
-    assertTrue(MetricManager.testLastMetricOpcodeSuccess());
+    assertEquals("myapi.CustomTimedResource.someRandomName", Metrics.testLastMetricName());
+    assertTrue(Metrics.testLastMetricOpcodeSuccess());
 
     resource.publicMethodWithNameWhiteSpace();
-    assertEquals("myapi.CustomTimedResource.publicMethodWithNameWhiteSpace", MetricManager.testLastMetricName());
-    assertTrue(MetricManager.testLastMetricOpcodeSuccess());
+    assertEquals("myapi.CustomTimedResource.publicMethodWithNameWhiteSpace", Metrics.testLastMetricName());
+    assertTrue(Metrics.testLastMetricOpcodeSuccess());
 
-    MetricManager.testReset();
-    assertNull(MetricManager.testLastMetricName());
+    Metrics.testReset();
+    assertNull(Metrics.testLastMetricName());
 
     resource.hashCode();
-    assertNull(MetricManager.testLastMetricName());
+    assertNull(Metrics.testLastMetricName());
 
     resource.toString();
-    assertNull(MetricManager.testLastMetricName());
+    assertNull(Metrics.testLastMetricName());
 
   }
 
   @Test
   public void testCustomerResource_staticMethods() {
 
-    MetricManager.testReset();
-    assertNull(MetricManager.testLastMetricName());
+    Metrics.testReset();
+    assertNull(Metrics.testLastMetricName());
 
     CustomTimedResource.aStaticMethodNotAnnotated();
-    assertNull(MetricManager.testLastMetricName());
+    assertNull(Metrics.testLastMetricName());
 
     CustomTimedResource.aStaticMethodWithTimedAnnotation();
-    assertEquals("myapi.CustomTimedResource.staticGeneral", MetricManager.testLastMetricName());
+    assertEquals("myapi.CustomTimedResource.staticGeneral", Metrics.testLastMetricName());
 
   }
 }

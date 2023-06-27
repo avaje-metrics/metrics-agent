@@ -3,9 +3,8 @@ package org.test.web.api;
 import com.myapp.something.nice.ExcludeMeService;
 import com.myapp.something.nice.NiceService;
 import com.myapp.something.controller.NiceController;
-import io.avaje.metrics.MetricManager;
-import io.avaje.metrics.MockBucketTimedMetric;
-import org.junit.Assert;
+import io.avaje.metrics.Metrics;
+import io.avaje.metrics.MockBucketTimer;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -18,23 +17,23 @@ public class NameMappingEnhancedTest extends BaseTest {
 
     NiceService niceService = new NiceService();
 
-    MockBucketTimedMetric metric = MetricManager.testGetBucketTimedMetric("app.NiceService.doNice");
+    MockBucketTimer metric = Metrics.testGetBucketTimedMetric("app.NiceService.doNice");
     metric.testReset();
-    MetricManager.testReset();
+    Metrics.testReset();
 
     assertEquals(0, metric.testGetCount());
 
     niceService.doNice();
     assertEquals(1, metric.testGetCount());
-    assertTrue(MetricManager.testLastMetricOpcodeSuccess());
+    assertTrue(Metrics.testLastMetricOpcodeSuccess());
 
     niceService.doNice();
     assertEquals(2, metric.testGetCount());
-    assertTrue(MetricManager.testLastMetricOpcodeSuccess());
+    assertTrue(Metrics.testLastMetricOpcodeSuccess());
 
     niceService.doNice();
     assertEquals(3, metric.testGetCount());
-    assertTrue(MetricManager.testLastMetricOpcodeSuccess());
+    assertTrue(Metrics.testLastMetricOpcodeSuccess());
 
   }
 

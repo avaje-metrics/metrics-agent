@@ -6,11 +6,11 @@ import java.util.Map;
 /**
  * Test double for the MetricManager service.
  */
-public class MetricManager {
+public class Metrics {
 
-  private static Map<String, TimedMetric> cache = new HashMap<>();
+  private static Map<String, Timer> cache = new HashMap<>();
 
-  private static Map<String, TimedMetric> bucketCache = new HashMap<>();
+  private static Map<String, Timer> bucketCache = new HashMap<>();
 
   private static String lastMetricName;
 
@@ -21,38 +21,38 @@ public class MetricManager {
   /**
    * Method called by the enhancement code.
    */
-  public synchronized static TimedMetric timed(String name) {
+  public synchronized static Timer timer(String name) {
 
-    TimedMetric timedMetric = cache.get(name);
-    if (timedMetric == null) {
+    Timer timer = cache.get(name);
+    if (timer == null) {
       System.out.println("== MetricManager: create timedMetric " + name);
-      timedMetric = new MockTimedMetric(name);
-      cache.put(name, timedMetric);
+      timer = new MockTimer(name);
+      cache.put(name, timer);
     }
-    return timedMetric;
+    return timer;
   }
 
 
-  public synchronized static TimedMetric timed(String name, int... bucketRanges) {
+  public synchronized static Timer timer(String name, int... bucketRanges) {
 
-    TimedMetric timedMetric = bucketCache.get(name);
-    if (timedMetric == null) {
+    Timer timer = bucketCache.get(name);
+    if (timer == null) {
       System.out.println("== MetricManager: create BucketTimedMetric " + name);
-      timedMetric = new MockBucketTimedMetric(name);
-      bucketCache.put(name, timedMetric);
+      timer = new MockBucketTimer(name);
+      bucketCache.put(name, timer);
     }
-    return timedMetric;
+    return timer;
   }
 
   /**
    * For testing purpose get the TimedMetric if one has been created.
    */
-  public synchronized static MockTimedMetric testGetTimedMetric(String name) {
-    return (MockTimedMetric)cache.get(name);
+  public synchronized static MockTimer testGetTimedMetric(String name) {
+    return (MockTimer)cache.get(name);
   }
 
-  public synchronized static MockBucketTimedMetric testGetBucketTimedMetric(String name) {
-    return (MockBucketTimedMetric)bucketCache.get(name);
+  public synchronized static MockBucketTimer testGetBucketTimedMetric(String name) {
+    return (MockBucketTimer)bucketCache.get(name);
   }
 
   /**

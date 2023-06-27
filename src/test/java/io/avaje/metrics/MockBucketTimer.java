@@ -3,13 +3,13 @@ package io.avaje.metrics;
 /**
  * Test Double
  */
-public class MockTimedMetric implements TimedMetric {
+public class MockBucketTimer implements Timer {
 
   private final String name;
 
   private int count;
 
-  MockTimedMetric(String name) {
+  MockBucketTimer(String name) {
     this.name = name;
   }
 
@@ -35,9 +35,9 @@ public class MockTimedMetric implements TimedMetric {
 
   private void testOperationEnd(boolean success, long startNanos, boolean activeThreadContext) {
     long exeNanos = System.nanoTime() - startNanos;
-    System.out.println("... " + name + " testOperationEnd exe:" + exeNanos + " success:" + success + " activeThreadContext:" + activeThreadContext);
+    System.out.println("... " + name + " operationEnd exe:" + exeNanos + " success:" + success + " activeThreadContext:" + activeThreadContext);
     count++;
-    MetricManager.testOperationEnd(name, success, activeThreadContext);
+    Metrics.testOperationEnd(name, success, activeThreadContext);
   }
 
   @Override

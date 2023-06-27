@@ -1,7 +1,7 @@
 package org.test.web.api;
 
-import io.avaje.metrics.MetricManager;
-import io.avaje.metrics.MockTimedMetric;
+import io.avaje.metrics.Metrics;
+import io.avaje.metrics.MockTimer;
 import org.junit.Test;
 import org.test.app.SimpleService;
 
@@ -18,17 +18,17 @@ public class IndexResourceTest extends BaseTest {
 
     orderService.testForceError(false);
 
-    MockTimedMetric metric = MetricManager.testGetTimedMetric("app.IndexResource.get");
+    MockTimer metric = Metrics.testGetTimedMetric("app.IndexResource.get");
     metric.testReset();
 
     orderService.get();
-    assertEquals("app.IndexResource.get", MetricManager.testLastMetricName());
+    assertEquals("app.IndexResource.get", Metrics.testLastMetricName());
     assertEquals(1, metric.testGetCount());
-    assertTrue(MetricManager.testLastMetricOpcodeSuccess());
+    assertTrue(Metrics.testLastMetricOpcodeSuccess());
 
     orderService.get();
     assertEquals(2, metric.testGetCount());
-    assertTrue(MetricManager.testLastMetricOpcodeSuccess());
+    assertTrue(Metrics.testLastMetricOpcodeSuccess());
   }
 
   @Test
@@ -36,7 +36,7 @@ public class IndexResourceTest extends BaseTest {
 
     orderService.testForceError(true);
 
-    MockTimedMetric metric = MetricManager.testGetTimedMetric("app.IndexResource.get");
+    MockTimer metric = Metrics.testGetTimedMetric("app.IndexResource.get");
     metric.testReset();
 
     try {
@@ -46,7 +46,7 @@ public class IndexResourceTest extends BaseTest {
     } catch (ResourceException expected) {
       // expecting the error
       assertEquals(1, metric.testGetCount());
-      assertTrue(MetricManager.testLastMetricOpcodeError());
+      assertTrue(Metrics.testLastMetricOpcodeError());
     }
   }
 }

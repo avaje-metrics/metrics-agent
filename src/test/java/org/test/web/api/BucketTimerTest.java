@@ -1,27 +1,27 @@
 package org.test.web.api;
 
-import io.avaje.metrics.MetricManager;
-import io.avaje.metrics.MockBucketTimedMetric;
+import io.avaje.metrics.Metrics;
+import io.avaje.metrics.MockBucketTimer;
 import org.junit.Test;
 import org.test.app.OtherSimpleService;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
-public class BucketTimedMetricTest extends BaseTest {
+public class BucketTimerTest extends BaseTest {
 
   @Test
   public void testExecutionCount() throws InterruptedException {
 
     OtherSimpleService service = new OtherSimpleService();
 
-    MetricManager.testReset();
-    assertNull(MetricManager.testLastMetricName());
+    Metrics.testReset();
+    assertNull(Metrics.testLastMetricName());
 
     service.sayHi();
-    assertEquals("app.OtherSimpleService.sayHi", MetricManager.testLastMetricName());
+    assertEquals("app.OtherSimpleService.sayHi", Metrics.testLastMetricName());
 
-    MockBucketTimedMetric metric = MetricManager.testGetBucketTimedMetric("app.OtherSimpleService.saySomethingElse");
+    MockBucketTimer metric = Metrics.testGetBucketTimedMetric("app.OtherSimpleService.saySomethingElse");
     metric.testReset();
     assertEquals(0, metric.testGetCount());
 

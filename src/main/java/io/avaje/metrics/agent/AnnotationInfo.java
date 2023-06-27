@@ -34,13 +34,13 @@ public class AnnotationInfo {
     JAXRS_ANNOTATIONS.add("Ljavax/ws/rs/DELETE;");
     JAXRS_ANNOTATIONS.add("Ljavax/ws/rs/OPTIONS;");
 
-    DINJECT_ANNOTATIONS.add("Lio/dinject/controller/Path;");
-    DINJECT_ANNOTATIONS.add("Lio/dinject/controller/Head;");
-    DINJECT_ANNOTATIONS.add("Lio/dinject/controller/Get;");
-    DINJECT_ANNOTATIONS.add("Lio/dinject/controller/Put;");
-    DINJECT_ANNOTATIONS.add("Lio/dinject/controller/Post;");
-    DINJECT_ANNOTATIONS.add("Lio/dinject/controller/Delete;");
-    DINJECT_ANNOTATIONS.add("Lio/dinject/controller/Options;");
+    DINJECT_ANNOTATIONS.add("Lio/avaje/http/api/Path;");
+    DINJECT_ANNOTATIONS.add("Lio/avaje/http/api/Head;");
+    DINJECT_ANNOTATIONS.add("Lio/avaje/http/api/Get;");
+    DINJECT_ANNOTATIONS.add("Lio/avaje/http/api/Put;");
+    DINJECT_ANNOTATIONS.add("Lio/avaje/http/api/Post;");
+    DINJECT_ANNOTATIONS.add("Lio/avaje/http/api/Delete;");
+    DINJECT_ANNOTATIONS.add("Lio/avaje/http/api/Options;");
   }
 
   /**
@@ -71,8 +71,8 @@ public class AnnotationInfo {
     return desc.startsWith("Ljavax/ws/rs") && JAXRS_ANNOTATIONS.contains(desc);
   }
 
-  static boolean isDInjectControllerMethod(String desc) {
-    return desc.startsWith("Lio/dinject/") && DINJECT_ANNOTATIONS.contains(desc);
+  static boolean isAvajeControllerMethod(String desc) {
+    return desc.startsWith("Lio/avaje/http/api") && DINJECT_ANNOTATIONS.contains(desc);
   }
 
   /**
