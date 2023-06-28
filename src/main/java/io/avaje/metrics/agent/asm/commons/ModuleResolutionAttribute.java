@@ -28,7 +28,7 @@
 
 package io.avaje.metrics.agent.asm.commons;
 
-import io.avaje.metrics.agent.asm.*;
+import io.avaje.metrics.agent.asm.ClassVisitor;
 import io.avaje.metrics.agent.asm.Attribute;
 import io.avaje.metrics.agent.asm.ByteVector;
 import io.avaje.metrics.agent.asm.ClassReader;

@@ -32,10 +32,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import io.avaje.metrics.agent.asm.Label;
-import io.avaje.metrics.agent.asm.Opcodes;
 import io.avaje.metrics.agent.asm.ConstantDynamic;
 import io.avaje.metrics.agent.asm.Handle;
+import io.avaje.metrics.agent.asm.Label;
+import io.avaje.metrics.agent.asm.Opcodes;
 import io.avaje.metrics.agent.asm.MethodVisitor;
 import io.avaje.metrics.agent.asm.Type;
 
