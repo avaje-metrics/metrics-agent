@@ -2,14 +2,11 @@ package io.avaje.metrics.agent;
 
 import java.io.PrintStream;
 import java.util.function.Consumer;
-import java.util.logging.Logger;
 
 /**
  * Used to hold meta data, arguments and log levels for the enhancement.
  */
 class EnhanceContext {
-
-  private static final Logger logger = Logger.getLogger(EnhanceContext.class.getName());
 
   private final IgnoreClassHelper ignoreClassHelper;
 
@@ -18,6 +15,7 @@ class EnhanceContext {
   private final boolean readOnly;
 
   private final boolean enhanceSingleton;
+  private final boolean enhanceComponent;
 
   private final boolean includeStaticMethods;
 
@@ -31,16 +29,14 @@ class EnhanceContext {
    * Construct a context for enhancement.
    */
   EnhanceContext(AgentManifest manifest) {
-
     this.manifest = manifest;
     this.ignoreClassHelper = new IgnoreClassHelper(manifest.getPackages());
     this.logout = System.out;
     this.logLevel = manifest.getDebugLevel();
-
     this.includeStaticMethods = manifest.isIncludeStaticMethods();
     this.readOnly = manifest.isReadOnly();
     this.enhanceSingleton = manifest.isEnhanceSingleton();
-
+    this.enhanceComponent = manifest.isEnhanceComponent();
     if (logLevel > 0) {
       log(8, "settings: debug[" + logLevel + "] readonly[" + readOnly + "]", "");
     }
@@ -115,6 +111,11 @@ class EnhanceContext {
    */
   boolean isEnhanceSingleton() {
     return enhanceSingleton;
+  }
+
+
+  boolean isEnhanceComponent() {
+    return enhanceComponent;
   }
 
   /**
