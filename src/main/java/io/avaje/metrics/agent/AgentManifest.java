@@ -17,13 +17,10 @@ import java.util.jar.Manifest;
  */
 public class AgentManifest {
 
-
   public static AgentManifest read(ClassLoader classLoader) {
-
     if (classLoader == null) {
       classLoader = Thread.currentThread().getContextClassLoader();
     }
-
     try {
       return new AgentManifest()
         .readManifests(classLoader, "metrics-common.mf")
@@ -52,6 +49,7 @@ public class AgentManifest {
 
   private boolean includeStaticMethods;
   private boolean enhanceSingleton;
+  private boolean enhanceComponent;
   private boolean readOnly;
 
   private List<String> nameTrimPackages = new ArrayList<>();
@@ -126,7 +124,6 @@ public class AgentManifest {
   }
 
   void readToggles(Attributes attributes) {
-
     String debug = attributes.getValue("debugLevel");
     if (debug != null) {
       debugLevel = Integer.parseInt(debug);
@@ -135,6 +132,7 @@ public class AgentManifest {
     includeRequestTiming = bool(attributes, "requestTiming");
     includeStaticMethods = bool(attributes, "includeStaticMethods");
     enhanceSingleton = bool(attributes, "enhanceSingleton");
+    enhanceComponent = bool(attributes, "enhanceComponent");
     readOnly = bool(attributes, "readOnly");
     includeSpringComponents = bool(attributes, "spring");
     includeJaxRsComponents = bool(attributes, "jaxrs");
@@ -184,7 +182,6 @@ public class AgentManifest {
    * Set the debugLevel but only if it has not already been set (via metrics.mf file typically).
    */
   public AgentManifest setDefaultDebugLevel(int defaultDebugLevel) {
-
     if (debugLevel == 0) {
       debugLevel = defaultDebugLevel;
     }
@@ -229,6 +226,10 @@ public class AgentManifest {
 
   public boolean isEnhanceSingleton() {
     return enhanceSingleton;
+  }
+
+  public boolean isEnhanceComponent() {
+    return enhanceComponent;
   }
 
   public boolean isReadOnly() {

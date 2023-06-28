@@ -16,6 +16,7 @@ import static io.avaje.metrics.agent.Transformer.ASM_VERSION;
  */
 public class ClassAdapterMetric extends ClassVisitor implements Opcodes {
 
+  private static final String COMPONENT = "/Component;";
   private static final String SINGLETON = "/Singleton;";
 
   private static final String SPRINGFRAMEWORK_STEREOTYPE = "Lorg/springframework/stereotype";
@@ -203,6 +204,11 @@ public class ClassAdapterMetric extends ClassVisitor implements Opcodes {
     }
 
     if (enhanceContext.isEnhanceSingleton() && desc.endsWith(SINGLETON)) {
+      detectSingleton = true;
+      enhanceClassLevel = true;
+    }
+
+    if (enhanceContext.isEnhanceComponent() && desc.endsWith(COMPONENT)) {
       detectSingleton = true;
       enhanceClassLevel = true;
     }
