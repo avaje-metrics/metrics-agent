@@ -16,7 +16,7 @@ import static io.avaje.metrics.agent.Transformer.ASM_VERSION;
  */
 public class ClassAdapterMetric extends ClassVisitor implements Opcodes {
 
-  private static final String COMPONENT = "/Component;";
+  private static final String AVAJE_COMPONENT = "io/avaje/inject/Component;";
   private static final String SINGLETON = "/Singleton;";
 
   private static final String SPRINGFRAMEWORK_STEREOTYPE = "Lorg/springframework/stereotype";
@@ -208,7 +208,7 @@ public class ClassAdapterMetric extends ClassVisitor implements Opcodes {
       enhanceClassLevel = true;
     }
 
-    if (enhanceContext.isEnhanceComponent() && desc.endsWith(COMPONENT)) {
+    if (enhanceContext.isEnhanceAvajeComponent() && desc.endsWith(AVAJE_COMPONENT)) {
       detectSingleton = true;
       enhanceClassLevel = true;
     }
@@ -309,6 +309,7 @@ public class ClassAdapterMetric extends ClassVisitor implements Opcodes {
       return new StaticInitAdapter(mv, access, name, desc, className);
     }
 
+    boolean privateMethod = isPrivateMethod(access);
     boolean publicMethod = isPublicMethod(access);
     int metricIndex = methodAdapters.size();
     String uniqueMethodName = deriveUniqueMethodName(name);
@@ -316,7 +317,7 @@ public class ClassAdapterMetric extends ClassVisitor implements Opcodes {
       log("... method:" + name + " public:" + publicMethod + " index:" + metricIndex + " uniqueMethodName:" + uniqueMethodName);
     }
 
-    boolean enhanceByDefault = enhanceClassLevel && publicMethod;
+    boolean enhanceByDefault = enhanceClassLevel && (publicMethod || !privateMethod && enhanceContext.isEnhanceNonPrivate());
     if ((access & Opcodes.ACC_STATIC) != 0) {
       // by default not enhancing static method unless it is explicitly
       // annotated with a Timed annotation
@@ -359,6 +360,10 @@ public class ClassAdapterMetric extends ClassVisitor implements Opcodes {
 
   private boolean isPublicMethod(int access) {
     return ((access & Opcodes.ACC_PUBLIC) != 0);
+  }
+
+  private boolean isPrivateMethod(int access) {
+    return ((access & Opcodes.ACC_PRIVATE) != 0);
   }
 
   /**

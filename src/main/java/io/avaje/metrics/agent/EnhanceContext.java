@@ -15,7 +15,8 @@ class EnhanceContext {
   private final boolean readOnly;
 
   private final boolean enhanceSingleton;
-  private final boolean enhanceComponent;
+  private final boolean enhanceAvajeComponent;
+  private final boolean enhanceNonPrivate;
 
   private final boolean includeStaticMethods;
 
@@ -36,7 +37,8 @@ class EnhanceContext {
     this.includeStaticMethods = manifest.isIncludeStaticMethods();
     this.readOnly = manifest.isReadOnly();
     this.enhanceSingleton = manifest.isEnhanceSingleton();
-    this.enhanceComponent = manifest.isEnhanceComponent();
+    this.enhanceAvajeComponent = manifest.isEnhanceAvajeComponent();
+    this.enhanceNonPrivate = manifest.isEnhanceNonPrivate();
     if (logLevel > 0) {
       log(8, "settings: debug[" + logLevel + "] readonly[" + readOnly + "]", "");
     }
@@ -114,8 +116,12 @@ class EnhanceContext {
   }
 
 
-  boolean isEnhanceComponent() {
-    return enhanceComponent;
+  boolean isEnhanceAvajeComponent() {
+    return enhanceAvajeComponent;
+  }
+
+  boolean isEnhanceNonPrivate() {
+    return enhanceNonPrivate;
   }
 
   /**

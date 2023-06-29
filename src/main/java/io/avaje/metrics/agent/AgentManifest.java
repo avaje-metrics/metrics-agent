@@ -49,7 +49,9 @@ public class AgentManifest {
 
   private boolean includeStaticMethods;
   private boolean enhanceSingleton;
-  private boolean enhanceComponent;
+  private boolean enhanceAvajeComponent;
+  private boolean enhanceNonPrivate;
+
   private boolean readOnly;
 
   private List<String> nameTrimPackages = new ArrayList<>();
@@ -131,8 +133,9 @@ public class AgentManifest {
 
     includeRequestTiming = bool(attributes, "requestTiming");
     includeStaticMethods = bool(attributes, "includeStaticMethods");
-    enhanceSingleton = bool(attributes, "enhanceSingleton");
-    enhanceComponent = bool(attributes, "enhanceComponent");
+    enhanceSingleton = bool(attributes, "enhanceSingleton", true);
+    enhanceAvajeComponent = bool(attributes, "enhanceAvajeComponent", true);
+    enhanceNonPrivate = bool(attributes, "enhanceNonPrivate", true);
     readOnly = bool(attributes, "readOnly");
     includeSpringComponents = bool(attributes, "spring");
     includeJaxRsComponents = bool(attributes, "jaxrs");
@@ -152,8 +155,16 @@ public class AgentManifest {
   }
 
   private boolean bool(Attributes attributes, String key) {
+    return bool(attributes, key, false);
+  }
+
+  private boolean bool(Attributes attributes, String key, boolean defaultValue) {
     String val = attributes.getValue(key);
-    return val != null && Boolean.parseBoolean(val.trim());
+    if (val == null) {
+      return defaultValue;
+    } else {
+      return Boolean.parseBoolean(val.trim());
+    }
   }
 
 
@@ -228,8 +239,12 @@ public class AgentManifest {
     return enhanceSingleton;
   }
 
-  public boolean isEnhanceComponent() {
-    return enhanceComponent;
+  public boolean isEnhanceAvajeComponent() {
+    return enhanceAvajeComponent;
+  }
+
+  public boolean isEnhanceNonPrivate() {
+    return enhanceNonPrivate;
   }
 
   public boolean isReadOnly() {
