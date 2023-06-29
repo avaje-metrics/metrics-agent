@@ -48,9 +48,9 @@ public class AgentManifest {
   private int debugLevel;
 
   private boolean includeStaticMethods;
-  private boolean enhanceSingleton;
-  private boolean enhanceAvajeComponent;
-  private boolean enhanceNonPrivate;
+  private boolean enhanceSingleton = true;
+  private boolean enhanceAvajeComponent = true;
+  private boolean enhanceNonPrivate = true;
 
   private boolean readOnly;
 
@@ -133,9 +133,9 @@ public class AgentManifest {
 
     includeRequestTiming = bool(attributes, "requestTiming");
     includeStaticMethods = bool(attributes, "includeStaticMethods");
-    enhanceSingleton = bool(attributes, "enhanceSingleton", true);
-    enhanceAvajeComponent = bool(attributes, "enhanceAvajeComponent", true);
-    enhanceNonPrivate = bool(attributes, "enhanceNonPrivate", true);
+    enhanceSingleton = bool(attributes, "enhanceSingleton", enhanceSingleton);
+    enhanceAvajeComponent = bool(attributes, "enhanceAvajeComponent", enhanceAvajeComponent);
+    enhanceNonPrivate = bool(attributes, "enhanceNonPrivate", enhanceNonPrivate);
     readOnly = bool(attributes, "readOnly");
     includeSpringComponents = bool(attributes, "spring");
     includeJaxRsComponents = bool(attributes, "jaxrs");
