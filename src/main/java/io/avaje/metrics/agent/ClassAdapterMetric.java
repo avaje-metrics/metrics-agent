@@ -18,6 +18,7 @@ public class ClassAdapterMetric extends ClassVisitor implements Opcodes {
 
   private static final String AVAJE_COMPONENT = "io/avaje/inject/Component;";
   private static final String SINGLETON = "/Singleton;";
+  private static final String GENERATED = "/Generated;";
 
   private static final String SPRINGFRAMEWORK_STEREOTYPE = "Lorg/springframework/stereotype";
 
@@ -176,9 +177,7 @@ public class ClassAdapterMetric extends ClassVisitor implements Opcodes {
    */
   @Override
   public AnnotationVisitor visitAnnotation(String desc, boolean visible) {
-
     AnnotationVisitor av = super.visitAnnotation(desc, visible);
-
     log(8, "... check annotation ", desc);
 
     if (desc.equals(ANNOTATION_ENHANCED_MARKER)) {
@@ -187,6 +186,9 @@ public class ClassAdapterMetric extends ClassVisitor implements Opcodes {
 
     if (desc.equals(ANNOTATION_NOT_TIMED)) {
       throw new NoEnhancementRequiredException("marked as NotTimed");
+    }
+    if (desc.endsWith(GENERATED)) {
+      throw new NoEnhancementRequiredException("marked as Generated");
     }
 
     if (desc.equals(ANNOTATION_TIMED)) {
