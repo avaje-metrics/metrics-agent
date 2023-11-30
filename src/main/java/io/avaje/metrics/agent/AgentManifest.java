@@ -28,8 +28,7 @@ public class AgentManifest {
 
     } catch (IOException e) {
       // log to standard error and return empty
-      System.err.println("Agent: error reading manifest resources");
-      e.printStackTrace();
+      System.err.println("Agent: error reading manifest resources " + e);
       return new AgentManifest();
     }
   }
@@ -50,7 +49,7 @@ public class AgentManifest {
   private boolean includeStaticMethods;
   private boolean enhanceSingleton = true;
   private boolean enhanceAvajeComponent = true;
-  private boolean enhanceNonPrivate = false;
+  private boolean enhanceNonPrivate;
 
   private boolean readOnly;
 
@@ -103,7 +102,6 @@ public class AgentManifest {
         addResource(url.openStream());
       } catch (IOException e) {
         System.err.println("Error reading manifest resources " + url);
-        e.printStackTrace();
       }
     }
     return this;
@@ -119,8 +117,7 @@ public class AgentManifest {
       try {
         is.close();
       } catch (IOException e) {
-        System.err.println("Error closing manifest resource");
-        e.printStackTrace();
+        System.err.println("Error closing manifest resource " + e);
       }
     }
   }
@@ -143,8 +140,7 @@ public class AgentManifest {
 
     String trimPkgs = attributes.getValue("nameTrimPackages");
     if (trimPkgs != null) {
-      String[] split = trimPkgs.split(",|;| ");
-      for (String rawPkg : split) {
+      for (String rawPkg : trimPkgs.split("[,; ]")) {
         rawPkg = rawPkg.trim();
         if (!rawPkg.isEmpty()) {
           nameTrimPackages.add(rawPkg + ".");
@@ -179,52 +175,13 @@ public class AgentManifest {
    */
   private void add(Set<String> addTo, String packages) {
     if (packages != null) {
-      String[] split = packages.split(",|;| ");
-      for (String aSplit : split) {
+      for (String aSplit : packages.split("[,; ]")) {
         String pkg = aSplit.trim();
         if (!pkg.isEmpty()) {
           addTo.add(pkg);
         }
       }
     }
-  }
-
-  /**
-   * Set the debugLevel but only if it has not already been set (via metrics.mf file typically).
-   */
-  public AgentManifest setDefaultDebugLevel(int defaultDebugLevel) {
-    if (debugLevel == 0) {
-      debugLevel = defaultDebugLevel;
-    }
-    return this;
-  }
-
-  /**
-   * Set the debugLevel.
-   */
-  public AgentManifest setDebugLevel(int debugLevel) {
-    this.debugLevel = debugLevel;
-    return this;
-  }
-
-  public AgentManifest setIncludeRequestTiming(boolean includeRequestTiming) {
-    this.includeRequestTiming = includeRequestTiming;
-    return this;
-  }
-
-  public AgentManifest setIncludeSpringComponents(boolean includeSpringComponents) {
-    this.includeSpringComponents = includeSpringComponents;
-    return this;
-  }
-
-  public AgentManifest setIncludeJaxRsComponents(boolean includeJaxRsComponents) {
-    this.includeJaxRsComponents = includeJaxRsComponents;
-    return this;
-  }
-
-  public AgentManifest setIncludeStaticMethods(boolean includeStaticMethods) {
-    this.includeStaticMethods = includeStaticMethods;
-    return this;
   }
 
   public int getDebugLevel() {
