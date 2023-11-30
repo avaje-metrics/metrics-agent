@@ -50,11 +50,11 @@ public class AgentManifest {
   private boolean includeStaticMethods;
   private boolean enhanceSingleton = true;
   private boolean enhanceAvajeComponent = true;
-  private boolean enhanceNonPrivate = true;
+  private boolean enhanceNonPrivate = false;
 
   private boolean readOnly;
 
-  private List<String> nameTrimPackages = new ArrayList<>();
+  private final List<String> nameTrimPackages = new ArrayList<>();
 
   /**
    * Construct with no initial packages (to use with addRaw()).
@@ -146,7 +146,7 @@ public class AgentManifest {
       String[] split = trimPkgs.split(",|;| ");
       for (String rawPkg : split) {
         rawPkg = rawPkg.trim();
-        if (rawPkg.length() > 0) {
+        if (!rawPkg.isEmpty()) {
           nameTrimPackages.add(rawPkg + ".");
         }
       }

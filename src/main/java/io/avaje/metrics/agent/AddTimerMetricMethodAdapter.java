@@ -81,7 +81,7 @@ public class AddTimerMetricMethodAdapter extends AdviceAdapter {
    */
   private void setName(String metricName) {
     metricName = metricName.trim();
-    if (metricName.length() > 0) {
+    if (!metricName.isEmpty()) {
       this.name = metricName;
       this.explicitFullName = name.contains(".");
     }
@@ -162,7 +162,7 @@ public class AddTimerMetricMethodAdapter extends AdviceAdapter {
       return av;
     }
     if (AnnotationInfo.isAvajeControllerMethod(desc)) {
-      log(4, "... found dinject controller annotation ", desc);
+      log(4, "... found avaje-http controller annotation ", desc);
       enhanced = true;
       return av;
     }

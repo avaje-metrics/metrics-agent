@@ -356,7 +356,6 @@ public class ClassAdapterMetric extends ClassVisitor implements Opcodes {
   }
 
   private AddTimerMetricMethodAdapter createAdapter(boolean enhanceDefault, int metricIndex, String uniqueMethodName, MethodVisitor mv, int access, String name, String desc) {
-
     return new AddTimerMetricMethodAdapter(this, enhanceDefault, metricIndex, uniqueMethodName, mv, access, name, desc);
   }
 
