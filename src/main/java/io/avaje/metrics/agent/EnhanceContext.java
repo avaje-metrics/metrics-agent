@@ -147,6 +147,10 @@ class EnhanceContext {
     return manifest.isIncludeSpring();
   }
 
+  boolean isIncludeJEE() {
+    return manifest.isIncludeJEE();
+  }
+
   void logAddingMetric(String mappedMetricName) {
     if (enhancementLogger != null) {
       enhancementLogger.accept(mappedMetricName);

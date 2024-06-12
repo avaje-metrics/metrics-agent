@@ -33,13 +33,10 @@ public class ClassAdapterMetric extends ClassVisitor implements Opcodes {
   private boolean markerAnnotationAdded;
 
   private boolean detectSingleton;
-
   private boolean detectWebController;
-
   private boolean detectJaxrs;
-
+  private boolean detectJEE;
   private boolean detectSpringComponent;
-
   private boolean detectExplicit;
 
   private boolean enhanceClassLevel;
@@ -179,18 +176,15 @@ public class ClassAdapterMetric extends ClassVisitor implements Opcodes {
   public AnnotationVisitor visitAnnotation(String desc, boolean visible) {
     AnnotationVisitor av = super.visitAnnotation(desc, visible);
     log(8, "... check annotation ", desc);
-
     if (desc.equals(ANNOTATION_ENHANCED_MARKER)) {
       throw new AlreadyEnhancedException("Already enhanced");
     }
-
     if (desc.equals(ANNOTATION_NOT_TIMED)) {
       throw new NoEnhancementRequiredException("marked as NotTimed");
     }
     if (desc.endsWith(GENERATED)) {
       throw new NoEnhancementRequiredException("marked as Generated");
     }
-
     if (desc.equals(ANNOTATION_TIMED)) {
       log(5, "found Timed annotation ", desc);
       detectExplicit = true;
@@ -198,28 +192,27 @@ public class ClassAdapterMetric extends ClassVisitor implements Opcodes {
       // read the name and bucket ranges from the class level Timer annotation
       return new ClassTimedAnnotationVisitor(av);
     }
-
     if (isWebEndpoint(desc)) {
       log(5, "found web endpoint annotation ", desc);
       detectWebController = true;
       enhanceClassLevel = true;
     }
-
     if (enhanceContext.isEnhanceSingleton() && desc.endsWith(SINGLETON)) {
       detectSingleton = true;
       enhanceClassLevel = true;
     }
-
     if (enhanceContext.isEnhanceAvajeComponent() && desc.endsWith(AVAJE_COMPONENT)) {
       detectSingleton = true;
       enhanceClassLevel = true;
     }
-
     if (enhanceContext.isIncludeJaxRS() && isJaxRsEndpoint(desc)) {
       detectJaxrs = true;
       enhanceClassLevel = true;
     }
-
+    if (enhanceContext.isIncludeJEE() && isJEE(desc)) {
+      detectJEE = true;
+      enhanceClassLevel = true;
+    }
     // We are interested in Service, Controller, Component etc
     if (enhanceContext.isIncludeSpring() && desc.startsWith(SPRINGFRAMEWORK_STEREOTYPE)) {
       detectSpringComponent = true;
@@ -242,16 +235,26 @@ public class ClassAdapterMetric extends ClassVisitor implements Opcodes {
       || desc.equals("Ljavax/ws/rs/Consumes;");
   }
 
+  private boolean isJEE(String desc) {
+    return desc.equals("Ljavax/ejb/Singleton;")
+            || desc.equals("Ljakarta/ejb/Singleton;")
+            || desc.equals("Ljavax/ejb/Stateless;")
+            || desc.equals("Ljakarta/ejb/Stateless;")
+            || desc.equals("Ljavax/ejb/MessageDriven;")
+            || desc.equals("Ljakarta/ejb/MessageDriven;");
+  }
+
   private void addMarkerAnnotation() {
 
     if (!markerAnnotationAdded) {
       if (isLog(4)) {
         String flagExplicit = (detectExplicit ? "EXPLICIT " : "");
         String flagWeb = (detectWebController ? "WebApi " : "");
+        String flagJee = (detectJEE ? "JEE " : "");
         String flagJaxrs = (detectJaxrs ? "JAXRS " : "");
         String flagSpring = (detectSpringComponent ? "SPRING " : "");
         String flagSingleton = (detectSingleton ? "SINGLETON" : "");
-        log(4, "enhancing - detection ", flagExplicit + flagWeb + flagJaxrs + flagSpring + flagSingleton);
+        log(4, "enhancing - detection ", flagExplicit + flagWeb + flagJee + flagJaxrs + flagSpring + flagSingleton);
       }
       AnnotationVisitor av = cv.visitAnnotation(ANNOTATION_ENHANCED_MARKER, true);
       if (av != null) {
