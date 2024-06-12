@@ -34,6 +34,7 @@ public class ClassAdapterMetric extends ClassVisitor implements Opcodes {
 
   private boolean detectSingleton;
   private boolean detectWebController;
+  private boolean detectWebService;
   private boolean detectJaxrs;
   private boolean detectJEE;
   private boolean detectSpringComponent;
@@ -132,11 +133,18 @@ public class ClassAdapterMetric extends ClassVisitor implements Opcodes {
     if (detectWebController) {
       return deriveControllerName();
     }
+    if (detectWebService) {
+      return deriveWebServiceName();
+    }
     return enhanceContext.isNameIncludesPackage() ? longName : "app." + shortName;
   }
 
   private String deriveControllerName() {
     return "web.api." + shortName;
+  }
+
+  private String deriveWebServiceName() {
+    return "web.ws." + shortName;
   }
 
   private void setName(String name) {
@@ -210,6 +218,9 @@ public class ClassAdapterMetric extends ClassVisitor implements Opcodes {
       enhanceClassLevel = true;
     }
     if (enhanceContext.isIncludeJEE() && isJEE(desc)) {
+      if (isWebService(desc)) {
+        detectWebService = true;
+      }
       detectJEE = true;
       enhanceClassLevel = true;
     }
@@ -233,6 +244,11 @@ public class ClassAdapterMetric extends ClassVisitor implements Opcodes {
     return desc.equals("Ljavax/ws/rs/Path;")
       || desc.equals("Ljavax/ws/rs/Produces;")
       || desc.equals("Ljavax/ws/rs/Consumes;");
+  }
+
+  private boolean isWebService(String desc) {
+    return desc.equals("Ljavax/jws/WebService;")
+            || desc.equals("Ljakarta/jws/WebService;");
   }
 
   private boolean isJEE(String desc) {
