@@ -33,24 +33,19 @@ public class AgentManifest {
     }
   }
 
-
   private final Set<String> includePackages = new HashSet<>();
 
   private boolean includeRequestTiming;
-
   private boolean includeSpringComponents;
-
   private boolean includeJaxRsComponents;
+  private boolean includeJEEComponents;
 
   private boolean nameIncludePackages;
-
   private int debugLevel;
-
   private boolean includeStaticMethods;
   private boolean enhanceSingleton = true;
   private boolean enhanceAvajeComponent = true;
   private boolean enhanceNonPrivate;
-
   private boolean readOnly;
 
   private final List<String> nameTrimPackages = new ArrayList<>();
@@ -72,12 +67,18 @@ public class AgentManifest {
     return includePackages;
   }
 
-
   /**
    * Return true if we should use automatically enhance JAX-RS endpoints.
    */
   public boolean isIncludeJaxRS() {
     return includeJaxRsComponents;
+  }
+
+  /**
+   * Return true if we should use automatically enhance JEE beans.
+   */
+  public boolean isIncludeJEE() {
+    return includeJEEComponents;
   }
 
   /**
@@ -136,6 +137,7 @@ public class AgentManifest {
     readOnly = bool(attributes, "readOnly");
     includeSpringComponents = bool(attributes, "spring");
     includeJaxRsComponents = bool(attributes, "jaxrs");
+    includeJEEComponents = bool(attributes, "jee");
     nameIncludePackages= bool(attributes, "nameIncludePackages");
 
     String trimPkgs = attributes.getValue("nameTrimPackages");
