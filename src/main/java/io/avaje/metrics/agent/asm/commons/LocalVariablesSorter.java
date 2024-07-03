@@ -29,10 +29,10 @@ package io.avaje.metrics.agent.asm.commons;
 
 import io.avaje.metrics.agent.asm.AnnotationVisitor;
 import io.avaje.metrics.agent.asm.Label;
-import io.avaje.metrics.agent.asm.Opcodes;
-import io.avaje.metrics.agent.asm.TypePath;
 import io.avaje.metrics.agent.asm.MethodVisitor;
+import io.avaje.metrics.agent.asm.Opcodes;
 import io.avaje.metrics.agent.asm.Type;
+import io.avaje.metrics.agent.asm.TypePath;
 
 /**
  * A {@link MethodVisitor} that renumbers local variables in their order of appearance. This adapter
