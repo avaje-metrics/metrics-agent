@@ -28,12 +28,7 @@
 
 package io.avaje.metrics.agent.asm.commons;
 
-import io.avaje.metrics.agent.asm.ClassVisitor;
-import io.avaje.metrics.agent.asm.Attribute;
-import io.avaje.metrics.agent.asm.ByteVector;
-import io.avaje.metrics.agent.asm.ClassReader;
-import io.avaje.metrics.agent.asm.ClassWriter;
-import io.avaje.metrics.agent.asm.Label;
+import io.avaje.metrics.agent.asm.*;
 
 /**
  * A ModuleTarget attribute. This attribute is specific to the OpenJDK and may change in the future.

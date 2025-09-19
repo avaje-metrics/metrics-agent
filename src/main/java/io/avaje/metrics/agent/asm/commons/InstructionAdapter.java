@@ -28,12 +28,7 @@
 
 package io.avaje.metrics.agent.asm.commons;
 
-import io.avaje.metrics.agent.asm.ConstantDynamic;
-import io.avaje.metrics.agent.asm.Handle;
-import io.avaje.metrics.agent.asm.Label;
-import io.avaje.metrics.agent.asm.MethodVisitor;
-import io.avaje.metrics.agent.asm.Opcodes;
-import io.avaje.metrics.agent.asm.Type;
+import io.avaje.metrics.agent.asm.*;
 
 /**
  * A {@link MethodVisitor} providing a more detailed API to generate and transform instructions.
