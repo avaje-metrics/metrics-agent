@@ -27,9 +27,10 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 package io.avaje.metrics.agent.asm.commons;
 
+import io.avaje.metrics.agent.asm.Type;
+
 import java.util.HashMap;
 import java.util.Map;
-import io.avaje.metrics.agent.asm.Type;
 
 /**
  * A named method descriptor.
