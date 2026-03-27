@@ -28,7 +28,11 @@
 
 package io.avaje.metrics.agent.asm.commons;
 
-import io.avaje.metrics.agent.asm.*;
+import io.avaje.metrics.agent.asm.Attribute;
+import io.avaje.metrics.agent.asm.ByteVector;
+import io.avaje.metrics.agent.asm.ClassReader;
+import io.avaje.metrics.agent.asm.ClassWriter;
+import io.avaje.metrics.agent.asm.Label;
 
 /**
  * A ModuleTarget attribute. This attribute is specific to the OpenJDK and may change in the future.
@@ -52,7 +56,7 @@ public final class ModuleTargetAttribute extends Attribute {
 
   /**
    * Constructs an empty {@link ModuleTargetAttribute}. This object can be passed as a prototype to
-   * the {@link ClassReader#accept(ClassVisitor, Attribute[], int)} method.
+   * the {@link ClassReader#accept(io.avaje.metrics.agent.asm.ClassVisitor, Attribute[], int)} method.
    */
   public ModuleTargetAttribute() {
     this(null);
