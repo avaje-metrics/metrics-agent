@@ -28,7 +28,11 @@
 
 package io.avaje.metrics.agent.asm.commons;
 
-import io.avaje.metrics.agent.asm.*;
+import io.avaje.metrics.agent.asm.Attribute;
+import io.avaje.metrics.agent.asm.ByteVector;
+import io.avaje.metrics.agent.asm.ClassReader;
+import io.avaje.metrics.agent.asm.ClassWriter;
+import io.avaje.metrics.agent.asm.Label;
 
 /**
  * A ModuleResolution attribute. This attribute is specific to the OpenJDK and may change in the
@@ -78,7 +82,7 @@ public final class ModuleResolutionAttribute extends Attribute {
 
   /**
    * Constructs an empty {@link ModuleResolutionAttribute}. This object can be passed as a prototype
-   * to the {@link ClassReader#accept(ClassVisitor, Attribute[], int)} method.
+   * to the {@link ClassReader#accept(io.avaje.metrics.agent.asm.ClassVisitor, Attribute[], int)} method.
    */
   public ModuleResolutionAttribute() {
     this(0);
