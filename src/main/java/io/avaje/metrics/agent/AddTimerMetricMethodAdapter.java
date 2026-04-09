@@ -111,7 +111,15 @@ public class AddTimerMetricMethodAdapter extends AdviceAdapter {
     if (explicitFullName) {
       return name;
     }
-    return classAdapter.getMetricPrefix() + "." + name;
+    return classAdapter.metricPrefix(methodReturnsStream()) + "." + name;
+  }
+
+  /**
+   * Return true if this method returns java.util.stream.Stream.
+   */
+  private boolean methodReturnsStream() {
+    String returnType = methodDesc.substring(methodDesc.indexOf(')') + 1);
+    return returnType.startsWith("Ljava/util/stream/Stream;");
   }
 
   public void visitCode() {
