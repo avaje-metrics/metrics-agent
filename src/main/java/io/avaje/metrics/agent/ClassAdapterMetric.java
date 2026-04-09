@@ -121,7 +121,7 @@ public class ClassAdapterMetric extends ClassVisitor implements Opcodes {
   /**
    * Return the class level metric prefix used to prefix timed metrics on methods.
    */
-  String getMetricPrefix() {
+  String metricPrefix(boolean streamReturn) {
     if (name != null) {
       // explicit name via @Timed
       return name;
@@ -131,7 +131,7 @@ public class ClassAdapterMetric extends ClassVisitor implements Opcodes {
       return prefix + "." + shortName;
     }
     if (detectWebController) {
-      return deriveControllerName();
+      return deriveControllerName(streamReturn);
     }
     if (detectWebService) {
       return deriveWebServiceName();
@@ -139,8 +139,8 @@ public class ClassAdapterMetric extends ClassVisitor implements Opcodes {
     return enhanceContext.isNameIncludesPackage() ? longName : "app." + shortName;
   }
 
-  private String deriveControllerName() {
-    return "web.api." + shortName;
+  private String deriveControllerName(boolean streamReturn) {
+    return streamReturn ? "web.stream." + shortName : "web.api." + shortName;
   }
 
   private String deriveWebServiceName() {
