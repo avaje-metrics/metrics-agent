@@ -50,6 +50,7 @@ public class ClassAdapterMetric extends ClassVisitor implements Opcodes {
   private String shortName;
   private String name;
   private String prefix;
+  private TimedSpanMode spanMode = TimedSpanMode.DEFAULT;
 
   /**
    * List of unique names to support parameter overloading.
@@ -116,6 +117,10 @@ public class ClassAdapterMetric extends ClassVisitor implements Opcodes {
    */
   int[] getBuckets() {
     return buckets;
+  }
+
+  TimedSpanMode getSpanMode() {
+    return spanMode;
   }
 
   /**
@@ -300,6 +305,14 @@ public class ClassAdapterMetric extends ClassVisitor implements Opcodes {
       } else if ("prefix".equals(name)) {
         setPrefix(value.toString());
       }
+    }
+
+    @Override
+    public void visitEnum(String name, String descriptor, String value) {
+      if ("span".equals(name)) {
+        spanMode = TimedSpanMode.of(value);
+      }
+      super.visitEnum(name, descriptor, value);
     }
   }
 

@@ -13,6 +13,7 @@ import java.util.Arrays;
 import static io.avaje.metrics.agent.Transformer.ASM_VERSION;
 import static io.avaje.metrics.agent.asm.Type.BOOLEAN_TYPE;
 import static io.avaje.metrics.agent.asm.Type.LONG_TYPE;
+import static io.avaje.metrics.agent.asm.Type.getObjectType;
 
 /**
  * Enhances a method adding support for using TimerMetric or BucketTimerMetric to collect method
@@ -21,13 +22,22 @@ import static io.avaje.metrics.agent.asm.Type.LONG_TYPE;
 public class AddTimerMetricMethodAdapter extends AdviceAdapter {
 
   private static final String TIMED_METRIC = "io/avaje/metrics/Timer";
+  private static final String TIMED_EVENT = "io/avaje/metrics/Timer$Event";
+  private static final String THROWABLE = "java/lang/Throwable";
 
   private static final String LTIMED_METRIC = "Lio/avaje/metrics/Timer;";
+  private static final String LTIMED_EVENT = "Lio/avaje/metrics/Timer$Event;";
 
   private static final String METRIC_MANAGER = "io/avaje/metrics/Metrics";
 
+  private static final String CREATE_TIMER = "timer";
+  private static final String CREATE_TRACED_TIMER = "tracedTimer";
+  private static final String OPERATION_START_EVENT = "startEvent";
   private static final String OPERATION_END = "add";
   private static final String OPERATION_ERR = "addErr";
+  private static final String OPERATION_EVENT_END = "end";
+  private static final String OPERATION_EVENT_END_ERROR = "endWithError";
+  private static final String OPERATION_EVENT_END_ERROR_DESC = "(Ljava/lang/Throwable;)V";
 
   private static final String METHOD_IS_ACTIVE_THREAD_CONTEXT = "isRequestTiming";
 
@@ -51,10 +61,13 @@ public class AddTimerMetricMethodAdapter extends AdviceAdapter {
   private int posUseContext;
 
   private int posTimeStart;
+  private int posEvent;
+  private int posThrowable;
 
   private boolean detectNotTimed;
 
   private boolean enhanced;
+  private TimedSpanMode spanMode = TimedSpanMode.DEFAULT;
 
   AddTimerMetricMethodAdapter(ClassAdapterMetric classAdapter, boolean enhanceDefault,
                               int metricIndex, String uniqueMethodName, MethodVisitor mv, int acc, String name, String desc) {
@@ -125,6 +138,10 @@ public class AddTimerMetricMethodAdapter extends AdviceAdapter {
     return context.isLog(level);
   }
 
+  private boolean isTraced() {
+    return context.isTimedSpansEnabled(classAdapter.getSpanMode(), spanMode);
+  }
+
   private void log(int level, String msg, String extra) {
     context.log(level, msg, extra);
   }
@@ -193,6 +210,14 @@ public class AddTimerMetricMethodAdapter extends AdviceAdapter {
       }
     }
 
+    @Override
+    public void visitEnum(String name, String descriptor, String value) {
+      if ("span".equals(name)) {
+        spanMode = TimedSpanMode.of(value);
+      }
+      super.visitEnum(name, descriptor, value);
+    }
+
     private boolean isNotEmpty(Object value) {
       return !"".equals(value);
     }
@@ -222,20 +247,38 @@ public class AddTimerMetricMethodAdapter extends AdviceAdapter {
         if (isLog(8)) {
           log(8, "... add visitFrame in ", name);
         }
-        mv.visitFrame(Opcodes.F_SAME, 1, new Object[]{Opcodes.LONG}, 0, null);
+        if (isTraced()) {
+          mv.visitFrame(Opcodes.F_SAME, 1, new Object[]{TIMED_EVENT}, 0, null);
+        } else {
+          mv.visitFrame(Opcodes.F_SAME, 1, new Object[]{Opcodes.LONG}, 0, null);
+        }
       }
 
       Label l5 = new Label();
       mv.visitLabel(l5);
       mv.visitLineNumber(1, l5);
-      mv.visitFieldInsn(GETSTATIC, className, "_$metric_" + metricIndex, LTIMED_METRIC);
-      loadLocal(posTimeStart);
-      String methodDesc = isError ? OPERATION_ERR : OPERATION_END;
-      if (context.isIncludeRequestTiming()) {
-        loadLocal(posUseContext);
-        mv.visitMethodInsn(INVOKEINTERFACE, TIMED_METRIC, methodDesc, "(JZ)V", true);
+      if (isTraced()) {
+        if (isError) {
+          storeLocal(posThrowable);
+        }
+        loadLocal(posEvent);
+        if (isError) {
+          loadLocal(posThrowable);
+          mv.visitMethodInsn(INVOKEINTERFACE, TIMED_EVENT, OPERATION_EVENT_END_ERROR, OPERATION_EVENT_END_ERROR_DESC, true);
+          loadLocal(posThrowable);
+        } else {
+          mv.visitMethodInsn(INVOKEINTERFACE, TIMED_EVENT, OPERATION_EVENT_END, "()V", true);
+        }
       } else {
-        mv.visitMethodInsn(INVOKEINTERFACE, TIMED_METRIC, methodDesc, "(J)V", true);
+        mv.visitFieldInsn(GETSTATIC, className, "_$metric_" + metricIndex, LTIMED_METRIC);
+        loadLocal(posTimeStart);
+        String methodDesc = isError ? OPERATION_ERR : OPERATION_END;
+        if (context.isIncludeRequestTiming()) {
+          loadLocal(posUseContext);
+          mv.visitMethodInsn(INVOKEINTERFACE, TIMED_METRIC, methodDesc, "(JZ)V", true);
+        } else {
+          mv.visitMethodInsn(INVOKEINTERFACE, TIMED_METRIC, methodDesc, "(J)V", true);
+        }
       }
     }
   }
@@ -249,15 +292,23 @@ public class AddTimerMetricMethodAdapter extends AdviceAdapter {
   @Override
   protected void onMethodEnter() {
     if (enhanced) {
-      if (context.isIncludeRequestTiming()) {
-        posUseContext = newLocal(BOOLEAN_TYPE);
+      if (isTraced()) {
+        posEvent = newLocal(getObjectType(TIMED_EVENT));
+        posThrowable = newLocal(getObjectType(THROWABLE));
         mv.visitFieldInsn(GETSTATIC, className, "_$metric_" + metricIndex, LTIMED_METRIC);
-        mv.visitMethodInsn(INVOKEINTERFACE, TIMED_METRIC, METHOD_IS_ACTIVE_THREAD_CONTEXT, "()Z", true);
-        mv.visitVarInsn(ISTORE, posUseContext);
+        mv.visitMethodInsn(INVOKEINTERFACE, TIMED_METRIC, OPERATION_START_EVENT, "()" + LTIMED_EVENT, true);
+        storeLocal(posEvent);
+      } else {
+        if (context.isIncludeRequestTiming()) {
+          posUseContext = newLocal(BOOLEAN_TYPE);
+          mv.visitFieldInsn(GETSTATIC, className, "_$metric_" + metricIndex, LTIMED_METRIC);
+          mv.visitMethodInsn(INVOKEINTERFACE, TIMED_METRIC, METHOD_IS_ACTIVE_THREAD_CONTEXT, "()Z", true);
+          mv.visitVarInsn(ISTORE, posUseContext);
+        }
+        posTimeStart = newLocal(LONG_TYPE);
+        mv.visitMethodInsn(INVOKESTATIC, "java/lang/System", "nanoTime", "()J", false);
+        mv.visitVarInsn(LSTORE, posTimeStart);
       }
-      posTimeStart = newLocal(LONG_TYPE);
-      mv.visitMethodInsn(INVOKESTATIC, "java/lang/System", "nanoTime", "()J", false);
-      mv.visitVarInsn(LSTORE, posTimeStart);
     }
   }
 
@@ -283,7 +334,7 @@ public class AddTimerMetricMethodAdapter extends AdviceAdapter {
 
       int[] buckets = getBuckets();
       if (buckets == null || buckets.length == 0) {
-        mv.visitMethodInsn(INVOKESTATIC, METRIC_MANAGER, "timer", "(Ljava/lang/String;)Lio/avaje/metrics/Timer;", false);
+        mv.visitMethodInsn(INVOKESTATIC, METRIC_MANAGER, isTraced() ? CREATE_TRACED_TIMER : CREATE_TIMER, "(Ljava/lang/String;)Lio/avaje/metrics/Timer;", false);
         mv.visitFieldInsn(PUTSTATIC, className, "_$metric_" + i, LTIMED_METRIC);
 
       } else {
@@ -300,7 +351,7 @@ public class AddTimerMetricMethodAdapter extends AdviceAdapter {
           push(mv, buckets[j]);
           mv.visitInsn(IASTORE);
         }
-        mv.visitMethodInsn(INVOKESTATIC, METRIC_MANAGER, "timer", "(Ljava/lang/String;[I)Lio/avaje/metrics/Timer;", false);
+        mv.visitMethodInsn(INVOKESTATIC, METRIC_MANAGER, isTraced() ? CREATE_TRACED_TIMER : CREATE_TIMER, "(Ljava/lang/String;[I)Lio/avaje/metrics/Timer;", false);
         mv.visitFieldInsn(PUTSTATIC, className, "_$metric_" + i, LTIMED_METRIC);
       }
     }

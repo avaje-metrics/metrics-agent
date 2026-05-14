@@ -12,9 +12,17 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Timed {
 
+  enum SpanMode {
+    DEFAULT,
+    ON,
+    OFF
+  }
+
   String prefix() default "";
 
   String name() default "";
 
   int[] buckets() default {};
+
+  SpanMode span() default SpanMode.DEFAULT;
 }

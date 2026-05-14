@@ -39,6 +39,7 @@ public class AgentManifest {
   private boolean includeSpringComponents;
   private boolean includeJaxRsComponents;
   private boolean includeJEEComponents;
+  private TimedSpansMode timedSpansMode = TimedSpansMode.DEFAULT_OFF;
 
   private boolean nameIncludePackages;
   private int debugLevel;
@@ -130,6 +131,7 @@ public class AgentManifest {
     }
 
     includeRequestTiming = bool(attributes, "requestTiming");
+    timedSpansMode = TimedSpansMode.of(attributes.getValue("timedSpans"));
     includeStaticMethods = bool(attributes, "includeStaticMethods");
     enhanceSingleton = bool(attributes, "enhanceSingleton", enhanceSingleton);
     enhanceAvajeComponent = bool(attributes, "enhanceAvajeComponent", enhanceAvajeComponent);
@@ -192,6 +194,10 @@ public class AgentManifest {
 
   public boolean isIncludeStaticMethods() {
     return includeStaticMethods;
+  }
+
+  boolean isTimedSpansEnabled(TimedSpanMode classMode, TimedSpanMode methodMode) {
+    return timedSpansMode.resolve(classMode, methodMode);
   }
 
   public boolean isEnhanceSingleton() {
