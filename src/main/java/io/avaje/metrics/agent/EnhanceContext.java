@@ -135,6 +135,10 @@ class EnhanceContext {
     return manifest.isTimedSpansEnabled(classMode, methodMode);
   }
 
+  boolean isTimedMetricNamingLabelTag() {
+    return manifest.isTimedMetricNamingLabelTag();
+  }
+
   boolean isNameIncludesPackage() {
     return manifest.isNameIncludesPackage();
   }

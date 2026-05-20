@@ -39,6 +39,7 @@ public class AgentManifest {
   private boolean includeJaxRsComponents;
   private boolean includeJEEComponents;
   private TimedSpansMode timedSpansMode = TimedSpansMode.DEFAULT_OFF;
+  private TimedMetricNaming timedMetricNaming = TimedMetricNaming.FULL_NAME;
 
   private boolean nameIncludePackages;
   private int debugLevel;
@@ -126,6 +127,7 @@ public class AgentManifest {
     }
 
     timedSpansMode = TimedSpansMode.of(attributes.getValue("timedSpans"));
+    timedMetricNaming = TimedMetricNaming.of(attributes.getValue("timedMetricNaming"));
     includeStaticMethods = bool(attributes, "includeStaticMethods");
     enhanceSingleton = bool(attributes, "enhanceSingleton", enhanceSingleton);
     enhanceAvajeComponent = bool(attributes, "enhanceAvajeComponent", enhanceAvajeComponent);
@@ -192,6 +194,10 @@ public class AgentManifest {
 
   boolean isTimedSpansEnabled(TimedSpanMode classMode, TimedSpanMode methodMode) {
     return timedSpansMode.resolve(classMode, methodMode);
+  }
+
+  boolean isTimedMetricNamingLabelTag() {
+    return timedMetricNaming == TimedMetricNaming.LABEL_TAG;
   }
 
   public boolean isEnhanceSingleton() {
