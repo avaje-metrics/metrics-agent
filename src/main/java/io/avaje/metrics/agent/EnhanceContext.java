@@ -131,12 +131,8 @@ class EnhanceContext {
     return includeStaticMethods;
   }
 
-  boolean isIncludeRequestTiming() {
-    return manifest.isIncludeRequestTiming();
-  }
-
   boolean isTimedSpansEnabled(TimedSpanMode classMode, TimedSpanMode methodMode) {
-    return !manifest.isIncludeRequestTiming() && manifest.isTimedSpansEnabled(classMode, methodMode);
+    return manifest.isTimedSpansEnabled(classMode, methodMode);
   }
 
   boolean isNameIncludesPackage() {

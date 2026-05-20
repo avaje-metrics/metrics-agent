@@ -17,34 +17,19 @@ public class MockBucketTimer implements Timer {
 
   @Override
   public void add(long startNanos) {
-    testOperationEnd(true, startNanos, false);
-  }
-
-  @Override
-  public void add(long startNanos, boolean activeThreadContext) {
-    testOperationEnd(true, startNanos, activeThreadContext);
+    testOperationEnd(true, startNanos);
   }
 
   @Override
   public void addErr(long startNanos) {
-    testOperationEnd(false, startNanos, false);
+    testOperationEnd(false, startNanos);
   }
 
-  @Override
-  public void addErr(long startNanos, boolean activeThreadContext) {
-    testOperationEnd(false, startNanos, activeThreadContext);
-  }
-
-  private void testOperationEnd(boolean success, long startNanos, boolean activeThreadContext) {
+  private void testOperationEnd(boolean success, long startNanos) {
     long exeNanos = System.nanoTime() - startNanos;
-    System.out.println("... " + name + " operationEnd exe:" + exeNanos + " success:" + success + " activeThreadContext:" + activeThreadContext);
+    System.out.println("... " + name + " operationEnd exe:" + exeNanos + " success:" + success);
     count++;
-    Metrics.testOperationEnd(name, success, activeThreadContext, success ? "add" : "addErr");
-  }
-
-  @Override
-  public boolean isRequestTiming() {
-    return true;
+    Metrics.testOperationEnd(name, success, success ? "add" : "addErr");
   }
 
   @Override
@@ -82,19 +67,19 @@ public class MockBucketTimer implements Timer {
     @Override
     public void end() {
       count++;
-      Metrics.testOperationEnd(name, true, false, "event.end");
+      Metrics.testOperationEnd(name, true, "event.end");
     }
 
     @Override
     public void endWithError() {
       count++;
-      Metrics.testOperationEnd(name, false, false, "event.endWithError");
+      Metrics.testOperationEnd(name, false, "event.endWithError");
     }
 
     @Override
     public void endWithError(Throwable error) {
       count++;
-      Metrics.testOperationEnd(name, false, false, "event.endWithError", error);
+      Metrics.testOperationEnd(name, false, "event.endWithError", error);
     }
   }
 }
