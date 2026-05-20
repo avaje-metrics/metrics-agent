@@ -74,4 +74,22 @@ public class AgentManifestTest {
     assertFalse(manifest.isTimedSpansEnabled(TimedSpanMode.DEFAULT, TimedSpanMode.ON));
     assertFalse(manifest.isTimedSpansEnabled(TimedSpanMode.ON, TimedSpanMode.ON));
   }
+
+  @Test
+  public void timedMetricNaming_unsetDefaultsFullName() {
+    AgentManifest manifest = new AgentManifest();
+
+    assertFalse(manifest.isTimedMetricNamingLabelTag());
+  }
+
+  @Test
+  public void timedMetricNaming_labelTagMode() {
+    AgentManifest manifest = new AgentManifest();
+    Attributes attributes = new Attributes();
+    attributes.putValue("timedMetricNaming", "label-tag");
+
+    manifest.readToggles(attributes);
+
+    assertTrue(manifest.isTimedMetricNamingLabelTag());
+  }
 }

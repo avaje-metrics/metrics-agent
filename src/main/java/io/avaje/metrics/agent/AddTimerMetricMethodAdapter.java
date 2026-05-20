@@ -37,6 +37,7 @@ public class AddTimerMetricMethodAdapter extends AdviceAdapter {
   private static final String OPERATION_EVENT_END = "end";
   private static final String OPERATION_EVENT_END_ERROR = "endWithError";
   private static final String OPERATION_EVENT_END_ERROR_DESC = "(Ljava/lang/Throwable;)V";
+  private static final String CREATE_TAGGED_TIMER_DESC = "(Ljava/lang/String;[Ljava/lang/String;)Lio/avaje/metrics/Timer;";
 
   private final ClassAdapterMetric classAdapter;
 
@@ -51,6 +52,7 @@ public class AddTimerMetricMethodAdapter extends AdviceAdapter {
   private final int metricIndex;
 
   private String name;
+  private boolean explicitName;
   private boolean explicitFullName;
 
   private int[] buckets;
@@ -90,8 +92,9 @@ public class AddTimerMetricMethodAdapter extends AdviceAdapter {
   private void setName(String metricName) {
     metricName = metricName.trim();
     if (!metricName.isEmpty()) {
+      this.explicitName = true;
       this.name = metricName;
-      this.explicitFullName = name.contains(".");
+      this.explicitFullName = metricName.contains(".");
     }
   }
 
@@ -120,6 +123,25 @@ public class AddTimerMetricMethodAdapter extends AdviceAdapter {
       return name;
     }
     return classAdapter.getMetricPrefix() + "." + name;
+  }
+
+  private String getMetricLabel() {
+    if (explicitName) {
+      return name;
+    }
+    return classAdapter.getMetricLabelPrefix() + "." + name;
+  }
+
+  private boolean useLabelTagMetricNaming() {
+    int[] bucketRanges = getBuckets();
+    return context.isTimedMetricNamingLabelTag() && (bucketRanges == null || bucketRanges.length == 0);
+  }
+
+  private String getMetricDescription() {
+    if (useLabelTagMetricNaming()) {
+      return classAdapter.getMetricBaseName() + " [label:" + getMetricLabel() + "]";
+    }
+    return getUniqueMetricName();
   }
 
   public void visitCode() {
@@ -305,19 +327,30 @@ public class AddTimerMetricMethodAdapter extends AdviceAdapter {
     } else {
       // apply any metric name mappings to the uniqueMethodName to get
       // the final metric name that will be used
-      String mappedMetricName = getUniqueMetricName();
-      context.logAddingMetric(mappedMetricName);
+      String metricDescription = getMetricDescription();
+      context.logAddingMetric(metricDescription);
       if (isLog(1)) {
-        log(1, "# Add Metric[" + mappedMetricName + "] index[" + i + "]", "");
+        log(1, "# Add Metric[" + metricDescription + "] index[" + i + "]", "");
       }
 
       Label l0 = new Label();
       mv.visitLabel(l0);
       mv.visitLineNumber(1, l0);
-      mv.visitLdcInsn(mappedMetricName);
 
       int[] buckets = getBuckets();
-      if (buckets == null || buckets.length == 0) {
+      if (useLabelTagMetricNaming()) {
+        mv.visitLdcInsn(classAdapter.getMetricBaseName());
+        push(mv, 1);
+        mv.visitTypeInsn(ANEWARRAY, "java/lang/String");
+        mv.visitInsn(DUP);
+        push(mv, 0);
+        mv.visitLdcInsn("label:" + getMetricLabel());
+        mv.visitInsn(AASTORE);
+        mv.visitMethodInsn(INVOKESTATIC, METRIC_MANAGER, isTraced() ? CREATE_TRACED_TIMER : CREATE_TIMER, CREATE_TAGGED_TIMER_DESC, false);
+        mv.visitFieldInsn(PUTSTATIC, className, "_$metric_" + i, LTIMED_METRIC);
+
+      } else if (buckets == null || buckets.length == 0) {
+        mv.visitLdcInsn(getUniqueMetricName());
         mv.visitMethodInsn(INVOKESTATIC, METRIC_MANAGER, isTraced() ? CREATE_TRACED_TIMER : CREATE_TIMER, "(Ljava/lang/String;)Lio/avaje/metrics/Timer;", false);
         mv.visitFieldInsn(PUTSTATIC, className, "_$metric_" + i, LTIMED_METRIC);
 
@@ -327,6 +360,7 @@ public class AddTimerMetricMethodAdapter extends AdviceAdapter {
           log(3, "... init with buckets", Arrays.toString(buckets));
         }
 
+        mv.visitLdcInsn(getUniqueMetricName());
         push(mv, buckets.length);
         mv.visitIntInsn(NEWARRAY, Opcodes.T_INT);
         for (int j = 0; j < buckets.length; j++) {
@@ -344,7 +378,7 @@ public class AddTimerMetricMethodAdapter extends AdviceAdapter {
   void addFieldDefinition(ClassVisitor cv, int i) {
     if (isEnhanced()) {
       if (isLog(4)) {
-        log(4, "... init field index[" + i + "] METHOD[" + getUniqueMetricName() + "]", "");
+        log(4, "... init field index[" + i + "] METHOD[" + getMetricDescription() + "]", "");
       }
       FieldVisitor fv = cv.visitField(ACC_PRIVATE + ACC_STATIC, "_$metric_" + i, LTIMED_METRIC, null, null);
       fv.visitEnd();

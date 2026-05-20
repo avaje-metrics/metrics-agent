@@ -144,12 +144,40 @@ public class ClassAdapterMetric extends ClassVisitor implements Opcodes {
     return enhanceContext.isNameIncludesPackage() ? longName : "app." + shortName;
   }
 
+  String getMetricBaseName() {
+    if (name != null) {
+      return name;
+    }
+    if (prefix != null) {
+      return prefix;
+    }
+    if (detectWebController) {
+      return deriveControllerBaseName();
+    }
+    if (detectWebService) {
+      return deriveWebServiceBaseName();
+    }
+    return "app.component";
+  }
+
+  String getMetricLabelPrefix() {
+    return enhanceContext.isNameIncludesPackage() ? longName : shortName;
+  }
+
   private String deriveControllerName() {
-    return "web.api." + shortName;
+    return deriveControllerBaseName() + "." + shortName;
   }
 
   private String deriveWebServiceName() {
-    return "web.ws." + shortName;
+    return deriveWebServiceBaseName() + "." + shortName;
+  }
+
+  private String deriveControllerBaseName() {
+    return "web.api";
+  }
+
+  private String deriveWebServiceBaseName() {
+    return "web.ws";
   }
 
   private void setName(String name) {
