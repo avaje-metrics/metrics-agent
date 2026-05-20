@@ -11,7 +11,6 @@ import io.avaje.metrics.agent.asm.commons.AdviceAdapter;
 import java.util.Arrays;
 
 import static io.avaje.metrics.agent.Transformer.ASM_VERSION;
-import static io.avaje.metrics.agent.asm.Type.BOOLEAN_TYPE;
 import static io.avaje.metrics.agent.asm.Type.LONG_TYPE;
 import static io.avaje.metrics.agent.asm.Type.getObjectType;
 
@@ -39,8 +38,6 @@ public class AddTimerMetricMethodAdapter extends AdviceAdapter {
   private static final String OPERATION_EVENT_END_ERROR = "endWithError";
   private static final String OPERATION_EVENT_END_ERROR_DESC = "(Ljava/lang/Throwable;)V";
 
-  private static final String METHOD_IS_ACTIVE_THREAD_CONTEXT = "isRequestTiming";
-
   private final ClassAdapterMetric classAdapter;
 
   private final EnhanceContext context;
@@ -57,8 +54,6 @@ public class AddTimerMetricMethodAdapter extends AdviceAdapter {
   private boolean explicitFullName;
 
   private int[] buckets;
-
-  private int posUseContext;
 
   private int posTimeStart;
   private int posEvent;
@@ -273,12 +268,7 @@ public class AddTimerMetricMethodAdapter extends AdviceAdapter {
         mv.visitFieldInsn(GETSTATIC, className, "_$metric_" + metricIndex, LTIMED_METRIC);
         loadLocal(posTimeStart);
         String methodDesc = isError ? OPERATION_ERR : OPERATION_END;
-        if (context.isIncludeRequestTiming()) {
-          loadLocal(posUseContext);
-          mv.visitMethodInsn(INVOKEINTERFACE, TIMED_METRIC, methodDesc, "(JZ)V", true);
-        } else {
-          mv.visitMethodInsn(INVOKEINTERFACE, TIMED_METRIC, methodDesc, "(J)V", true);
-        }
+        mv.visitMethodInsn(INVOKEINTERFACE, TIMED_METRIC, methodDesc, "(J)V", true);
       }
     }
   }
@@ -299,12 +289,6 @@ public class AddTimerMetricMethodAdapter extends AdviceAdapter {
         mv.visitMethodInsn(INVOKEINTERFACE, TIMED_METRIC, OPERATION_START_EVENT, "()" + LTIMED_EVENT, true);
         storeLocal(posEvent);
       } else {
-        if (context.isIncludeRequestTiming()) {
-          posUseContext = newLocal(BOOLEAN_TYPE);
-          mv.visitFieldInsn(GETSTATIC, className, "_$metric_" + metricIndex, LTIMED_METRIC);
-          mv.visitMethodInsn(INVOKEINTERFACE, TIMED_METRIC, METHOD_IS_ACTIVE_THREAD_CONTEXT, "()Z", true);
-          mv.visitVarInsn(ISTORE, posUseContext);
-        }
         posTimeStart = newLocal(LONG_TYPE);
         mv.visitMethodInsn(INVOKESTATIC, "java/lang/System", "nanoTime", "()J", false);
         mv.visitVarInsn(LSTORE, posTimeStart);

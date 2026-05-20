@@ -35,7 +35,6 @@ public class AgentManifest {
 
   private final Set<String> includePackages = new HashSet<>();
 
-  private boolean includeRequestTiming;
   private boolean includeSpringComponents;
   private boolean includeJaxRsComponents;
   private boolean includeJEEComponents;
@@ -89,10 +88,6 @@ public class AgentManifest {
     return includeSpringComponents;
   }
 
-  public boolean isIncludeRequestTiming() {
-    return includeRequestTiming;
-  }
-
   /**
    * Read all the specific manifest files and return the set of packages containing type query beans.
    */
@@ -130,7 +125,6 @@ public class AgentManifest {
       debugLevel = Integer.parseInt(debug);
     }
 
-    includeRequestTiming = bool(attributes, "requestTiming");
     timedSpansMode = TimedSpansMode.of(attributes.getValue("timedSpans"));
     includeStaticMethods = bool(attributes, "includeStaticMethods");
     enhanceSingleton = bool(attributes, "enhanceSingleton", enhanceSingleton);

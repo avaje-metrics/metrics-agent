@@ -6,12 +6,8 @@ package io.avaje.metrics;
 public interface Timer {
 
   void add(long startNanos);
-  void add(long startNanos, boolean activeThreadContext);
   void addErr(long startNanos);
-  void addErr(long startNanos, boolean activeThreadContext);
   Event startEvent();
-
-  boolean isRequestTiming();
 
   interface Event {
     void end();

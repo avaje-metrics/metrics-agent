@@ -15,8 +15,6 @@ public class Metrics {
   private static String lastMetricName;
 
   private static int lastMetricOpcode;
-
-  private static boolean lastActiveThreadContext;
   private static String lastOperationKind;
   private static Throwable lastThrowable;
 
@@ -86,18 +84,17 @@ public class Metrics {
   /**
    * Called when a timer ends so that we can assert the call occured.
    */
-  protected static void testOperationEnd(String name, boolean success, boolean activeThreadContext) {
-    testOperationEnd(name, success, activeThreadContext, "add");
+  protected static void testOperationEnd(String name, boolean success) {
+    testOperationEnd(name, success, "add");
   }
 
-  protected static void testOperationEnd(String name, boolean success, boolean activeThreadContext, String operationKind) {
-    testOperationEnd(name, success, activeThreadContext, operationKind, null);
+  protected static void testOperationEnd(String name, boolean success, String operationKind) {
+    testOperationEnd(name, success, operationKind, null);
   }
 
-  protected static void testOperationEnd(String name, boolean success, boolean activeThreadContext, String operationKind, Throwable throwable) {
+  protected static void testOperationEnd(String name, boolean success, String operationKind, Throwable throwable) {
     lastMetricName  = name;
     lastMetricOpcode = success ? 1 : 191;
-    lastActiveThreadContext = activeThreadContext;
     lastOperationKind = operationKind;
     lastThrowable = throwable;
   }
@@ -110,10 +107,6 @@ public class Metrics {
     return 191 == lastMetricOpcode;
   }
 
-  public static boolean testLastActiveThreadContext() {
-    return lastActiveThreadContext;
-  }
-
   public static int testLastMetricOpcode() {
     return lastMetricOpcode;
   }
@@ -121,7 +114,6 @@ public class Metrics {
   public static void testReset() {
     lastMetricName = null;
     lastMetricOpcode = 0;
-    lastActiveThreadContext = false;
     lastOperationKind = null;
     lastThrowable = null;
   }
