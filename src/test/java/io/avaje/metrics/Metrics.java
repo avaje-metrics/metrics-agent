@@ -74,6 +74,10 @@ public class Metrics {
     return name + ":" + Arrays.toString(tags);
   }
 
+  public static TimerBuilder timerBuilder(String name) {
+    return new TestTimerBuilder(name);
+  }
+
   public synchronized static Timer timer(String name, int... bucketRanges) {
 
     Timer timer = bucketCache.get(key(name));
@@ -106,7 +110,11 @@ public class Metrics {
   }
 
   public synchronized static MockBucketTimer testGetBucketTimedMetric(String name) {
-    return (MockBucketTimer) bucketCache.get(key(name));
+    return testGetBucketTimedMetric(name, new String[0]);
+  }
+
+  public synchronized static MockBucketTimer testGetBucketTimedMetric(String name, String... tags) {
+    return (MockBucketTimer) bucketCache.get(tags.length == 0 ? key(name) : key(name, tags));
   }
 
   /**
@@ -186,5 +194,59 @@ public class Metrics {
     return lastThrowable;
   }
 
+  private synchronized static Timer timer(String name, boolean traced, int[] bucketRanges, String... tags) {
+    if (bucketRanges == null || bucketRanges.length == 0) {
+      if (tags.length == 0) {
+        return traced ? tracedTimer(name) : timer(name);
+      }
+      return timer(name, traced, tags);
+    }
+    if (tags.length == 0) {
+      return traced ? tracedTimer(name, bucketRanges) : timer(name, bucketRanges);
+    }
+    String key = key(name, tags);
+    Timer timer = bucketCache.get(key);
+    if (timer == null) {
+      System.out.println("== MetricManager: create " + (traced ? "traced " : "") + "BucketTimedMetric " + name + ":" + Arrays.toString(tags));
+      timer = new MockBucketTimer(name, tags, traced);
+      bucketCache.put(key, timer);
+    } else if (traced) {
+      ((MockBucketTimer) timer).testEnableTracing();
+    }
+    return timer;
+  }
+
+  private static final class TestTimerBuilder implements TimerBuilder {
+
+    private final String name;
+    private String[] tags = new String[0];
+    private int[] bucketRanges = new int[0];
+
+    private TestTimerBuilder(String name) {
+      this.name = name;
+    }
+
+    @Override
+    public TimerBuilder tags(Tags tags) {
+      this.tags = tags.array();
+      return this;
+    }
+
+    @Override
+    public TimerBuilder bucketRanges(int... bucketRangesMillis) {
+      this.bucketRanges = Arrays.copyOf(bucketRangesMillis, bucketRangesMillis.length);
+      return this;
+    }
+
+    @Override
+    public Timer build() {
+      return timer(name, false, bucketRanges, tags);
+    }
+
+    @Override
+    public Timer buildTraced() {
+      return timer(name, true, bucketRanges, tags);
+    }
+  }
 
 }

@@ -25,8 +25,8 @@ If unset, `full-name` is used.
 
 - `full-name` keeps the existing metric naming, for example:
   `web.api.CustomerResource.staticGeneral`
-- `label-tag` changes non-bucket timed metrics to use the base metric name plus a `label:` tag, for example:
-  `Metrics.timer("web.api", "label:CustomerResource.staticGeneral")`
+- `label-tag` changes timed metrics to use the base metric name plus a `label:` tag, for example:
+  `Metrics.timerBuilder("web.api").tags(Tags.of("label:CustomerResource.staticGeneral")).build()`
 
 In `label-tag` mode:
 
@@ -35,4 +35,4 @@ In `label-tag` mode:
 - method `@Timed(name = "...")` becomes the `label:` tag value
 - otherwise non-web timed classes default to the base metric name `app.component`
 - `nameIncludePackages=true` affects the label value rather than the base metric name
-- bucket timers continue to use full-name metric naming in this first cut
+- bucket timers also use the same base metric name plus `label:` tag pattern

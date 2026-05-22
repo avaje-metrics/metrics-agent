@@ -29,15 +29,19 @@ public class AddTimerMetricMethodAdapter extends AdviceAdapter {
 
   private static final String METRIC_MANAGER = "io/avaje/metrics/Metrics";
 
-  private static final String CREATE_TIMER = "timer";
-  private static final String CREATE_TRACED_TIMER = "tracedTimer";
+  private static final String TIMER_BUILDER = "io/avaje/metrics/TimerBuilder";
+  private static final String TAGS = "io/avaje/metrics/Tags";
+  private static final String CREATE_TIMER_BUILDER = "timerBuilder";
+  private static final String TIMER_BUILDER_DESC = "(Ljava/lang/String;)Lio/avaje/metrics/TimerBuilder;";
+  private static final String CREATE_TAGS_DESC = "([Ljava/lang/String;)Lio/avaje/metrics/Tags;";
+  private static final String BUILDER_TAGS_DESC = "(Lio/avaje/metrics/Tags;)Lio/avaje/metrics/TimerBuilder;";
+  private static final String BUILDER_BUCKETS_DESC = "([I)Lio/avaje/metrics/TimerBuilder;";
   private static final String OPERATION_START_EVENT = "startEvent";
   private static final String OPERATION_END = "add";
   private static final String OPERATION_ERR = "addErr";
   private static final String OPERATION_EVENT_END = "end";
   private static final String OPERATION_EVENT_END_ERROR = "endWithError";
   private static final String OPERATION_EVENT_END_ERROR_DESC = "(Ljava/lang/Throwable;)V";
-  private static final String CREATE_TAGGED_TIMER_DESC = "(Ljava/lang/String;[Ljava/lang/String;)Lio/avaje/metrics/Timer;";
 
   private final ClassAdapterMetric classAdapter;
 
@@ -133,8 +137,7 @@ public class AddTimerMetricMethodAdapter extends AdviceAdapter {
   }
 
   private boolean useLabelTagMetricNaming() {
-    int[] bucketRanges = getBuckets();
-    return context.isTimedMetricNamingLabelTag() && (bucketRanges == null || bucketRanges.length == 0);
+    return context.isTimedMetricNamingLabelTag();
   }
 
   private String getMetricDescription() {
@@ -338,41 +341,44 @@ public class AddTimerMetricMethodAdapter extends AdviceAdapter {
       mv.visitLineNumber(1, l0);
 
       int[] buckets = getBuckets();
+      mv.visitLdcInsn(useLabelTagMetricNaming() ? classAdapter.getMetricBaseName() : getUniqueMetricName());
+      mv.visitMethodInsn(INVOKESTATIC, METRIC_MANAGER, CREATE_TIMER_BUILDER, TIMER_BUILDER_DESC, false);
+
       if (useLabelTagMetricNaming()) {
-        mv.visitLdcInsn(classAdapter.getMetricBaseName());
-        push(mv, 1);
-        mv.visitTypeInsn(ANEWARRAY, "java/lang/String");
-        mv.visitInsn(DUP);
-        push(mv, 0);
-        mv.visitLdcInsn("label:" + getMetricLabel());
-        mv.visitInsn(AASTORE);
-        mv.visitMethodInsn(INVOKESTATIC, METRIC_MANAGER, isTraced() ? CREATE_TRACED_TIMER : CREATE_TIMER, CREATE_TAGGED_TIMER_DESC, false);
-        mv.visitFieldInsn(PUTSTATIC, className, "_$metric_" + i, LTIMED_METRIC);
-
-      } else if (buckets == null || buckets.length == 0) {
-        mv.visitLdcInsn(getUniqueMetricName());
-        mv.visitMethodInsn(INVOKESTATIC, METRIC_MANAGER, isTraced() ? CREATE_TRACED_TIMER : CREATE_TIMER, "(Ljava/lang/String;)Lio/avaje/metrics/Timer;", false);
-        mv.visitFieldInsn(PUTSTATIC, className, "_$metric_" + i, LTIMED_METRIC);
-
-      } else {
-        // A BucketTimedMetric so need to create with the bucket array
+        addLabelTag(mv);
+      }
+      if (buckets != null && buckets.length > 0) {
         if (isLog(3)) {
           log(3, "... init with buckets", Arrays.toString(buckets));
         }
-
-        mv.visitLdcInsn(getUniqueMetricName());
-        push(mv, buckets.length);
-        mv.visitIntInsn(NEWARRAY, Opcodes.T_INT);
-        for (int j = 0; j < buckets.length; j++) {
-          mv.visitInsn(DUP);
-          push(mv, j);
-          push(mv, buckets[j]);
-          mv.visitInsn(IASTORE);
-        }
-        mv.visitMethodInsn(INVOKESTATIC, METRIC_MANAGER, isTraced() ? CREATE_TRACED_TIMER : CREATE_TIMER, "(Ljava/lang/String;[I)Lio/avaje/metrics/Timer;", false);
-        mv.visitFieldInsn(PUTSTATIC, className, "_$metric_" + i, LTIMED_METRIC);
+        addBucketRanges(mv, buckets);
       }
+      mv.visitMethodInsn(INVOKEINTERFACE, TIMER_BUILDER, isTraced() ? "buildTraced" : "build", "()Lio/avaje/metrics/Timer;", true);
+      mv.visitFieldInsn(PUTSTATIC, className, "_$metric_" + i, LTIMED_METRIC);
     }
+  }
+
+  private void addLabelTag(MethodVisitor mv) {
+    push(mv, 1);
+    mv.visitTypeInsn(ANEWARRAY, "java/lang/String");
+    mv.visitInsn(DUP);
+    push(mv, 0);
+    mv.visitLdcInsn("label:" + getMetricLabel());
+    mv.visitInsn(AASTORE);
+    mv.visitMethodInsn(INVOKESTATIC, TAGS, "of", CREATE_TAGS_DESC, true);
+    mv.visitMethodInsn(INVOKEINTERFACE, TIMER_BUILDER, "tags", BUILDER_TAGS_DESC, true);
+  }
+
+  private void addBucketRanges(MethodVisitor mv, int[] buckets) {
+    push(mv, buckets.length);
+    mv.visitIntInsn(NEWARRAY, Opcodes.T_INT);
+    for (int j = 0; j < buckets.length; j++) {
+      mv.visitInsn(DUP);
+      push(mv, j);
+      push(mv, buckets[j]);
+      mv.visitInsn(IASTORE);
+    }
+    mv.visitMethodInsn(INVOKEINTERFACE, TIMER_BUILDER, "bucketRanges", BUILDER_BUCKETS_DESC, true);
   }
 
   void addFieldDefinition(ClassVisitor cv, int i) {

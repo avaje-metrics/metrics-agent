@@ -1,17 +1,25 @@
 package io.avaje.metrics;
 
+import java.util.Arrays;
+
 /**
  * Test Double
  */
 public class MockBucketTimer implements Timer {
 
   private final String name;
+  private final String[] tags;
   private boolean traced;
 
   private int count;
 
   MockBucketTimer(String name, boolean traced) {
+    this(name, new String[0], traced);
+  }
+
+  MockBucketTimer(String name, String[] tags, boolean traced) {
     this.name = name;
+    this.tags = Arrays.copyOf(tags, tags.length);
     this.traced = traced;
   }
 
@@ -29,7 +37,7 @@ public class MockBucketTimer implements Timer {
     long exeNanos = System.nanoTime() - startNanos;
     System.out.println("... " + name + " operationEnd exe:" + exeNanos + " success:" + success);
     count++;
-    Metrics.testOperationEnd(name, success, success ? "add" : "addErr");
+    Metrics.testOperationEnd(name, tags, success, success ? "add" : "addErr");
   }
 
   @Override
@@ -67,19 +75,19 @@ public class MockBucketTimer implements Timer {
     @Override
     public void end() {
       count++;
-      Metrics.testOperationEnd(name, true, "event.end");
+      Metrics.testOperationEnd(name, tags, true, "event.end");
     }
 
     @Override
     public void endWithError() {
       count++;
-      Metrics.testOperationEnd(name, false, "event.endWithError");
+      Metrics.testOperationEnd(name, tags, false, "event.endWithError");
     }
 
     @Override
     public void endWithError(Throwable error) {
       count++;
-      Metrics.testOperationEnd(name, false, "event.endWithError", error);
+      Metrics.testOperationEnd(name, tags, false, "event.endWithError", error);
     }
   }
 }

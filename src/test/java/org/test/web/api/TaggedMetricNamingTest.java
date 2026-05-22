@@ -105,13 +105,13 @@ public class TaggedMetricNamingTest {
   }
 
   @Test
-  public void bucketTimer_staysFullNameInLabelTagMode() throws Exception {
+  public void bucketTimer_usesBaseNameAndLabelTagInLabelTagMode() throws Exception {
 
     invokeTransformed("org.tagged.web.api.TaggedSpanTimedResource", "tracedBucketMethod", "timedMetricNaming: label-tag");
 
-    assertEquals("spanapi.TaggedSpanTimedResource.tracedBucketMethod", Metrics.testLastMetricName());
-    assertArrayEquals(new String[0], Metrics.testLastMetricTags());
-    MockBucketTimer metric = Metrics.testGetBucketTimedMetric("spanapi.TaggedSpanTimedResource.tracedBucketMethod");
+    assertEquals("spanapi", Metrics.testLastMetricName());
+    assertArrayEquals(new String[]{"label:TaggedSpanTimedResource.tracedBucketMethod"}, Metrics.testLastMetricTags());
+    MockBucketTimer metric = Metrics.testGetBucketTimedMetric("spanapi", "label:TaggedSpanTimedResource.tracedBucketMethod");
     assertNotNull(metric);
     assertTrue(metric.testIsTraced());
   }
