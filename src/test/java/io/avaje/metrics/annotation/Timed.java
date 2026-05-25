@@ -22,6 +22,8 @@ public @interface Timed {
 
   String name() default "";
 
+  String[] tags() default {};
+
   int[] buckets() default {};
 
   SpanMode span() default SpanMode.DEFAULT;

@@ -128,6 +128,88 @@ public class TaggedMetricNamingTest {
     assertFalse(metric.testIsTraced());
   }
 
+  @Test
+  public void timedTags_classTagsApplyInFullNameMode() throws Exception {
+
+    invokeTransformed("org.tagged.web.api.TaggedTimedTagsResource", "classTagged");
+
+    assertEquals("tagapi.TaggedTimedTagsResource.classTagged", Metrics.testLastMetricName());
+    assertArrayEquals(new String[]{"type:class", "component:billing"}, Metrics.testLastMetricTags());
+    MockTimer metric = Metrics.testGetTimedMetric("tagapi.TaggedTimedTagsResource.classTagged", "type:class", "component:billing");
+    assertNotNull(metric);
+    assertFalse(metric.testIsTraced());
+  }
+
+  @Test
+  public void timedTags_methodTagsAppendToClassTagsInFullNameMode() throws Exception {
+
+    invokeTransformed("org.tagged.web.api.TaggedTimedTagsResource", "methodTagged");
+
+    assertEquals("tagapi.TaggedTimedTagsResource.methodTagged", Metrics.testLastMetricName());
+    assertArrayEquals(new String[]{"type:class", "component:billing", "operation:sync", "source:method"}, Metrics.testLastMetricTags());
+    MockTimer metric = Metrics.testGetTimedMetric(
+      "tagapi.TaggedTimedTagsResource.methodTagged",
+      "type:class",
+      "component:billing",
+      "operation:sync",
+      "source:method");
+    assertNotNull(metric);
+    assertFalse(metric.testIsTraced());
+  }
+
+  @Test
+  public void timedTags_bucketTimersIncludeCustomTags() throws Exception {
+
+    invokeTransformed("org.tagged.web.api.TaggedTimedTagsResource", "bucketTagged");
+
+    assertEquals("tagapi.TaggedTimedTagsResource.bucketTagged", Metrics.testLastMetricName());
+    assertArrayEquals(new String[]{"type:class", "component:billing", "operation:bucket"}, Metrics.testLastMetricTags());
+    MockBucketTimer metric = Metrics.testGetBucketTimedMetric(
+      "tagapi.TaggedTimedTagsResource.bucketTagged",
+      "type:class",
+      "component:billing",
+      "operation:bucket");
+    assertNotNull(metric);
+    assertFalse(metric.testIsTraced());
+  }
+
+  @Test
+  public void timedTags_tracedTimersIncludeCustomTags() throws Exception {
+
+    invokeTransformed("org.tagged.web.api.TaggedTimedTagsResource", "tracedTagged");
+
+    assertEquals("tagapi.TaggedTimedTagsResource.tracedTagged", Metrics.testLastMetricName());
+    assertArrayEquals(new String[]{"type:class", "component:billing", "operation:trace"}, Metrics.testLastMetricTags());
+    assertTrue(Metrics.testLastOperationWasEvent());
+    MockTimer metric = Metrics.testGetTimedMetric(
+      "tagapi.TaggedTimedTagsResource.tracedTagged",
+      "type:class",
+      "component:billing",
+      "operation:trace");
+    assertNotNull(metric);
+    assertTrue(metric.testIsTraced());
+  }
+
+  @Test
+  public void timedTags_labelTagModeAppendsGeneratedLabel() throws Exception {
+
+    invokeTransformed("org.tagged.web.api.TaggedTimedTagsResource", "methodTagged", "timedMetricNaming: label-tag");
+
+    assertEquals("tagapi", Metrics.testLastMetricName());
+    assertArrayEquals(
+      new String[]{"type:class", "component:billing", "operation:sync", "source:method", "label:TaggedTimedTagsResource.methodTagged"},
+      Metrics.testLastMetricTags());
+    MockTimer metric = Metrics.testGetTimedMetric(
+      "tagapi",
+      "type:class",
+      "component:billing",
+      "operation:sync",
+      "source:method",
+      "label:TaggedTimedTagsResource.methodTagged");
+    assertNotNull(metric);
+    assertFalse(metric.testIsTraced());
+  }
+
   private void invokeTransformed(String className, String methodName, String... manifestEntries) throws Exception {
     Path tempDir = Files.createTempDirectory("metrics-agent-tagged-");
     try {
