@@ -7,6 +7,7 @@ import io.avaje.metrics.agent.asm.MethodVisitor;
 import io.avaje.metrics.agent.asm.Opcodes;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import static io.avaje.metrics.agent.Transformer.ASM_VERSION;
@@ -50,6 +51,7 @@ public class ClassAdapterMetric extends ClassVisitor implements Opcodes {
   private String shortName;
   private String name;
   private String prefix;
+  private String[] tags = new String[0];
   private TimedSpanMode spanMode = TimedSpanMode.DEFAULT;
 
   /**
@@ -119,6 +121,10 @@ public class ClassAdapterMetric extends ClassVisitor implements Opcodes {
     return buckets;
   }
 
+  String[] getTags() {
+    return Arrays.copyOf(tags, tags.length);
+  }
+
   TimedSpanMode getSpanMode() {
     return spanMode;
   }
@@ -186,6 +192,10 @@ public class ClassAdapterMetric extends ClassVisitor implements Opcodes {
 
   private void setPrefix(String prefix) {
     this.prefix = prefix;
+  }
+
+  private void setTags(String[] tags) {
+    this.tags = Arrays.copyOf(tags, tags.length);
   }
 
   private void setClassName(String className) {
@@ -333,6 +343,14 @@ public class ClassAdapterMetric extends ClassVisitor implements Opcodes {
       } else if ("prefix".equals(name)) {
         setPrefix(value.toString());
       }
+    }
+
+    @Override
+    public AnnotationVisitor visitArray(String name) {
+      if ("tags".equals(name)) {
+        return new AnnotationStringArrayVisitor(super.visitArray(name), ClassAdapterMetric.this::setTags);
+      }
+      return super.visitArray(name);
     }
 
     @Override

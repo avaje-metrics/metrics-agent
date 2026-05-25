@@ -60,6 +60,7 @@ public class AddTimerMetricMethodAdapter extends AdviceAdapter {
   private boolean explicitFullName;
 
   private int[] buckets;
+  private String[] methodTags = new String[0];
 
   private int posTimeStart;
   private int posEvent;
@@ -109,6 +110,10 @@ public class AddTimerMetricMethodAdapter extends AdviceAdapter {
     this.buckets = (int[]) bucket;
   }
 
+  private void setTags(String[] tags) {
+    this.methodTags = Arrays.copyOf(tags, tags.length);
+  }
+
   /**
    * Return the bucket ranges to be used for this metric/method.
    */
@@ -145,6 +150,21 @@ public class AddTimerMetricMethodAdapter extends AdviceAdapter {
       return classAdapter.getMetricBaseName() + " [label:" + getMetricLabel() + "]";
     }
     return getUniqueMetricName();
+  }
+
+  private String[] getTags() {
+    String[] classTags = classAdapter.getTags();
+    int labelTagCount = useLabelTagMetricNaming() ? 1 : 0;
+    String[] tags = new String[classTags.length + methodTags.length + labelTagCount];
+    int pos = 0;
+    System.arraycopy(classTags, 0, tags, pos, classTags.length);
+    pos += classTags.length;
+    System.arraycopy(methodTags, 0, tags, pos, methodTags.length);
+    pos += methodTags.length;
+    if (labelTagCount == 1) {
+      tags[pos] = "label:" + getMetricLabel();
+    }
+    return tags;
   }
 
   public void visitCode() {
@@ -228,6 +248,14 @@ public class AddTimerMetricMethodAdapter extends AdviceAdapter {
       } else if ("buckets".equals(name)) {
         setBuckets(value);
       }
+    }
+
+    @Override
+    public AnnotationVisitor visitArray(String name) {
+      if ("tags".equals(name)) {
+        return new AnnotationStringArrayVisitor(super.visitArray(name), AddTimerMetricMethodAdapter.this::setTags);
+      }
+      return super.visitArray(name);
     }
 
     @Override
@@ -341,11 +369,12 @@ public class AddTimerMetricMethodAdapter extends AdviceAdapter {
       mv.visitLineNumber(1, l0);
 
       int[] buckets = getBuckets();
+      String[] tags = getTags();
       mv.visitLdcInsn(useLabelTagMetricNaming() ? classAdapter.getMetricBaseName() : getUniqueMetricName());
       mv.visitMethodInsn(INVOKESTATIC, METRIC_MANAGER, CREATE_TIMER_BUILDER, TIMER_BUILDER_DESC, false);
 
-      if (useLabelTagMetricNaming()) {
-        addLabelTag(mv);
+      if (tags.length > 0) {
+        addTags(mv, tags);
       }
       if (buckets != null && buckets.length > 0) {
         if (isLog(3)) {
@@ -358,13 +387,15 @@ public class AddTimerMetricMethodAdapter extends AdviceAdapter {
     }
   }
 
-  private void addLabelTag(MethodVisitor mv) {
-    push(mv, 1);
+  private void addTags(MethodVisitor mv, String[] tags) {
+    push(mv, tags.length);
     mv.visitTypeInsn(ANEWARRAY, "java/lang/String");
-    mv.visitInsn(DUP);
-    push(mv, 0);
-    mv.visitLdcInsn("label:" + getMetricLabel());
-    mv.visitInsn(AASTORE);
+    for (int j = 0; j < tags.length; j++) {
+      mv.visitInsn(DUP);
+      push(mv, j);
+      mv.visitLdcInsn(tags[j]);
+      mv.visitInsn(AASTORE);
+    }
     mv.visitMethodInsn(INVOKESTATIC, TAGS, "of", CREATE_TAGS_DESC, true);
     mv.visitMethodInsn(INVOKEINTERFACE, TIMER_BUILDER, "tags", BUILDER_TAGS_DESC, true);
   }
