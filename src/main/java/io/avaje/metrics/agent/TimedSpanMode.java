@@ -2,7 +2,8 @@ package io.avaje.metrics.agent;
 
 enum TimedSpanMode {
   DEFAULT,
-  ON,
+  CHILD,
+  ROOT,
   OFF;
 
   static TimedSpanMode of(String value) {

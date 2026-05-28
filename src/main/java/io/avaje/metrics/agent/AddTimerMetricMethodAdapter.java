@@ -179,7 +179,11 @@ public class AddTimerMetricMethodAdapter extends AdviceAdapter {
   }
 
   private boolean isTraced() {
-    return context.isTimedSpansEnabled(classAdapter.getSpanMode(), spanMode);
+    return traceMode() != TimedSpanMode.OFF;
+  }
+
+  private TimedSpanMode traceMode() {
+    return context.timedSpanMode(classAdapter.getSpanMode(), spanMode);
   }
 
   private void log(int level, String msg, String extra) {
@@ -382,8 +386,21 @@ public class AddTimerMetricMethodAdapter extends AdviceAdapter {
         }
         addBucketRanges(mv, buckets);
       }
-      mv.visitMethodInsn(INVOKEINTERFACE, TIMER_BUILDER, isTraced() ? "buildTraced" : "build", "()Lio/avaje/metrics/Timer;", true);
+      mv.visitMethodInsn(INVOKEINTERFACE, TIMER_BUILDER, buildTimerMethod(), "()Lio/avaje/metrics/Timer;", true);
       mv.visitFieldInsn(PUTSTATIC, className, "_$metric_" + i, LTIMED_METRIC);
+    }
+  }
+
+  private String buildTimerMethod() {
+    switch (traceMode()) {
+      case CHILD:
+        return "buildTraced";
+      case ROOT:
+        return "buildRootTraced";
+      case DEFAULT:
+      case OFF:
+      default:
+        return "build";
     }
   }
 

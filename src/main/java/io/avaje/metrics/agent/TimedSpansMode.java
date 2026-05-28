@@ -2,7 +2,7 @@ package io.avaje.metrics.agent;
 
 enum TimedSpansMode {
   DEFAULT_OFF,
-  DEFAULT_ON,
+  DEFAULT_CHILD,
   DISABLED;
 
   static TimedSpansMode of(String value) {
@@ -10,24 +10,25 @@ enum TimedSpansMode {
       return DEFAULT_OFF;
     }
     switch (value.trim()) {
-      case "default-on":
-        return DEFAULT_ON;
+      case "default-child":
+        return DEFAULT_CHILD;
       case "disabled":
         return DISABLED;
       case "default-off":
-      default:
         return DEFAULT_OFF;
+      default:
+        throw new IllegalArgumentException("Invalid timedSpans mode " + value);
     }
   }
 
-  boolean resolve(TimedSpanMode classMode, TimedSpanMode methodMode) {
+  TimedSpanMode resolve(TimedSpanMode classMode, TimedSpanMode methodMode) {
     if (this == DISABLED) {
-      return false;
+      return TimedSpanMode.OFF;
     }
     TimedSpanMode effective = methodMode != TimedSpanMode.DEFAULT ? methodMode : classMode;
     if (effective == TimedSpanMode.DEFAULT) {
-      return this == DEFAULT_ON;
+      return this == DEFAULT_CHILD ? TimedSpanMode.CHILD : TimedSpanMode.OFF;
     }
-    return effective == TimedSpanMode.ON;
+    return effective;
   }
 }

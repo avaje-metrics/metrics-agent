@@ -2,7 +2,7 @@ package org.tagged.web.api;
 
 import io.avaje.metrics.annotation.Timed;
 
-@Timed(prefix = "spanapi", span = Timed.SpanMode.ON)
+@Timed(prefix = "spanapi", span = Timed.SpanMode.CHILD)
 public class TaggedSpanTimedResource {
 
   public String tracedMethod() {

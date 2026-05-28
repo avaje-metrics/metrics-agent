@@ -16,7 +16,7 @@ public class TaggedTimedTagsResource {
   public void bucketTagged() {
   }
 
-  @Timed(span = Timed.SpanMode.ON, tags = "operation:trace")
+  @Timed(span = Timed.SpanMode.CHILD, tags = "operation:trace")
   public void tracedTagged() {
   }
 }

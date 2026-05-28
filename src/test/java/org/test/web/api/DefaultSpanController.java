@@ -7,10 +7,16 @@ import io.avaje.metrics.annotation.Timed;
 @Controller("/default-span")
 public class DefaultSpanController {
 
-  @Timed(span = Timed.SpanMode.ON)
+  @Timed(span = Timed.SpanMode.CHILD)
   @Get("/traced")
   public String tracedEndpoint() {
     return "ok";
+  }
+
+  @Timed(span = Timed.SpanMode.ROOT)
+  @Get("/root")
+  public String rootEndpoint() {
+    return "root";
   }
 
   @Get("/plain")

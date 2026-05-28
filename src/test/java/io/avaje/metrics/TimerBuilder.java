@@ -9,4 +9,6 @@ public interface TimerBuilder {
   Timer build();
 
   Timer buildTraced();
+
+  Timer buildRootTraced();
 }

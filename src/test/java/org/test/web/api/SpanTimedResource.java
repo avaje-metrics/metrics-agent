@@ -2,7 +2,7 @@ package org.test.web.api;
 
 import io.avaje.metrics.annotation.Timed;
 
-@Timed(prefix = "spanapi", span = Timed.SpanMode.ON)
+@Timed(prefix = "spanapi", span = Timed.SpanMode.CHILD)
 public class SpanTimedResource {
 
   public String tracedMethod() {
@@ -12,6 +12,11 @@ public class SpanTimedResource {
   @Timed(span = Timed.SpanMode.OFF)
   public String plainMethod() {
     return "plain";
+  }
+
+  @Timed(span = Timed.SpanMode.ROOT)
+  public String rootMethod() {
+    return "root";
   }
 
   @Timed(buckets = {100, 200})

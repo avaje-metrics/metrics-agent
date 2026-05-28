@@ -14,7 +14,8 @@ public @interface Timed {
 
   enum SpanMode {
     DEFAULT,
-    ON,
+    CHILD,
+    ROOT,
     OFF
   }
 
