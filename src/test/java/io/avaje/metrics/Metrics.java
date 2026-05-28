@@ -21,11 +21,11 @@ public class Metrics {
   private static Throwable lastThrowable;
 
   public static Timer timer(String name, String... tags) {
-    return timer(name, false, tags);
+    return timer(name, false, false, tags);
   }
 
   public static Timer tracedTimer(String name, String... tags) {
-    return timer(name, true, tags);
+    return timer(name, true, false, tags);
   }
 
   /**
@@ -53,13 +53,27 @@ public class Metrics {
     return timer;
   }
 
-  private synchronized static Timer timer(String name, boolean traced, String... tags) {
+  public synchronized static Timer rootTracedTimer(String name) {
+    Timer timer = cache.get(key(name));
+    if (timer == null) {
+      System.out.println("== MetricManager: create root timedMetric " + name);
+      timer = new MockTimer(name, new String[0], true, true);
+      cache.put(key(name), timer);
+    } else {
+      ((MockTimer) timer).testEnableRootTracing();
+    }
+    return timer;
+  }
+
+  private synchronized static Timer timer(String name, boolean traced, boolean rootTraced, String... tags) {
     String key = key(name, tags);
     Timer timer = cache.get(key);
     if (timer == null) {
-      System.out.println("== MetricManager: create " + (traced ? "traced " : "") + "timedMetric " + name + ":" + Arrays.toString(tags));
-      timer = new MockTimer(name, tags, traced);
+      System.out.println("== MetricManager: create " + (rootTraced ? "root " : traced ? "traced " : "") + "timedMetric " + name + ":" + Arrays.toString(tags));
+      timer = new MockTimer(name, tags, traced, rootTraced);
       cache.put(key, timer);
+    } else if (rootTraced) {
+      ((MockTimer) timer).testEnableRootTracing();
     } else if (traced) {
       ((MockTimer) timer).testEnableTracing();
     }
@@ -98,6 +112,19 @@ public class Metrics {
       bucketCache.put(key(name), timer);
     } else {
       ((MockBucketTimer) timer).testEnableTracing();
+    }
+    return timer;
+  }
+
+  public synchronized static Timer rootTracedTimer(String name, int... bucketRanges) {
+
+    Timer timer = bucketCache.get(key(name));
+    if (timer == null) {
+      System.out.println("== MetricManager: create root BucketTimedMetric " + name);
+      timer = new MockBucketTimer(name, new String[0], true, true);
+      bucketCache.put(key(name), timer);
+    } else {
+      ((MockBucketTimer) timer).testEnableRootTracing();
     }
     return timer;
   }
@@ -194,22 +221,30 @@ public class Metrics {
     return lastThrowable;
   }
 
-  private synchronized static Timer timer(String name, boolean traced, int[] bucketRanges, String... tags) {
+  private synchronized static Timer timer(String name, boolean traced, boolean rootTraced, int[] bucketRanges, String... tags) {
     if (bucketRanges == null || bucketRanges.length == 0) {
       if (tags.length == 0) {
+        if (rootTraced) {
+          return rootTracedTimer(name);
+        }
         return traced ? tracedTimer(name) : timer(name);
       }
-      return timer(name, traced, tags);
+      return timer(name, traced, rootTraced, tags);
     }
     if (tags.length == 0) {
+      if (rootTraced) {
+        return rootTracedTimer(name, bucketRanges);
+      }
       return traced ? tracedTimer(name, bucketRanges) : timer(name, bucketRanges);
     }
     String key = key(name, tags);
     Timer timer = bucketCache.get(key);
     if (timer == null) {
-      System.out.println("== MetricManager: create " + (traced ? "traced " : "") + "BucketTimedMetric " + name + ":" + Arrays.toString(tags));
-      timer = new MockBucketTimer(name, tags, traced);
+      System.out.println("== MetricManager: create " + (rootTraced ? "root " : traced ? "traced " : "") + "BucketTimedMetric " + name + ":" + Arrays.toString(tags));
+      timer = new MockBucketTimer(name, tags, traced, rootTraced);
       bucketCache.put(key, timer);
+    } else if (rootTraced) {
+      ((MockBucketTimer) timer).testEnableRootTracing();
     } else if (traced) {
       ((MockBucketTimer) timer).testEnableTracing();
     }
@@ -240,12 +275,17 @@ public class Metrics {
 
     @Override
     public Timer build() {
-      return timer(name, false, bucketRanges, tags);
+      return timer(name, false, false, bucketRanges, tags);
     }
 
     @Override
     public Timer buildTraced() {
-      return timer(name, true, bucketRanges, tags);
+      return timer(name, true, false, bucketRanges, tags);
+    }
+
+    @Override
+    public Timer buildRootTraced() {
+      return timer(name, true, true, bucketRanges, tags);
     }
   }
 

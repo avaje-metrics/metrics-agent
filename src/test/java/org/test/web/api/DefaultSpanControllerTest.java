@@ -21,6 +21,18 @@ public class DefaultSpanControllerTest extends BaseTest {
   }
 
   @Test
+  public void controllerMethodsCanOptIntoRootTracing() {
+    DefaultSpanController controller = new DefaultSpanController();
+
+    Metrics.testReset();
+    controller.rootEndpoint();
+    assertEquals("web.api.DefaultSpanController.rootEndpoint", Metrics.testLastMetricName());
+    assertTrue(Metrics.testLastOperationWasEvent());
+    assertTrue(Metrics.testGetTimedMetric("web.api.DefaultSpanController.rootEndpoint").testIsTraced());
+    assertTrue(Metrics.testGetTimedMetric("web.api.DefaultSpanController.rootEndpoint").testIsRootTraced());
+  }
+
+  @Test
   public void controllerMethodsDefaultToPlainTiming() {
     DefaultSpanController controller = new DefaultSpanController();
 

@@ -10,8 +10,9 @@ Usually the agent is used via maven plugin or tile.
 
 - Add `@Timed` to classes or methods
 - Use `@Timed(tags = {"component:billing", "operation:sync"})` to add stable custom timer tags
-- Use `@Timed(span = Timed.SpanMode.ON)` when timed methods should also create spans
-- Timed methods do not create spans by default; use `@Timed(span = Timed.SpanMode.ON)` on the class or method to opt in
+- Use `@Timed(span = Timed.SpanMode.CHILD)` when timed methods should create child spans
+- Use `@Timed(span = Timed.SpanMode.ROOT)` on top-level boundaries that should initiate a trace
+- Timed methods do not create spans by default; use `CHILD`, `ROOT`, or `timedSpans: default-child` to opt in
 - Add the maven plugin or tile 
 - Configure a metric reporter to report metrics (to local csv file or Collectd etc)
 
@@ -75,7 +76,7 @@ parsing, so `true` enables the option and any other value is false.
 | `jee` | boolean, default `false` | Enables JEE/Jakarta EJB and web service detection. |
 | `nameIncludePackages` | boolean, default `false` | Uses fully qualified class names in generated non-web metric names or label values. |
 | `nameTrimPackages` | package list, default empty | Legacy parsed setting. Package prefixes are stored longest-first, but current enhancement does not apply this setting to generated metric names. |
-| `timedSpans` | `default-off`, `default-on`, `disabled`; default `default-off` | Controls whether timed methods also create spans. `disabled` turns off timed spans globally, including explicit `@Timed(span = Timed.SpanMode.ON)`. |
+| `timedSpans` | `default-off`, `default-child`, `disabled`; default `default-off` | Controls whether timed methods also create spans. `disabled` turns off timed spans globally, including explicit `@Timed(span = Timed.SpanMode.CHILD)` or `ROOT`. |
 | `timedMetricNaming` | `full-name`, `label-tag`; default `full-name` | Controls whether timed metric names use the full generated name or a base metric name with a generated `label:` tag. |
 
 When `packages` is not set, the agent skips known JDK, JDBC, logging, test, and common
@@ -88,9 +89,12 @@ controller annotations, and the optional `spring`, `jaxrs`, and `jee` detection 
 
 ### Timed spans
 
-`timedSpans` supports `default-off`, `default-on`, and `disabled`. If unset, timed spans
+`timedSpans` supports `default-off`, `default-child`, and `disabled`. If unset, timed spans
 default to off. `disabled` turns off timed spans globally, including explicit
-`@Timed(span = Timed.SpanMode.ON)` settings, while leaving plain timing metrics enabled.
+`@Timed(span = Timed.SpanMode.CHILD)` or `ROOT` settings, while leaving plain timing metrics enabled.
+
+`CHILD` spans are only created under an existing recording span. `ROOT` spans create a root span
+when no recording span is current, which is useful for top-level Lambda-style handler methods.
 
 ### Timed metric naming
 

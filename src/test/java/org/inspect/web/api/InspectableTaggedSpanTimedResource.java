@@ -2,7 +2,7 @@ package org.inspect.web.api;
 
 import io.avaje.metrics.annotation.Timed;
 
-@Timed(prefix = "inspectapi", span = Timed.SpanMode.ON)
+@Timed(prefix = "inspectapi", span = Timed.SpanMode.CHILD)
 public class InspectableTaggedSpanTimedResource {
 
   public String tracedMethod() {

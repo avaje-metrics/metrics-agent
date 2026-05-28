@@ -10,17 +10,23 @@ public class MockTimer implements Timer {
   private final String name;
   private final String[] tags;
   private boolean traced;
+  private boolean rootTraced;
 
   private int count;
 
   MockTimer(String name, boolean traced) {
-    this(name, new String[0], traced);
+    this(name, new String[0], traced, false);
   }
 
   MockTimer(String name, String[] tags, boolean traced) {
+    this(name, tags, traced, false);
+  }
+
+  MockTimer(String name, String[] tags, boolean traced, boolean rootTraced) {
     this.name = name;
     this.tags = Arrays.copyOf(tags, tags.length);
     this.traced = traced;
+    this.rootTraced = rootTraced;
   }
 
   @Override
@@ -52,6 +58,11 @@ public class MockTimer implements Timer {
     this.traced = true;
   }
 
+  void testEnableRootTracing() {
+    this.traced = true;
+    this.rootTraced = true;
+  }
+
   /**
    * Return the count for the metric.
    */
@@ -68,6 +79,10 @@ public class MockTimer implements Timer {
 
   public boolean testIsTraced() {
     return traced;
+  }
+
+  public boolean testIsRootTraced() {
+    return rootTraced;
   }
 
   private final class MockTimerEvent implements Event {

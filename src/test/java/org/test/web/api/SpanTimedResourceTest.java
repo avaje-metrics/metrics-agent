@@ -29,6 +29,18 @@ public class SpanTimedResourceTest extends BaseTest {
   }
 
   @Test
+  public void rootMethodUsesRootTracedTimer() {
+    SpanTimedResource resource = new SpanTimedResource();
+
+    Metrics.testReset();
+    resource.rootMethod();
+    assertEquals("spanapi.SpanTimedResource.rootMethod", Metrics.testLastMetricName());
+    assertTrue(Metrics.testLastOperationWasEvent());
+    assertTrue(Metrics.testGetTimedMetric("spanapi.SpanTimedResource.rootMethod").testIsTraced());
+    assertTrue(Metrics.testGetTimedMetric("spanapi.SpanTimedResource.rootMethod").testIsRootTraced());
+  }
+
+  @Test
   public void tracedBucketMethodUsesTracedTimer() {
     SpanTimedResource resource = new SpanTimedResource();
 

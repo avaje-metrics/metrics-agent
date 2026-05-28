@@ -193,6 +193,10 @@ public class AgentManifest {
   }
 
   boolean isTimedSpansEnabled(TimedSpanMode classMode, TimedSpanMode methodMode) {
+    return timedSpanMode(classMode, methodMode) != TimedSpanMode.OFF;
+  }
+
+  TimedSpanMode timedSpanMode(TimedSpanMode classMode, TimedSpanMode methodMode) {
     return timedSpansMode.resolve(classMode, methodMode);
   }
 

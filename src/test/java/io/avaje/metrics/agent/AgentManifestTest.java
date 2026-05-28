@@ -29,22 +29,27 @@ public class AgentManifestTest {
     AgentManifest manifest = new AgentManifest();
 
     assertFalse(manifest.isTimedSpansEnabled(TimedSpanMode.DEFAULT, TimedSpanMode.DEFAULT));
-    assertTrue(manifest.isTimedSpansEnabled(TimedSpanMode.ON, TimedSpanMode.DEFAULT));
-    assertTrue(manifest.isTimedSpansEnabled(TimedSpanMode.DEFAULT, TimedSpanMode.ON));
+    assertEquals(TimedSpanMode.OFF, manifest.timedSpanMode(TimedSpanMode.DEFAULT, TimedSpanMode.DEFAULT));
+    assertTrue(manifest.isTimedSpansEnabled(TimedSpanMode.CHILD, TimedSpanMode.DEFAULT));
+    assertTrue(manifest.isTimedSpansEnabled(TimedSpanMode.ROOT, TimedSpanMode.DEFAULT));
+    assertTrue(manifest.isTimedSpansEnabled(TimedSpanMode.DEFAULT, TimedSpanMode.CHILD));
+    assertTrue(manifest.isTimedSpansEnabled(TimedSpanMode.DEFAULT, TimedSpanMode.ROOT));
     assertFalse(manifest.isTimedSpansEnabled(TimedSpanMode.DEFAULT, TimedSpanMode.OFF));
   }
 
   @Test
-  public void timedSpans_defaultOnMode() {
+  public void timedSpans_defaultChildMode() {
 
     AgentManifest manifest = new AgentManifest();
     Attributes attributes = new Attributes();
-    attributes.putValue("timedSpans", "default-on");
+    attributes.putValue("timedSpans", "default-child");
 
     manifest.readToggles(attributes);
 
     assertTrue(manifest.isTimedSpansEnabled(TimedSpanMode.DEFAULT, TimedSpanMode.DEFAULT));
-    assertTrue(manifest.isTimedSpansEnabled(TimedSpanMode.DEFAULT, TimedSpanMode.ON));
+    assertEquals(TimedSpanMode.CHILD, manifest.timedSpanMode(TimedSpanMode.DEFAULT, TimedSpanMode.DEFAULT));
+    assertTrue(manifest.isTimedSpansEnabled(TimedSpanMode.DEFAULT, TimedSpanMode.CHILD));
+    assertTrue(manifest.isTimedSpansEnabled(TimedSpanMode.DEFAULT, TimedSpanMode.ROOT));
     assertFalse(manifest.isTimedSpansEnabled(TimedSpanMode.DEFAULT, TimedSpanMode.OFF));
   }
 
@@ -58,7 +63,8 @@ public class AgentManifestTest {
     manifest.readToggles(attributes);
 
     assertFalse(manifest.isTimedSpansEnabled(TimedSpanMode.DEFAULT, TimedSpanMode.DEFAULT));
-    assertTrue(manifest.isTimedSpansEnabled(TimedSpanMode.DEFAULT, TimedSpanMode.ON));
+    assertTrue(manifest.isTimedSpansEnabled(TimedSpanMode.DEFAULT, TimedSpanMode.CHILD));
+    assertTrue(manifest.isTimedSpansEnabled(TimedSpanMode.DEFAULT, TimedSpanMode.ROOT));
   }
 
   @Test
@@ -71,8 +77,25 @@ public class AgentManifestTest {
     manifest.readToggles(attributes);
 
     assertFalse(manifest.isTimedSpansEnabled(TimedSpanMode.DEFAULT, TimedSpanMode.DEFAULT));
-    assertFalse(manifest.isTimedSpansEnabled(TimedSpanMode.DEFAULT, TimedSpanMode.ON));
-    assertFalse(manifest.isTimedSpansEnabled(TimedSpanMode.ON, TimedSpanMode.ON));
+    assertFalse(manifest.isTimedSpansEnabled(TimedSpanMode.DEFAULT, TimedSpanMode.CHILD));
+    assertFalse(manifest.isTimedSpansEnabled(TimedSpanMode.DEFAULT, TimedSpanMode.ROOT));
+    assertFalse(manifest.isTimedSpansEnabled(TimedSpanMode.CHILD, TimedSpanMode.CHILD));
+    assertFalse(manifest.isTimedSpansEnabled(TimedSpanMode.ROOT, TimedSpanMode.ROOT));
+  }
+
+  @Test
+  public void timedSpans_defaultOnIsInvalid() {
+
+    AgentManifest manifest = new AgentManifest();
+    Attributes attributes = new Attributes();
+    attributes.putValue("timedSpans", "default-on");
+
+    try {
+      manifest.readToggles(attributes);
+      fail("Expected invalid timedSpans mode");
+    } catch (IllegalArgumentException e) {
+      assertEquals("Invalid timedSpans mode default-on", e.getMessage());
+    }
   }
 
   @Test

@@ -135,6 +135,10 @@ class EnhanceContext {
     return manifest.isTimedSpansEnabled(classMode, methodMode);
   }
 
+  TimedSpanMode timedSpanMode(TimedSpanMode classMode, TimedSpanMode methodMode) {
+    return manifest.timedSpanMode(classMode, methodMode);
+  }
+
   boolean isTimedMetricNamingLabelTag() {
     return manifest.isTimedMetricNamingLabelTag();
   }
