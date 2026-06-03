@@ -18,4 +18,9 @@ public class TaggedCustomTimedResource {
   public String publicMethodWithFullName() {
     return "ok";
   }
+
+  @Timed(prefix = "lambda")
+  public String publicMethodWithMethodPrefix() {
+    return "ok";
+  }
 }

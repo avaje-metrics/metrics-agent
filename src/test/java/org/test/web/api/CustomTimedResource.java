@@ -35,6 +35,11 @@ public class CustomTimedResource {
     return null;
   }
 
+  @Timed(prefix = "lambda")
+  public String publicMethodWithMethodPrefix() {
+    return null;
+  }
+
   @NotTimed
   public String publicMethodNotTimed() {
     return null;

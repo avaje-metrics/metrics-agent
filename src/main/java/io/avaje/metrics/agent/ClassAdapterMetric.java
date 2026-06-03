@@ -130,6 +130,30 @@ public class ClassAdapterMetric extends ClassVisitor implements Opcodes {
   }
 
   /**
+   * Return the metric prefix used for an enhanced method, allowing a method-level
+   * {@code @Timed(prefix=...)} to override the class-level prefix while keeping the
+   * class short name on the unique metric name.
+   */
+  String getMetricPrefix(String methodPrefix) {
+    if (methodPrefix != null) {
+      return methodPrefix + "." + shortName;
+    }
+    return getMetricPrefix();
+  }
+
+  /**
+   * Return the metric base name (used as the registered metric name in label-tag
+   * naming mode) allowing a method-level {@code @Timed(prefix=...)} to override the
+   * class-level base name.
+   */
+  String getMetricBaseName(String methodPrefix) {
+    if (methodPrefix != null) {
+      return methodPrefix;
+    }
+    return getMetricBaseName();
+  }
+
+  /**
    * Return the class level metric prefix used to prefix timed metrics on methods.
    */
   String getMetricPrefix() {

@@ -58,6 +58,15 @@ public class TaggedMetricNamingTest {
   }
 
   @Test
+  public void methodPrefix_overridesClassPrefix() throws Exception {
+
+    invokeTransformed("org.tagged.web.api.TaggedCustomTimedResource", "publicMethodWithMethodPrefix", "timedMetricNaming: label-tag");
+
+    assertEquals("lambda", Metrics.testLastMetricName());
+    assertArrayEquals(new String[]{"label:TaggedCustomTimedResource.publicMethodWithMethodPrefix"}, Metrics.testLastMetricTags());
+  }
+
+  @Test
   public void dottedMethodName_becomesLabelOverride() throws Exception {
 
     invokeTransformed("org.tagged.web.api.TaggedCustomTimedResource", "publicMethodWithFullName", "timedMetricNaming: label-tag");

@@ -56,6 +56,7 @@ public class AddTimerMetricMethodAdapter extends AdviceAdapter {
   private final int metricIndex;
 
   private String name;
+  private String prefix;
   private boolean explicitName;
   private boolean explicitFullName;
 
@@ -104,6 +105,20 @@ public class AddTimerMetricMethodAdapter extends AdviceAdapter {
   }
 
   /**
+   * Set by method-level {@code @Timed(prefix=...)} attribute. Overrides the class-level
+   * prefix for both the registered metric base name and the unique metric name.
+   */
+  private void setPrefix(String metricPrefix) {
+    if (metricPrefix == null) {
+      return;
+    }
+    metricPrefix = metricPrefix.trim();
+    if (!metricPrefix.isEmpty()) {
+      this.prefix = metricPrefix;
+    }
+  }
+
+  /**
    * Set the bucket ranges to use for this metric/method.
    */
   private void setBuckets(Object bucket) {
@@ -131,7 +146,7 @@ public class AddTimerMetricMethodAdapter extends AdviceAdapter {
     if (explicitFullName) {
       return name;
     }
-    return classAdapter.getMetricPrefix() + "." + name;
+    return classAdapter.getMetricPrefix(prefix) + "." + name;
   }
 
   private String getMetricLabel() {
@@ -141,13 +156,17 @@ public class AddTimerMetricMethodAdapter extends AdviceAdapter {
     return classAdapter.getMetricLabelPrefix() + "." + name;
   }
 
+  private String getMetricBaseName() {
+    return classAdapter.getMetricBaseName(prefix);
+  }
+
   private boolean useLabelTagMetricNaming() {
     return context.isTimedMetricNamingLabelTag();
   }
 
   private String getMetricDescription() {
     if (useLabelTagMetricNaming()) {
-      return classAdapter.getMetricBaseName() + " [label:" + getMetricLabel() + "]";
+      return getMetricBaseName() + " [label:" + getMetricLabel() + "]";
     }
     return getUniqueMetricName();
   }
@@ -249,6 +268,8 @@ public class AddTimerMetricMethodAdapter extends AdviceAdapter {
     public void visit(String name, Object value) {
       if ("name".equals(name) && isNotEmpty(value)) {
         setName(value.toString());
+      } else if ("prefix".equals(name) && isNotEmpty(value)) {
+        setPrefix(value.toString());
       } else if ("buckets".equals(name)) {
         setBuckets(value);
       }
@@ -374,7 +395,7 @@ public class AddTimerMetricMethodAdapter extends AdviceAdapter {
 
       int[] buckets = getBuckets();
       String[] tags = getTags();
-      mv.visitLdcInsn(useLabelTagMetricNaming() ? classAdapter.getMetricBaseName() : getUniqueMetricName());
+      mv.visitLdcInsn(useLabelTagMetricNaming() ? getMetricBaseName() : getUniqueMetricName());
       mv.visitMethodInsn(INVOKESTATIC, METRIC_MANAGER, CREATE_TIMER_BUILDER, TIMER_BUILDER_DESC, false);
 
       if (tags.length > 0) {

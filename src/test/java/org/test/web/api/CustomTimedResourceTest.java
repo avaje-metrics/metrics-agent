@@ -43,6 +43,10 @@ public class CustomTimedResourceTest extends BaseTest {
     assertEquals("myapi.CustomTimedResource.publicMethodWithNameWhiteSpace", Metrics.testLastMetricName());
     assertTrue(Metrics.testLastMetricOpcodeSuccess());
 
+    resource.publicMethodWithMethodPrefix();
+    assertEquals("lambda.CustomTimedResource.publicMethodWithMethodPrefix", Metrics.testLastMetricName());
+    assertTrue(Metrics.testLastMetricOpcodeSuccess());
+
     Metrics.testReset();
     assertNull(Metrics.testLastMetricName());
 
