@@ -39,7 +39,7 @@ public class AgentManifest {
   private boolean includeJaxRsComponents;
   private boolean includeJEEComponents;
   private TimedSpansMode timedSpansMode = TimedSpansMode.DEFAULT_OFF;
-  private TimedMetricNaming timedMetricNaming = TimedMetricNaming.FULL_NAME;
+  private TimedMetricNaming timedMetricNaming = TimedMetricNaming.LABEL_TAG;
 
   private boolean nameIncludePackages;
   private int debugLevel;

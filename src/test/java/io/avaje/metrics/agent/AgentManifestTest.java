@@ -99,10 +99,10 @@ public class AgentManifestTest {
   }
 
   @Test
-  public void timedMetricNaming_unsetDefaultsFullName() {
+  public void timedMetricNaming_unsetDefaultsLabelTag() {
     AgentManifest manifest = new AgentManifest();
 
-    assertFalse(manifest.isTimedMetricNamingLabelTag());
+    assertTrue(manifest.isTimedMetricNamingLabelTag());
   }
 
   @Test
@@ -114,5 +114,16 @@ public class AgentManifestTest {
     manifest.readToggles(attributes);
 
     assertTrue(manifest.isTimedMetricNamingLabelTag());
+  }
+
+  @Test
+  public void timedMetricNaming_fullNameMode() {
+    AgentManifest manifest = new AgentManifest();
+    Attributes attributes = new Attributes();
+    attributes.putValue("timedMetricNaming", "full-name");
+
+    manifest.readToggles(attributes);
+
+    assertFalse(manifest.isTimedMetricNamingLabelTag());
   }
 }

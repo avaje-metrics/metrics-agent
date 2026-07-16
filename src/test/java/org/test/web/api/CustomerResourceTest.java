@@ -4,6 +4,7 @@ import io.avaje.metrics.Metrics;
 import io.avaje.metrics.MockTimer;
 import org.junit.Test;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -20,9 +21,10 @@ public class CustomerResourceTest extends BaseTest {
     assertNull(Metrics.testLastMetricName());
 
     customerResource.publicMethodWithJaxrs();
-    assertEquals("web.api.CustomerResource.publicMethodWithJaxrs", Metrics.testLastMetricName());
+    assertEquals("web.api", Metrics.testLastMetricName());
+    assertArrayEquals(new String[]{"label:CustomerResource.publicMethodWithJaxrs"}, Metrics.testLastMetricTags());
 
-    MockTimer metric = Metrics.testGetTimedMetric("web.api.CustomerResource.publicMethodWithJaxrs");
+    MockTimer metric = Metrics.testGetTimedMetric("web.api", "label:CustomerResource.publicMethodWithJaxrs");
     metric.testReset();
     assertEquals(0, metric.testGetCount());
 
@@ -56,32 +58,41 @@ public class CustomerResourceTest extends BaseTest {
     assertNull(Metrics.testLastMetricName());
 
     customerResource.publicMethodWithJaxrs();
-    assertEquals("web.api.CustomerResource.publicMethodWithJaxrs", Metrics.testLastMetricName());
+    assertEquals("web.api", Metrics.testLastMetricName());
+    assertArrayEquals(new String[]{"label:CustomerResource.publicMethodWithJaxrs"}, Metrics.testLastMetricTags());
     assertTrue(Metrics.testLastMetricOpcodeSuccess());
 
     customerResource.nakedProtectedMethod();
-    assertEquals("web.api.CustomerResource.publicMethodWithJaxrs", Metrics.testLastMetricName());
+    assertEquals("web.api", Metrics.testLastMetricName());
+    assertArrayEquals(new String[]{"label:CustomerResource.publicMethodWithJaxrs"}, Metrics.testLastMetricTags());
 
     customerResource.nakedPublicMethod();
-    assertEquals("web.api.CustomerResource.nakedPublicMethod", Metrics.testLastMetricName());
+    assertEquals("web.api", Metrics.testLastMetricName());
+    assertArrayEquals(new String[]{"label:CustomerResource.nakedPublicMethod"}, Metrics.testLastMetricTags());
 
     customerResource.publicMethodWithJaxrs();
-    assertEquals("web.api.CustomerResource.publicMethodWithJaxrs", Metrics.testLastMetricName());
+    assertEquals("web.api", Metrics.testLastMetricName());
+    assertArrayEquals(new String[]{"label:CustomerResource.publicMethodWithJaxrs"}, Metrics.testLastMetricTags());
 
     customerResource.publicMethodWithJaxrs("asd");
-    assertEquals("web.api.CustomerResource.publicMethodWithJaxrs1", Metrics.testLastMetricName());
+    assertEquals("web.api", Metrics.testLastMetricName());
+    assertArrayEquals(new String[]{"label:CustomerResource.publicMethodWithJaxrs1"}, Metrics.testLastMetricTags());
 
     customerResource.publicMethodWithJaxrs("asd", 3);
-    assertEquals("web.api.CustomerResource.publicMethodWithJaxrs2", Metrics.testLastMetricName());
+    assertEquals("web.api", Metrics.testLastMetricName());
+    assertArrayEquals(new String[]{"label:CustomerResource.publicMethodWithJaxrs2"}, Metrics.testLastMetricTags());
 
     customerResource.findAll("ok");
-    assertEquals("app.BaseResource.findAll", Metrics.testLastMetricName());
+    assertEquals("app.component", Metrics.testLastMetricName());
+    assertArrayEquals(new String[]{"label:BaseResource.findAll"}, Metrics.testLastMetricTags());
 
     customerResource.delete();
-    assertEquals("app.BaseResource.delete", Metrics.testLastMetricName());
+    assertEquals("app.component", Metrics.testLastMetricName());
+    assertArrayEquals(new String[]{"label:BaseResource.delete"}, Metrics.testLastMetricTags());
 
     customerResource.deleteX(23L, "as");// ();
-    assertEquals("app.BaseResource.deleteX", Metrics.testLastMetricName());
+    assertEquals("app.component", Metrics.testLastMetricName());
+    assertArrayEquals(new String[]{"label:BaseResource.deleteX"}, Metrics.testLastMetricTags());
 
     Metrics.testReset();
     assertNull(Metrics.testLastMetricName());
@@ -97,7 +108,8 @@ public class CustomerResourceTest extends BaseTest {
       fail("Never get here");
 
     } catch (IllegalArgumentException expected) {
-      assertEquals("app.BaseResource.findAll", Metrics.testLastMetricName());
+      assertEquals("app.component", Metrics.testLastMetricName());
+      assertArrayEquals(new String[]{"label:BaseResource.findAll"}, Metrics.testLastMetricTags());
       assertTrue(Metrics.testLastMetricOpcodeError());
     }
   }
@@ -112,7 +124,8 @@ public class CustomerResourceTest extends BaseTest {
     assertNull(Metrics.testLastMetricName());
 
     CustomerResource.aStaticMethodWithTimedAnnotation();
-    assertEquals("web.api.CustomerResource.staticGeneral", Metrics.testLastMetricName());
+    assertEquals("web.api", Metrics.testLastMetricName());
+    assertArrayEquals(new String[]{"label:staticGeneral"}, Metrics.testLastMetricTags());
 
   }
 }

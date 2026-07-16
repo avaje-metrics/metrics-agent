@@ -5,6 +5,7 @@ package org.test.web.api;
 import io.avaje.metrics.Metrics;
 import org.junit.Test;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -24,27 +25,33 @@ public class CustomTimedResourceTest extends BaseTest {
     assertNull(Metrics.testLastMetricName());
 
     resource.publicMethodNormal();
-    assertEquals("myapi.CustomTimedResource.publicMethodNormal", Metrics.testLastMetricName());
+    assertEquals("myapi", Metrics.testLastMetricName());
+    assertArrayEquals(new String[]{"label:CustomTimedResource.publicMethodNormal"}, Metrics.testLastMetricTags());
     assertTrue(Metrics.testLastMetricOpcodeSuccess());
 
     resource.publicMethodWithFullName();
-    assertEquals("myname.fully.defined", Metrics.testLastMetricName());
+    assertEquals("myapi", Metrics.testLastMetricName());
+    assertArrayEquals(new String[]{"label:myname.fully.defined"}, Metrics.testLastMetricTags());
     assertTrue(Metrics.testLastMetricOpcodeSuccess());
 
     resource.publicMethodWithFullNameWhiteSpace();
-    assertEquals("myapi.CustomTimedResource.publicMethodWithFullNameWhiteSpace", Metrics.testLastMetricName());
+    assertEquals("myapi", Metrics.testLastMetricName());
+    assertArrayEquals(new String[]{"label:CustomTimedResource.publicMethodWithFullNameWhiteSpace"}, Metrics.testLastMetricTags());
     assertTrue(Metrics.testLastMetricOpcodeSuccess());
 
     resource.publicMethodWithName();
-    assertEquals("myapi.CustomTimedResource.someRandomName", Metrics.testLastMetricName());
+    assertEquals("myapi", Metrics.testLastMetricName());
+    assertArrayEquals(new String[]{"label:someRandomName"}, Metrics.testLastMetricTags());
     assertTrue(Metrics.testLastMetricOpcodeSuccess());
 
     resource.publicMethodWithNameWhiteSpace();
-    assertEquals("myapi.CustomTimedResource.publicMethodWithNameWhiteSpace", Metrics.testLastMetricName());
+    assertEquals("myapi", Metrics.testLastMetricName());
+    assertArrayEquals(new String[]{"label:CustomTimedResource.publicMethodWithNameWhiteSpace"}, Metrics.testLastMetricTags());
     assertTrue(Metrics.testLastMetricOpcodeSuccess());
 
     resource.publicMethodWithMethodPrefix();
-    assertEquals("lambda.CustomTimedResource.publicMethodWithMethodPrefix", Metrics.testLastMetricName());
+    assertEquals("lambda", Metrics.testLastMetricName());
+    assertArrayEquals(new String[]{"label:CustomTimedResource.publicMethodWithMethodPrefix"}, Metrics.testLastMetricTags());
     assertTrue(Metrics.testLastMetricOpcodeSuccess());
 
     Metrics.testReset();
@@ -68,7 +75,8 @@ public class CustomTimedResourceTest extends BaseTest {
     assertNull(Metrics.testLastMetricName());
 
     CustomTimedResource.aStaticMethodWithTimedAnnotation();
-    assertEquals("myapi.CustomTimedResource.staticGeneral", Metrics.testLastMetricName());
+    assertEquals("myapi", Metrics.testLastMetricName());
+    assertArrayEquals(new String[]{"label:staticGeneral"}, Metrics.testLastMetricTags());
 
   }
 }

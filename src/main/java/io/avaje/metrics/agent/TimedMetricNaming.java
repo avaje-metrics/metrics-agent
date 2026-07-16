@@ -6,14 +6,14 @@ enum TimedMetricNaming {
 
   static TimedMetricNaming of(String value) {
     if (value == null || value.trim().isEmpty()) {
-      return FULL_NAME;
+      return LABEL_TAG;
     }
     switch (value.trim()) {
-      case "label-tag":
-        return LABEL_TAG;
       case "full-name":
-      default:
         return FULL_NAME;
+      case "label-tag":
+      default:
+        return LABEL_TAG;
     }
   }
 }

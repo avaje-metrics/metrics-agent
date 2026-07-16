@@ -5,6 +5,7 @@ import io.avaje.metrics.MockTimer;
 import org.junit.Test;
 import org.test.app.SimpleService;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -18,11 +19,12 @@ public class IndexResourceTest extends BaseTest {
 
     orderService.testForceError(false);
 
-    MockTimer metric = Metrics.testGetTimedMetric("app.IndexResource.get");
+    MockTimer metric = Metrics.testGetTimedMetric("app.component", "label:IndexResource.get");
     metric.testReset();
 
     orderService.get();
-    assertEquals("app.IndexResource.get", Metrics.testLastMetricName());
+    assertEquals("app.component", Metrics.testLastMetricName());
+    assertArrayEquals(new String[]{"label:IndexResource.get"}, Metrics.testLastMetricTags());
     assertEquals(1, metric.testGetCount());
     assertTrue(Metrics.testLastMetricOpcodeSuccess());
 
@@ -36,7 +38,7 @@ public class IndexResourceTest extends BaseTest {
 
     orderService.testForceError(true);
 
-    MockTimer metric = Metrics.testGetTimedMetric("app.IndexResource.get");
+    MockTimer metric = Metrics.testGetTimedMetric("app.component", "label:IndexResource.get");
     metric.testReset();
 
     try {

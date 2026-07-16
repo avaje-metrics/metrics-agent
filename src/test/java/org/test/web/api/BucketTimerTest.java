@@ -5,6 +5,7 @@ import io.avaje.metrics.MockBucketTimer;
 import org.junit.Test;
 import org.test.app.OtherSimpleService;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
@@ -19,9 +20,10 @@ public class BucketTimerTest extends BaseTest {
     assertNull(Metrics.testLastMetricName());
 
     service.sayHi();
-    assertEquals("app.OtherSimpleService.sayHi", Metrics.testLastMetricName());
+    assertEquals("app.component", Metrics.testLastMetricName());
+    assertArrayEquals(new String[]{"label:OtherSimpleService.sayHi"}, Metrics.testLastMetricTags());
 
-    MockBucketTimer metric = Metrics.testGetBucketTimedMetric("app.OtherSimpleService.saySomethingElse");
+    MockBucketTimer metric = Metrics.testGetBucketTimedMetric("app.component", "label:OtherSimpleService.saySomethingElse");
     metric.testReset();
     assertEquals(0, metric.testGetCount());
 
