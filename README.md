@@ -49,7 +49,7 @@ example `src/main/resources/metrics.mf`.
 Manifest-Version: 1.0
 packages: com.example.app.**
 timedSpans: default-off
-timedMetricNaming: label-tag
+timedMetricNaming: full-name
 spring: true
 jaxrs: true
 
@@ -77,7 +77,7 @@ parsing, so `true` enables the option and any other value is false.
 | `nameIncludePackages` | boolean, default `false` | Uses fully qualified class names in generated non-web metric names or label values. |
 | `nameTrimPackages` | package list, default empty | Legacy parsed setting. Package prefixes are stored longest-first, but current enhancement does not apply this setting to generated metric names. |
 | `timedSpans` | `default-off`, `default-child`, `disabled`; default `default-off` | Controls whether timed methods also create spans. `disabled` turns off timed spans globally, including explicit `@Timed(span = Timed.SpanMode.CHILD)` or `ROOT`. |
-| `timedMetricNaming` | `full-name`, `label-tag`; default `full-name` | Controls whether timed metric names use the full generated name or a base metric name with a generated `label:` tag. |
+| `timedMetricNaming` | `full-name`, `label-tag`; default `label-tag` | Controls whether timed metric names use the full generated name or a base metric name with a generated `label:` tag. |
 
 When `packages` is not set, the agent skips known JDK, JDBC, logging, test, and common
 library packages and checks the remaining classes. Set `packages` in production
@@ -98,12 +98,12 @@ when no recording span is current, which is useful for top-level Lambda-style ha
 
 ### Timed metric naming
 
-`timedMetricNaming` supports `full-name` and `label-tag`. If unset, `full-name` is used.
+`timedMetricNaming` supports `full-name` and `label-tag`. If unset, `label-tag` is used.
 
-- `full-name` keeps the existing metric naming, for example:
-  `web.api.CustomerResource.staticGeneral`
-- `label-tag` changes timed metrics to use the base metric name plus a `label:` tag, for example:
+- `label-tag` (default) changes timed metrics to use the base metric name plus a `label:` tag, for example:
   `Metrics.timerBuilder("web.api").tags(Tags.of("label:CustomerResource.staticGeneral")).build()`
+- `full-name` reverts to the legacy metric naming, for example:
+  `web.api.CustomerResource.staticGeneral`
 
 In `label-tag` mode:
 

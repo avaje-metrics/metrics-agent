@@ -8,6 +8,7 @@ import org.test.app.service.ContactDataLayer;
 import org.test.app.service.ContactRepository;
 import org.test.app.service.ContactServiceImpl;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 
 /**
@@ -21,15 +22,16 @@ public class SpringServiceAndRepositoryCallingTest extends BaseTest {
     ContactDataLayer contactDataLayer = new ContactRepository();
     ContactServiceImpl impl = new ContactServiceImpl(contactDataLayer);
 
-    MockTimer alertMetric = Metrics.testGetTimedMetric("service.ContactServiceImpl.sendAlert");
+    MockTimer alertMetric = Metrics.testGetTimedMetric("service", "label:ContactServiceImpl.sendAlert");
     alertMetric.testReset();
 
-    MockTimer repoMetric = Metrics.testGetTimedMetric("repo.ContactRepository.fetchData");
+    MockTimer repoMetric = Metrics.testGetTimedMetric("repo", "label:ContactRepository.fetchData");
     repoMetric.testReset();
 
 
     impl.sendAlert(new Contact());
-    assertEquals("service.ContactServiceImpl.sendAlert", Metrics.testLastMetricName());
+    assertEquals("service", Metrics.testLastMetricName());
+    assertArrayEquals(new String[]{"label:ContactServiceImpl.sendAlert"}, Metrics.testLastMetricTags());
     assertEquals(1, alertMetric.testGetCount());
     assertEquals(1, repoMetric.testGetCount());
 

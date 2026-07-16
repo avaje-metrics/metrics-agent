@@ -140,7 +140,7 @@ public class TaggedMetricNamingTest {
   @Test
   public void timedTags_classTagsApplyInFullNameMode() throws Exception {
 
-    invokeTransformed("org.tagged.web.api.TaggedTimedTagsResource", "classTagged");
+    invokeTransformed("org.tagged.web.api.TaggedTimedTagsResource", "classTagged", "timedMetricNaming: full-name");
 
     assertEquals("tagapi.TaggedTimedTagsResource.classTagged", Metrics.testLastMetricName());
     assertArrayEquals(new String[]{"type:class", "component:billing"}, Metrics.testLastMetricTags());
@@ -152,7 +152,7 @@ public class TaggedMetricNamingTest {
   @Test
   public void timedTags_methodTagsAppendToClassTagsInFullNameMode() throws Exception {
 
-    invokeTransformed("org.tagged.web.api.TaggedTimedTagsResource", "methodTagged");
+    invokeTransformed("org.tagged.web.api.TaggedTimedTagsResource", "methodTagged", "timedMetricNaming: full-name");
 
     assertEquals("tagapi.TaggedTimedTagsResource.methodTagged", Metrics.testLastMetricName());
     assertArrayEquals(new String[]{"type:class", "component:billing", "operation:sync", "source:method"}, Metrics.testLastMetricTags());
@@ -169,7 +169,7 @@ public class TaggedMetricNamingTest {
   @Test
   public void timedTags_bucketTimersIncludeCustomTags() throws Exception {
 
-    invokeTransformed("org.tagged.web.api.TaggedTimedTagsResource", "bucketTagged");
+    invokeTransformed("org.tagged.web.api.TaggedTimedTagsResource", "bucketTagged", "timedMetricNaming: full-name");
 
     assertEquals("tagapi.TaggedTimedTagsResource.bucketTagged", Metrics.testLastMetricName());
     assertArrayEquals(new String[]{"type:class", "component:billing", "operation:bucket"}, Metrics.testLastMetricTags());
@@ -185,7 +185,7 @@ public class TaggedMetricNamingTest {
   @Test
   public void timedTags_tracedTimersIncludeCustomTags() throws Exception {
 
-    invokeTransformed("org.tagged.web.api.TaggedTimedTagsResource", "tracedTagged");
+    invokeTransformed("org.tagged.web.api.TaggedTimedTagsResource", "tracedTagged", "timedMetricNaming: full-name");
 
     assertEquals("tagapi.TaggedTimedTagsResource.tracedTagged", Metrics.testLastMetricName());
     assertArrayEquals(new String[]{"type:class", "component:billing", "operation:trace"}, Metrics.testLastMetricTags());

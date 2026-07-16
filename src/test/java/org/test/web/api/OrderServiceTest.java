@@ -15,7 +15,7 @@ public class OrderServiceTest extends BaseTest {
 
     OrderService orderService = new OrderService();
 
-    MockTimer metric = Metrics.testGetTimedMetric("service.OrderService.processOrders");
+    MockTimer metric = Metrics.testGetTimedMetric("service", "label:OrderService.processOrders");
     metric.testReset();
     Metrics.testReset();
 
