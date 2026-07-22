@@ -26,6 +26,7 @@ import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 public class TaggedMetricNamingTest {
@@ -138,6 +139,18 @@ public class TaggedMetricNamingTest {
   }
 
   @Test
+  public void bridgeMethod_isNotEnhanced() throws Exception {
+
+    invokeTransformed("org.tagged.web.api.TaggedGenericTimedResource", "handle", Object.class, "timedMetricNaming: label-tag");
+
+    assertEquals("bridgeapi", Metrics.testLastMetricName());
+    assertArrayEquals(new String[]{"label:TaggedGenericTimedResource.handle"}, Metrics.testLastMetricTags());
+    assertTrue(Metrics.testLastOperationWasEvent());
+    assertNotNull(Metrics.testGetTimedMetric("bridgeapi", "label:TaggedGenericTimedResource.handle"));
+    assertNull(Metrics.testGetTimedMetric("bridgeapi", "label:TaggedGenericTimedResource.handle1"));
+  }
+
+  @Test
   public void timedTags_classTagsApplyInFullNameMode() throws Exception {
 
     invokeTransformed("org.tagged.web.api.TaggedTimedTagsResource", "classTagged", "timedMetricNaming: full-name");
@@ -220,6 +233,14 @@ public class TaggedMetricNamingTest {
   }
 
   private void invokeTransformed(String className, String methodName, String... manifestEntries) throws Exception {
+    invokeTransformed(className, methodName, new Class<?>[0], manifestEntries);
+  }
+
+  private void invokeTransformed(String className, String methodName, Class<?> parameterType, String... manifestEntries) throws Exception {
+    invokeTransformed(className, methodName, new Class<?>[]{parameterType}, manifestEntries);
+  }
+
+  private void invokeTransformed(String className, String methodName, Class<?>[] parameterTypes, String... manifestEntries) throws Exception {
     Path tempDir = Files.createTempDirectory("metrics-agent-tagged-");
     try {
       copyClassFile(className, tempDir);
@@ -232,9 +253,9 @@ public class TaggedMetricNamingTest {
       try (TransformedClassLoader loader = new TransformedClassLoader(tempDir, getClass().getClassLoader(), className)) {
         Class<?> type = loader.loadClass(className);
         Metrics.testReset();
-        Method method = type.getMethod(methodName);
+        Method method = type.getMethod(methodName, parameterTypes);
         Object target = Modifier.isStatic(method.getModifiers()) ? null : type.getDeclaredConstructor().newInstance();
-        method.invoke(target);
+        method.invoke(target, parameterTypes.length == 0 ? new Object[0] : new Object[]{"test"});
       }
     } finally {
       deleteDirectory(tempDir);
