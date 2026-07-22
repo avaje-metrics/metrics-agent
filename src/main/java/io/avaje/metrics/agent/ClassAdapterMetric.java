@@ -412,6 +412,10 @@ public class ClassAdapterMetric extends ClassVisitor implements Opcodes {
       existingStaticInitialiser = true;
       return new StaticInitAdapter(mv, access, name, desc, className);
     }
+    if ((access & (ACC_BRIDGE | ACC_SYNTHETIC)) != 0) {
+      log(5, "... not enhancing synthetic or bridge method:", name, " desc:", desc);
+      return mv;
+    }
 
     boolean privateMethod = isPrivateMethod(access);
     boolean publicMethod = isPublicMethod(access);
